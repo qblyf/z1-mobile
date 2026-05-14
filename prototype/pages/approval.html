@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>审批中心 - Z1 全网连锁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #F2F2F7; margin: 0; }
+        .status-bar { height: 54px; padding: 14px 24px 0; display: flex; justify-content: space-between; align-items: center; color: #000; font-size: 15px; font-weight: 600; }
+        .nav-bar { height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 0.5px solid #E5E5EA; }
+        .tab-btn { padding: 12px 20px; font-size: 15px; font-weight: 500; color: #8E8E93; position: relative; }
+        .tab-btn.active { color: #007AFF; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 20px; right: 20px; height: 3px; background: #007AFF; border-radius: 2px; }
+        .approval-card { background: white; border-radius: 12px; margin: 12px 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; }
+        .approval-card:active { transform: scale(0.98); }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .red-dot { width: 8px; height: 8px; background: #FF3B30; border-radius: 50%; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex gap-1 items-center"><i class="fas fa-signal text-xs"></i><i class="fas fa-wifi text-xs"></i><i class="fas fa-battery-full text-xs"></i></div>
+    </div>
+
+    <div class="nav-bar">
+        <button onclick="history.back()" class="text-blue-500"><i class="fas fa-chevron-left text-lg"></i></button>
+        <span class="font-semibold text-lg">审批中心</span>
+        <button class="text-blue-500"><i class="fas fa-filter text-lg"></i></button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white flex border-b border-gray-100">
+        <button class="tab-btn active flex-1" onclick="switchTab(this, 'pending')">
+            待处理 <span class="red-dot ml-1"></span>
+        </button>
+        <button class="tab-btn flex-1" onclick="switchTab(this, 'approved')">已通过</button>
+        <button class="tab-btn flex-1" onclick="switchTab(this, 'rejected')">已拒绝</button>
+    </div>
+
+    <!-- Pending List -->
+    <div id="pending-list" class="pb-24 pt-2">
+
+        <!-- Approval Card 1 -->
+        <div class="approval-card">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="badge bg-orange-100 text-orange-700">采购申请</span>
+                        <span class="text-gray-400 text-sm">#AP2026051401</span>
+                    </div>
+                    <div class="font-semibold text-lg">iPhone 15 Pro 采购</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xl font-bold text-orange-600">¥89,990</div>
+                    <div class="text-gray-400 text-xs">含税</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-gray-500 text-sm mb-3">
+                <span><i class="far fa-user mr-1"></i>张三</span>
+                <span><i class="far fa-clock mr-1"></i>今天 10:30</span>
+            </div>
+            <div class="text-gray-600 text-sm mb-4">采购数量：10 台 · 供应商：苹果直营店</div>
+            <div class="flex gap-3">
+                <button class="flex-1 py-3 rounded-xl bg-red-50 text-red-500 font-semibold" onclick="handleReject(event)">拒绝</button>
+                <button class="flex-1 py-3 rounded-xl bg-blue-500 text-white font-semibold" onclick="handleApprove(event)">同意</button>
+            </div>
+        </div>
+
+        <!-- Approval Card 2 -->
+        <div class="approval-card">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="badge bg-blue-100 text-blue-700">调拨申请</span>
+                        <span class="text-gray-400 text-sm">#AP2026051402</span>
+                    </div>
+                    <div class="font-semibold text-lg">门店调拨 - AirPods</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xl font-bold text-blue-600">¥18,990</div>
+                    <div class="text-gray-400 text-xs">成本价</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-gray-500 text-sm mb-3">
+                <span><i class="far fa-user mr-1"></i>李四</span>
+                <span><i class="far fa-clock mr-1"></i>今天 09:15</span>
+            </div>
+            <div class="text-gray-600 text-sm mb-4">调拨数量：10 套 · 从：总店 → 分店A</div>
+            <div class="flex gap-3">
+                <button class="flex-1 py-3 rounded-xl bg-red-50 text-red-500 font-semibold" onclick="handleReject(event)">拒绝</button>
+                <button class="flex-1 py-3 rounded-xl bg-blue-500 text-white font-semibold" onclick="handleApprove(event)">同意</button>
+            </div>
+        </div>
+
+        <!-- Approval Card 3 -->
+        <div class="approval-card">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="badge bg-purple-100 text-purple-700">退货申请</span>
+                        <span class="text-gray-400 text-sm">#AP2026051305</span>
+                    </div>
+                    <div class="font-semibold text-lg">客户退货 - MagSafe</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xl font-bold text-gray-600">¥149</div>
+                    <div class="text-gray-400 text-xs">退款金额</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-gray-500 text-sm mb-3">
+                <span><i class="far fa-user mr-1"></i>王五</span>
+                <span><i class="far fa-clock mr-1"></i>昨天 16:45</span>
+            </div>
+            <div class="text-gray-600 text-sm mb-4">客户：赵六 · 订单：#SO2026051203</div>
+            <div class="flex gap-3">
+                <button class="flex-1 py-3 rounded-xl bg-red-50 text-red-500 font-semibold" onclick="handleReject(event)">拒绝</button>
+                <button class="flex-1 py-3 rounded-xl bg-blue-500 text-white font-semibold" onclick="handleApprove(event)">同意</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Approved List (Hidden) -->
+    <div id="approved-list" class="pb-24 pt-2 hidden">
+        <div class="approval-card opacity-70">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <span class="badge bg-green-100 text-green-700">已通过</span>
+                    <span class="ml-2 font-semibold">盘库审批</span>
+                </div>
+                <span class="text-gray-500 text-sm">05-13</span>
+            </div>
+            <div class="text-gray-500 text-sm">张三 · 盘盈 5 件 / 盘亏 2 件</div>
+        </div>
+        <div class="approval-card opacity-70">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <span class="badge bg-green-100 text-green-700">已通过</span>
+                    <span class="ml-2 font-semibold">促销申请</span>
+                </div>
+                <span class="text-gray-500 text-sm">05-12</span>
+            </div>
+            <div class="text-gray-500 text-sm">李四 · 全场 8 折</div>
+        </div>
+    </div>
+
+    <!-- Rejected List (Hidden) -->
+    <div id="rejected-list" class="pb-24 pt-2 hidden">
+        <div class="approval-card opacity-70">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <span class="badge bg-red-100 text-red-700">已拒绝</span>
+                    <span class="ml-2 font-semibold">大额采购</span>
+                </div>
+                <span class="text-gray-500 text-sm">05-11</span>
+            </div>
+            <div class="text-gray-500 text-sm">王五 · 原因：库存充足</div>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 flex justify-around py-3" style="padding-bottom: env(safe-area-inset-bottom, 16px);">
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='home.html'">
+            <i class="fas fa-home text-xl mb-1"></i><span class="text-xs">首页</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='order-list.html'">
+            <i class="fas fa-file-alt text-xl mb-1"></i><span class="text-xs">订单</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='stocktaking.html'">
+            <i class="fas fa-box text-xl mb-1"></i><span class="text-xs">库存</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='member-home.html'">
+            <i class="fas fa-users text-xl mb-1"></i><span class="text-xs">会员</span>
+        </button>
+        <button class="flex flex-col items-center text-blue-500">
+            <i class="fas fa-check-circle text-xl mb-1"></i><span class="text-xs">审批</span>
+        </button>
+    </div>
+
+    <script>
+        function switchTab(btn, type) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('pending-list').classList.add('hidden');
+            document.getElementById('approved-list').classList.add('hidden');
+            document.getElementById('rejected-list').classList.add('hidden');
+            document.getElementById(type + '-list').classList.remove('hidden');
+        }
+
+        function handleApprove(e) {
+            e.stopPropagation();
+            const card = e.target.closest('.approval-card');
+            card.style.opacity = '0.5';
+            alert('审批已通过');
+        }
+
+        function handleReject(e) {
+            e.stopPropagation();
+            const card = e.target.closest('.approval-card');
+            card.style.opacity = '0.5';
+            alert('审批已拒绝');
+        }
+    </script>
+
+</body>
+</html>

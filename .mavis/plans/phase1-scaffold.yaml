@@ -1,0 +1,181 @@
+version: 1
+plan:
+  name: 'z1-mobile Phase 1: 项目脚手架 + 基础架构'
+  max_concurrency: 2
+  max_consecutive_failures: 2
+  max_cycles: 10
+tasks:
+  - id: scaffold
+    title: 'Flutter 项目脚手架 + 基础架构'
+    prompt: |
+      ## 任务：创建 Flutter 项目脚手架和基础架构
+
+      ### 工作目录
+      `/Users/fan/www/AI/phone/Flutter/z1-nextapp`
+
+      ### 项目背景
+      将 Z1 全网连锁系统 PWA 重构为 Flutter App。项目代号 z1-mobile。
+
+      ### 交付物要求
+
+      1. **Flutter 项目初始化**
+         - 创建 Flutter 项目 `z1_mobile`
+         - 设置 Dart SDK 版本 >= 3.0.0
+         - 配置 pubspec.yaml 依赖（见下方）
+
+      2. **目录结构**（Feature-First Clean Architecture）
+      ```
+      lib/
+      ├── main.dart
+      ├── app.dart
+      ├── core/
+      │   ├── api/           # API 客户端
+      │   ├── constants/     # 常量
+      │   ├── errors/        # 错误处理
+      │   ├── router/        # 路由配置
+      │   ├── theme/         # 主题
+      │   └── utils/         # 工具类
+      ├── features/
+      │   ├── auth/          # 认证模块
+      │   └── home/          # 首页模块
+      ├── shared/
+      │   ├── widgets/       # 公共组件
+      │   └── services/      # 公共服务
+      └── injection.dart     # 依赖注入
+      ```
+
+      3. **pubspec.yaml 依赖配置**
+      ```yaml
+      dependencies:
+        flutter:
+          sdk: flutter
+        
+        # 状态管理
+        flutter_bloc: ^8.1.6
+        equatable: ^2.0.5
+        
+        # 依赖注入
+        get_it: ^7.7.0
+        injectable: ^2.4.4
+        
+        # 路由
+        go_router: ^14.6.2
+        
+        # 网络层
+        dio: ^5.7.0
+        
+        # 本地存储
+        shared_preferences: ^2.3.3
+        flutter_secure_storage: ^9.2.2
+        
+        # UI
+        cupertino_icons: ^1.0.8
+        
+        # 扫码
+        mobile_scanner: ^5.2.3
+        
+        # JSON 序列化
+        json_annotation: ^4.9.0
+        
+        # 工具
+        dartz: ^0.10.1
+        freezed_annotation: ^2.4.4
+        intl: ^0.19.0
+
+      dev_dependencies:
+        flutter_test:
+          sdk: flutter
+        build_runner: ^2.4.13
+        json_serializable: ^6.8.0
+        freezed: ^2.5.7
+        injectable_generator: ^2.6.2
+        flutter_lints: ^4.0.0
+        bloc_test: ^9.1.7
+        mocktail: ^1.0.4
+      ```
+
+      4. **核心文件实现**
+      
+      - `lib/core/api/api_client.dart` - Dio HTTP 客户端封装
+      - `lib/core/api/api_interceptor.dart` - Token 拦截器
+      - `lib/core/api/api_error.dart` - API 错误定义
+      - `lib/core/constants/api_constants.dart` - API 常量
+      - `lib/core/router/app_router.dart` - GoRouter 配置
+      - `lib/core/theme/app_theme.dart` - Material 3 主题
+      - `lib/core/errors/exceptions.dart` - 自定义异常
+      - `lib/injection.dart` - GetIt 依赖注入配置
+
+      5. **占位页面**（最小可运行）
+      - 登录页 `lib/features/auth/presentation/pages/login_page.dart`
+      - 首页 `lib/features/home/presentation/pages/home_page.dart`
+      - 路由守卫：未登录跳转登录页
+
+      ### 验收标准
+      - `flutter pub get` 无错误
+      - `flutter analyze` 无 error（warning 可接受）
+      - `flutter build apk --debug` 或 `flutter build ios --debug` 编译成功
+      - 代码结构符合 Feature-First 架构
+
+      ### 参考文档
+      - 项目设计文档: `docs/project-design.md`
+      - z1-pwa 项目: `/Users/fan/www/AI/z1/z1-pwa`
+      - z1-mid SDK: `/Users/fan/www/AI/z1/z1-mid`
+
+      ### 报告要求
+      完成后：
+      1. 列出创建的所有文件
+      2. 运行 `flutter pub get` 和 `flutter analyze` 的结果
+      3. 尝试构建并报告结果
+      4. 将完整输出写入 `deliverable.md`
+    assigned_to: coder
+    verified_by: verifier
+    verify_prompt: |
+      ## 验收任务：Flutter 项目脚手架
+
+      ### 工作目录
+      `/Users/fan/www/AI/phone/Flutter/z1-nextapp`
+
+      ### 验收清单
+
+      1. **目录结构检查**
+         - 确认 `lib/` 下存在 `core/`、`features/`、`shared/` 目录
+         - 确认 `core/` 下存在 `api/`、`constants/`、`errors/`、`router/`、`theme/`、`utils/`
+         - 确认 `features/` 下存在 `auth/`、`home/` 模块
+
+      2. **依赖检查**
+         - 运行 `cd /Users/fan/www/AI/phone/Flutter/z1-nextapp && flutter pub get`
+         - 确认无错误
+
+      3. **代码质量检查**
+         - 运行 `flutter analyze`
+         - 列出所有 error（warning 不扣分）
+         - 确认无 error
+
+      4. **核心文件检查**
+         - `lib/core/api/api_client.dart` 存在且有 Dio 封装
+         - `lib/core/api/api_interceptor.dart` 存在且有 Token 拦截器
+         - `lib/core/router/app_router.dart` 存在且有 GoRouter 配置
+         - `lib/core/theme/app_theme.dart` 存在且有 Material 3 主题
+         - `lib/injection.dart` 存在且有 GetIt 配置
+
+      5. **页面检查**
+         - `lib/features/auth/presentation/pages/login_page.dart` 存在
+         - `lib/features/home/presentation/pages/home_page.dart` 存在
+         - 路由配置了 `/login` 和 `/home` 路径
+
+      6. **构建验证**（如果时间允许）
+         - 尝试运行 `flutter build apk --debug --no-pub`
+         - 或 `flutter build ios --debug --no-pub`
+         - 报告构建结果
+
+      ### 评分标准
+      - ✅ PASS：目录结构正确 + 依赖安装成功 + 无 error + 核心文件完整
+      - ⚠️ WARN：目录结构正确 + 依赖安装成功 + 有 warning 但无 error
+      - ❌ FAIL：目录结构缺失 或 依赖安装失败 或 有 error
+
+      ### 报告要求
+      1. 列出每项检查的结果
+      2. 给出最终 PASS/WARN/FAIL 结论
+      3. 如有问题，列出具体需要修复的文件
+      4. 将完整验收报告写入 `deliverable.md`
+    timeout_ms: 1800000
