@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>商品详情</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .overlay { background: rgba(0,0,0,0.4); }
+    .modal { animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .qty-btn { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600; transition:all 0.15s; }
+    .tag-blue { background:#eff6ff;color:#2563eb; }
+    .tag-green { background:#f0fdf4;color:#16a34a; }
+  </style>
+</head>
+<body>
+
+  <div class="overlay fixed inset-0 z-50 flex items-end justify-center" onclick="closeModal(event)">
+    <div class="modal bg-white rounded-t-3xl w-full max-w-[390px] max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
+
+      <!-- 图片区 -->
+      <div class="relative bg-gray-100 h-64 flex items-center justify-center">
+        <div class="text-7xl">📿</div>
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+          <div class="w-2 h-2 rounded-full bg-blue-600"></div>
+          <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+          <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+        </div>
+        <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 text-white flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+
+        <!-- 基本信息 -->
+        <div>
+          <div class="text-xs text-gray-400 mb-1">足金 · 黄金类</div>
+          <div class="text-xl font-bold text-gray-800 mb-1">足金凤尾纹手镯 30g</div>
+          <div class="text-xs text-gray-400">条码：6901234567890</div>
+        </div>
+
+        <!-- 价格区 -->
+        <div class="flex items-baseline gap-3">
+          <span class="text-3xl font-black text-red-500">¥2,800</span>
+          <span class="text-sm text-gray-400 line-through">¥3,200</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="tag tag-blue text-xs">会员价 ¥2,650</span>
+          <span class="tag tag-green text-xs">有货</span>
+        </div>
+
+        <!-- 服务项 -->
+        <div class="card p-4 space-y-3">
+          <div class="text-sm font-medium text-gray-700 mb-2">可加购服务</div>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" class="w-5 h-5 accent-blue-600" checked>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-gray-800">免费刻字服务</div>
+              <div class="text-xs text-gray-400">可免费在产品上刻字</div>
+            </div>
+            <span class="text-xs text-green-600">免费</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" class="w-5 h-5 accent-blue-600">
+            <div class="flex-1">
+              <div class="text-sm font-medium text-gray-800">礼品包装</div>
+              <div class="text-xs text-gray-400">精美礼盒包装</div>
+            </div>
+            <span class="text-sm font-semibold text-gray-800">+¥30</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" class="w-5 h-5 accent-blue-600">
+            <div class="flex-1">
+              <div class="text-sm font-medium text-gray-800">终身保养</div>
+              <div class="text-xs text-gray-400">每年一次免费保养服务</div>
+            </div>
+            <span class="text-sm font-semibold text-gray-800">+¥200</span>
+          </label>
+        </div>
+
+        <!-- 数量 -->
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-gray-700">购买数量</span>
+          <div class="flex items-center gap-4">
+            <button class="qty-btn bg-gray-100 text-gray-600 active:scale-90" onclick="changeQty(-1)">−</button>
+            <span class="text-xl font-bold text-gray-800 w-8 text-center" id="qtyNum">1</span>
+            <button class="qty-btn bg-blue-600 text-white active:scale-90" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+
+        <!-- 小计 -->
+        <div class="flex justify-between items-center p-4 rounded-2xl bg-blue-50">
+          <span class="text-sm text-gray-600">小计</span>
+          <span class="text-2xl font-black text-blue-600" id="subtotal">¥2,800</span>
+        </div>
+
+      </div>
+
+      <!-- 底部按钮 -->
+      <div class="sticky bottom-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 flex gap-3">
+        <button onclick="addToCart()" class="flex-1 py-4 rounded-2xl text-base font-semibold text-blue-600 bg-blue-50 border border-blue-100 active:scale-[0.98] transition-transform">
+          加入购物车
+        </button>
+        <button onclick="buyNow()" class="flex-[2] py-4 rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 active:scale-[0.98] transition-transform">
+          立即购买
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let qty = 1;
+    const price = 2800;
+    function changeQty(delta) {
+      qty = Math.max(1, Math.min(99, qty + delta));
+      document.getElementById('qtyNum').textContent = qty;
+      document.getElementById('subtotal').textContent = '¥' + (qty * price).toLocaleString();
+    }
+    function closeModal(e) { if (e && e.target !== e.currentTarget) return; window.close?.() || alert('关闭弹窗'); }
+    function addToCart() { alert('加入购物车成功'); closeModal(); }
+    function buyNow() { alert('立即购买，进入订单确认页'); closeModal(); }
+  </script>
+</body>
+</html>

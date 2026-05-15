@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>收银</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .glass { background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); }
+    .card { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .btn-primary { background: linear-gradient(135deg,#3b82f6,#2563eb); border-radius: 14px; color: white; font-weight: 600; }
+    .payment-item { border-radius: 14px; border: 2px solid #e5e7eb; transition: all 0.2s; cursor: pointer; }
+    .payment-item.selected { border-color: #3b82f6; background: #eff6ff; }
+    .payment-item:active { transform: scale(0.98); }
+    .input-field { border-radius: 12px; border: 1.5px solid #e5e7eb; transition: border-color 0.2s; }
+    .input-field:focus { border-color: #3b82f6; outline: none; }
+  </style>
+</head>
+<body class="bg-gray-50 pb-8">
+
+  <!-- 顶部导航 -->
+  <div class="glass fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between">
+    <button class="p-2 -ml-2 rounded-full active:bg-gray-100" onclick="history.back()">
+      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <span class="text-base font-semibold text-gray-800">收银</span>
+    <div class="w-10"></div>
+  </div>
+
+  <div class="pt-20 px-4">
+
+    <!-- 金额展示 -->
+    <div class="text-center py-8">
+      <div class="text-sm text-gray-400 mb-2">应付金额</div>
+      <div class="text-5xl font-black text-gray-800 tracking-tight">¥21,378</div>
+    </div>
+
+    <!-- 支付方式 -->
+    <div class="mb-5">
+      <div class="text-sm font-medium text-gray-500 mb-3">选择支付方式</div>
+      <div class="grid grid-cols-2 gap-3">
+
+        <!-- 现金 -->
+        <div class="card p-4 payment-item selected" onclick="selectPay(this,'cash')" id="pay-cash">
+          <div class="text-3xl mb-2">💵</div>
+          <div class="text-sm font-semibold text-gray-800">现金</div>
+          <div class="text-xs text-gray-400 mt-1">Cash</div>
+        </div>
+
+        <!-- 微信支付 -->
+        <div class="card p-4 payment-item" onclick="selectPay(this,'wechat')" id="pay-wechat">
+          <div class="text-3xl mb-2">💚</div>
+          <div class="text-sm font-semibold text-gray-800">微信支付</div>
+          <div class="text-xs text-gray-400 mt-1">WeChat Pay</div>
+        </div>
+
+        <!-- 支付宝 -->
+        <div class="card p-4 payment-item" onclick="selectPay(this,'alipay')" id="pay-alipay">
+          <div class="text-3xl mb-2">💙</div>
+          <div class="text-sm font-semibold text-gray-800">支付宝</div>
+          <div class="text-xs text-gray-400 mt-1">Alipay</div>
+        </div>
+
+        <!-- 银行卡 -->
+        <div class="card p-4 payment-item" onclick="selectPay(this,'card')" id="pay-card">
+          <div class="text-3xl mb-2">💳</div>
+          <div class="text-sm font-semibold text-gray-800">银行卡</div>
+          <div class="text-xs text-gray-400 mt-1">Bank Card</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 现金收款输入（选中现金时显示） -->
+    <div id="cashInput" class="card p-4 mb-4">
+      <div class="text-sm font-medium text-gray-500 mb-2">实收金额</div>
+      <div class="flex gap-2">
+        <input type="number" id="receivedAmount" placeholder="输入实收金额" class="input-field flex-1 px-4 py-3 text-lg font-semibold" value="21378" oninput="calcChange()">
+        <button onclick="setExact()" class="px-4 py-3 text-sm bg-gray-100 text-gray-600 rounded-xl active:bg-gray-200 transition-colors">恰好</button>
+      </div>
+      <div class="mt-3 flex justify-between text-sm">
+        <span class="text-gray-500">找零</span>
+        <span class="font-bold text-green-600" id="changeAmount">¥0.00</span>
+      </div>
+    </div>
+
+    <!-- 二维码收款（扫码支付时显示） -->
+    <div id="qrCodeArea" class="card p-4 mb-4 hidden text-center">
+      <div class="text-sm text-gray-500 mb-3">请顾客扫描下方二维码付款</div>
+      <div class="w-48 h-48 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center text-4xl mb-3">
+        📱
+      </div>
+      <div class="text-xs text-gray-400">二维码有效期 5 分钟，超时自动刷新</div>
+    </div>
+
+    <!-- 汇总信息 -->
+    <div class="card px-4 py-4 space-y-3">
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-500">订单号</span>
+        <span class="text-gray-700 font-mono text-xs">Z1-20260515-001</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-500">实付金额</span>
+        <span class="text-gray-800 font-semibold" id="actualPay">¥21,378</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-500">支付方式</span>
+        <span class="text-gray-800 font-semibold" id="payMethod">现金</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部固定 -->
+  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-xl border-t border-gray-100">
+    <button onclick="confirmPay()" id="payBtn" class="btn-primary w-full py-4 text-base active:scale-[0.98] transition-transform">
+      确认收款
+    </button>
+  </div>
+
+  <script>
+    let selectedPay = 'cash';
+    const total = 21378;
+
+    function selectPay(el, type) {
+      document.querySelectorAll('.payment-item').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedPay = type;
+      document.getElementById('payMethod').textContent = {cash:'现金', wechat:'微信支付', alipay:'支付宝', card:'银行卡'}[type];
+
+      const cashInput = document.getElementById('cashInput');
+      const qrArea = document.getElementById('qrCodeArea');
+      const btn = document.getElementById('payBtn');
+
+      if (type === 'cash') {
+        cashInput.classList.remove('hidden');
+        qrArea.classList.add('hidden');
+        btn.textContent = '确认收款';
+      } else {
+        cashInput.classList.add('hidden');
+        qrArea.classList.remove('hidden');
+        btn.textContent = '等待支付...';
+      }
+    }
+
+    function setExact() {
+      document.getElementById('receivedAmount').value = total;
+      calcChange();
+    }
+
+    function calcChange() {
+      const received = parseFloat(document.getElementById('receivedAmount').value) || 0;
+      const change = Math.max(0, received - total);
+      document.getElementById('changeAmount').textContent = '¥' + change.toFixed(2);
+      document.getElementById('actualPay').textContent = '¥' + received.toLocaleString();
+    }
+
+    function confirmPay() {
+      if (selectedPay === 'cash') {
+        const received = parseFloat(document.getElementById('receivedAmount').value) || 0;
+        if (received < total) { alert('实收金额不足！'); return; }
+      }
+      alert('收款成功，跳转订单详情');
+      window.location.href = 'order-detail.html';
+    }
+
+    calcChange();
+  </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>销售订单列表</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .glass { background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); }
+    .card { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .tab-active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .tag { display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500; }
+    .status-paid { background:#dcfce7;color:#166534; }
+    .status-finished { background:#eff6ff;color:#1d4ed8; }
+    .status-unpaid { background:#fef2f2;color:#dc2626; }
+    .status-refunded { background:#f3f4f6;color:#6b7280; }
+    .order-card { transition: transform 0.15s; }
+    .order-card:active { transform: scale(0.98); background: #f9fafb; }
+  </style>
+</head>
+<body class="bg-gray-50 pb-4">
+
+  <!-- 顶部导航 -->
+  <div class="glass fixed top-0 left-0 right-0 z-50 px-4 py-3">
+    <div class="text-center text-base font-semibold text-gray-800">销售订单</div>
+  </div>
+
+  <div class="pt-14 px-4">
+
+    <!-- 搜索框 -->
+    <div class="mb-3 relative">
+      <input type="text" placeholder="搜索订单号/会员姓名/手机号" class="w-full bg-white rounded-2xl px-4 py-2.5 pl-10 text-sm shadow-sm">
+      <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </div>
+
+    <!-- Tab 筛选 -->
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-1" style="scrollbar-width:none;">
+      <button class="px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 tab-active text-blue-600">今日</button>
+      <button class="px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 text-gray-500 active:bg-white transition-colors">本周</button>
+      <button class="px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 text-gray-500 active:bg-white transition-colors">本月</button>
+      <button class="px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 text-gray-500 active:bg-white transition-colors">全部</button>
+      <button class="px-3 py-2 rounded-full text-sm font-medium flex-shrink-0 text-gray-500 bg-gray-100 ml-auto">筛选</button>
+    </div>
+
+    <!-- 订单列表 -->
+    <div class="space-y-3 pb-4">
+      <!-- 订单1 -->
+      <div class="card p-4 order-card cursor-pointer" onclick="goDetail()">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="text-xs font-mono text-gray-400">Z1-20260515-001</div>
+            <div class="text-xs text-gray-400 mt-0.5">10:30 · 零售</div>
+          </div>
+          <div class="text-right">
+            <div class="text-base font-bold text-red-500">¥21,378</div>
+            <span class="tag status-finished mt-1">已完成</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold">张</div>
+          <div class="text-sm font-medium text-gray-700">张三</div>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700">金卡</span>
+          <span class="text-xs text-gray-400 ml-auto">3件商品</span>
+        </div>
+      </div>
+
+      <!-- 订单2 -->
+      <div class="card p-4 order-card cursor-pointer" onclick="goDetail()">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="text-xs font-mono text-gray-400">Z1-20260515-002</div>
+            <div class="text-xs text-gray-400 mt-0.5">09:15 · 零售</div>
+          </div>
+          <div class="text-right">
+            <div class="text-base font-bold text-red-500">¥890</div>
+            <span class="tag status-paid mt-1">已付款</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold">李</div>
+          <div class="text-sm font-medium text-gray-700">李四</div>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">银卡</span>
+          <span class="text-xs text-gray-400 ml-auto">3件商品</span>
+        </div>
+      </div>
+
+      <!-- 订单3 -->
+      <div class="card p-4 order-card cursor-pointer" onclick="goDetail()">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="text-xs font-mono text-gray-400">Z1-20260515-003</div>
+            <div class="text-xs text-gray-400 mt-0.5">08:50 · 批发</div>
+          </div>
+          <div class="text-right">
+            <div class="text-base font-bold text-gray-300">¥5,600</div>
+            <span class="tag status-unpaid mt-1">待付款</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-semibold">散</div>
+          <div class="text-sm font-medium text-gray-500">散客</div>
+          <span class="text-xs text-gray-400 ml-auto">5件商品</span>
+        </div>
+      </div>
+
+      <!-- 订单4 -->
+      <div class="card p-4 order-card cursor-pointer" onclick="goDetail()">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="text-xs font-mono text-gray-400">Z1-20260514-028</div>
+            <div class="text-xs text-gray-400 mt-0.5">昨天 18:20 · 零售</div>
+          </div>
+          <div class="text-right">
+            <div class="text-base font-bold text-gray-400 line-through">¥560</div>
+            <span class="tag status-refunded mt-1">已退款</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold">张</div>
+          <div class="text-sm font-medium text-gray-700">张三</div>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700">金卡</span>
+          <span class="text-xs text-gray-400 ml-auto">2件商品</span>
+        </div>
+      </div>
+
+      <!-- 订单5 -->
+      <div class="card p-4 order-card cursor-pointer" onclick="goDetail()">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="text-xs font-mono text-gray-400">Z1-20260514-027</div>
+            <div class="text-xs text-gray-400 mt-0.5">昨天 16:05 · 工程</div>
+          </div>
+          <div class="text-right">
+            <div class="text-base font-bold text-red-500">¥128,000</div>
+            <span class="tag status-finished mt-1">已完成</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-semibold">赵</div>
+          <div class="text-sm font-medium text-gray-700">赵六</div>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">普通</span>
+          <span class="text-xs text-gray-400 ml-auto">12件商品</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function goDetail() { alert('跳转订单详情页'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>商品选购</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .glass { background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .card { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .tag { display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500; }
+    .tag-red { background:#fef2f2;color:#dc2626; }
+    .tag-green { background:#f0fdf4;color:#16a34a; }
+    .tag-orange { background:#fff7ed;color:#ea580c; }
+    .tag-blue { background:#eff6ff;color:#2563eb; }
+    .cates::-webkit-scrollbar { display: none; }
+    .btn-primary { background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:14px;color:white;font-weight:600; }
+    .cart-bar { background:linear-gradient(135deg,#1e40af,#1d4ed8); border-radius:18px 18px 0 0; box-shadow: 0 -4px 20px rgba(37,99,235,0.3); }
+    .product-card { transition: transform 0.15s; }
+    .product-card:active { transform: scale(0.97); }
+    .qty-btn { width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600; transition: all 0.15s; }
+    .qty-btn-minus { background:#f3f4f6;color:#374151; }
+    .qty-btn-plus { background:#eff6ff;color:#2563eb; }
+    .qty-btn:active { transform: scale(0.85); }
+    .modal { display:none; }
+    .modal.show { display:flex; }
+    .modal-content { background:white; border-radius:20px 20px 0 0; max-height:85vh; overflow-y:auto; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+    .overlay { display:none; }
+    .overlay.show { display:block; }
+  </style>
+</head>
+<body class="bg-gray-50 pb-28">
+
+  <!-- 顶部导航 -->
+  <div class="glass fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center gap-3">
+    <button class="p-1 rounded-full active:bg-gray-100 flex-shrink-0" onclick="history.back()">
+      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="flex-1 relative">
+      <input type="text" placeholder="搜索商品名称/条码" class="w-full bg-gray-100 rounded-2xl px-4 py-2 pl-10 text-sm">
+      <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </div>
+    <button class="w-9 h-9 rounded-2xl bg-green-50 flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform">
+      <svg class="w-4.5 h-4.5 text-green-600" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h6v6H3V3zm2 2v2h2V5H5zm8-2h6v6h-6V3zm2 2v2h2V5h-2zM5 13h6v6H5v-6zm2 2v2h2v-2H7zm10 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm-2 0h2v2h-2v-2z"/></svg>
+    </button>
+  </div>
+
+  <!-- 顶部信息栏 -->
+  <div class="pt-16 px-4 pb-2">
+    <div class="flex items-center gap-2 py-2">
+      <span class="tag tag-blue">零售</span>
+      <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-xs text-gray-600 active:bg-gray-200 transition-colors" onclick="toggleMember()">
+        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
+        <span id="memberName">张三 金卡</span>
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 分类 + 商品 -->
+  <div class="flex px-4 gap-3" style="height: calc(100vh - 190px);">
+    <!-- 分类侧栏 -->
+    <div class="cates w-20 flex-shrink-0 overflow-y-auto">
+      <div class="py-1 text-center text-sm py-2 rounded-xl text-white font-semibold text-xs bg-blue-600 mb-2">全部</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">黄金</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">钻石</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">银饰</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">翡翠玉石</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">珍珠</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">K金</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">手表</div>
+      <div class="py-2 text-center text-xs text-gray-500 mb-2">配饰</div>
+    </div>
+    <!-- 商品网格 -->
+    <div class="flex-1 overflow-y-auto pr-1">
+      <div class="grid grid-cols-2 gap-3 pb-4">
+        <!-- 商品1 -->
+        <div class="card overflow-hidden product-card cursor-pointer" onclick="showProductDetail(0)">
+          <div class="bg-gray-100 h-28 flex items-center justify-center relative">
+            <span class="absolute top-2 left-2 tag tag-green text-xs">有货</span>
+            <span class="absolute top-2 right-2 text-lg">📿</span>
+          </div>
+          <div class="p-3">
+            <div class="text-xs text-gray-500 mb-1">足金手镯 · 黄金</div>
+            <div class="text-sm font-semibold text-gray-800 leading-tight mb-2">足金凤尾纹手镯 30g</div>
+            <div class="flex items-baseline gap-1.5 mb-2">
+              <span class="text-base font-bold text-red-500">¥2,800</span>
+            </div>
+            <div class="text-xs text-gray-400 line-through mb-2">¥3,200</div>
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-orange-500">会员价 ¥2,650</div>
+              <button class="w-7 h-7 rounded-full bg-blue-600 text-white text-lg flex items-center justify-center active:scale-90 transition-transform" onclick="event.stopPropagation();addToCart(0)">+</button>
+            </div>
+          </div>
+        </div>
+        <!-- 商品2 -->
+        <div class="card overflow-hidden product-card cursor-pointer" onclick="showProductDetail(1)">
+          <div class="bg-gray-100 h-28 flex items-center justify-center relative">
+            <span class="absolute top-2 left-2 tag tag-orange text-xs">仅剩3件</span>
+            <span class="absolute top-2 right-2 text-lg">💎</span>
+          </div>
+          <div class="p-3">
+            <div class="text-xs text-gray-500 mb-1">钻石 · 钻石镶嵌</div>
+            <div class="text-sm font-semibold text-gray-800 leading-tight mb-2">50分钻戒 D色 VS1</div>
+            <div class="flex items-baseline gap-1.5 mb-2">
+              <span class="text-base font-bold text-red-500">¥18,500</span>
+            </div>
+            <div class="text-xs text-gray-400 line-through mb-2">¥22,000</div>
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-orange-500">会员价 ¥17,800</div>
+              <button class="w-7 h-7 rounded-full bg-blue-600 text-white text-lg flex items-center justify-center active:scale-90 transition-transform" onclick="event.stopPropagation();addToCart(1)">+</button>
+            </div>
+          </div>
+        </div>
+        <!-- 商品3 -->
+        <div class="card overflow-hidden product-card cursor-pointer" onclick="showProductDetail(2)">
+          <div class="bg-gray-100 h-28 flex items-center justify-center relative">
+            <span class="absolute top-2 left-2 tag tag-green text-xs">有货</span>
+            <span class="absolute top-2 right-2 text-lg">📿</span>
+          </div>
+          <div class="p-3">
+            <div class="text-xs text-gray-500 mb-1">银饰 · 925银</div>
+            <div class="text-sm font-semibold text-gray-800 leading-tight mb-2">S925 满天星项链</div>
+            <div class="flex items-baseline gap-1.5 mb-2">
+              <span class="text-base font-bold text-red-500">¥228</span>
+            </div>
+            <div class="text-xs text-gray-400 line-through mb-2">¥298</div>
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-orange-500">会员价 ¥198</div>
+              <button class="w-7 h-7 rounded-full bg-blue-600 text-white text-lg flex items-center justify-center active:scale-90 transition-transform" onclick="event.stopPropagation();addToCart(2)">+</button>
+            </div>
+          </div>
+        </div>
+        <!-- 商品4 -->
+        <div class="card overflow-hidden product-card cursor-pointer" onclick="showProductDetail(3)">
+          <div class="bg-gray-100 h-28 flex items-center justify-center relative">
+            <span class="absolute top-2 left-2 tag tag-red text-xs">缺货</span>
+            <span class="absolute top-2 right-2 text-lg">💍</span>
+          </div>
+          <div class="p-3">
+            <div class="text-xs text-gray-500 mb-1">黄金 · 古法金</div>
+            <div class="text-sm font-semibold text-gray-800 leading-tight mb-2">古法金传承手镯 50g</div>
+            <div class="flex items-baseline gap-1.5 mb-2">
+              <span class="text-base font-bold text-gray-300">¥35,800</span>
+            </div>
+            <div class="text-xs text-gray-400 line-through mb-2">¥40,000</div>
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-gray-400">会员价 —</div>
+              <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-lg flex items-center justify-center cursor-not-allowed" disabled>+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部购物车浮动栏 -->
+  <div class="fixed bottom-0 left-0 right-0 p-4">
+    <div class="cart-bar px-4 py-3 flex items-center gap-3">
+      <div class="relative">
+        <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center cursor-pointer" onclick="showCart()">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span id="cartBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">3</span>
+        </div>
+      </div>
+      <div class="flex-1">
+        <div class="text-white/70 text-xs">合计</div>
+        <div class="text-white font-bold text-lg" id="cartTotal">¥3,176</div>
+      </div>
+      <button onclick="goCheckout()" class="bg-white text-blue-600 font-bold px-5 py-3 rounded-xl text-sm active:scale-95 transition-transform">
+        去结算
+      </button>
+    </div>
+  </div>
+
+  <!-- 遮罩层 -->
+  <div id="overlay" class="overlay fixed inset-0 bg-black/40 z-50" onclick="closeAll()"></div>
+
+  <!-- 购物车弹窗 -->
+  <div id="cartModal" class="modal fixed bottom-0 left-0 right-0 z-50" style="align-items:flex-end;">
+    <div class="modal-content w-full p-5">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-base font-bold text-gray-800">购物车</span>
+        <button onclick="clearCart()" class="text-xs text-red-500 active:scale-95 transition-transform">清空全部</button>
+      </div>
+      <div class="space-y-3 max-h-80 overflow-y-auto">
+        <div class="flex gap-3 p-3 rounded-2xl bg-gray-50">
+          <div class="w-14 h-14 rounded-xl bg-gray-200 flex items-center justify-center text-2xl flex-shrink-0">📿</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-800 truncate">足金凤尾纹手镯 30g</div>
+            <div class="text-xs text-gray-400">¥2,800</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="qty-btn qty-btn-minus" onclick="changeQty(0,-1)">−</button>
+            <span class="w-6 text-center text-sm font-semibold">1</span>
+            <button class="qty-btn qty-btn-plus" onclick="changeQty(0,1)">+</button>
+          </div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-2xl bg-gray-50">
+          <div class="w-14 h-14 rounded-xl bg-gray-200 flex items-center justify-center text-2xl flex-shrink-0">💎</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-800 truncate">50分钻戒 D色 VS1</div>
+            <div class="text-xs text-gray-400">¥18,500</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="qty-btn qty-btn-minus" onclick="changeQty(1,-1)">−</button>
+            <span class="w-6 text-center text-sm font-semibold">1</span>
+            <button class="qty-btn qty-btn-plus" onclick="changeQty(1,1)">+</button>
+          </div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-2xl bg-gray-50">
+          <div class="w-14 h-14 rounded-xl bg-gray-200 flex items-center justify-center text-2xl flex-shrink-0">📿</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-800 truncate">S925 满天星项链</div>
+            <div class="text-xs text-gray-400">¥228</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="qty-btn qty-btn-minus" onclick="changeQty(2,-1)">−</button>
+            <span class="w-6 text-center text-sm font-semibold">1</span>
+            <button class="qty-btn qty-btn-plus" onclick="changeQty(2,1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-100">
+        <button onclick="goCheckout();closeAll()" class="btn-primary w-full py-3.5 text-base">确认，结算订单</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cartCount = 3, cartTotal = 3176;
+    function showCart() { document.getElementById('overlay').classList.add('show'); document.getElementById('cartModal').classList.add('show'); }
+    function closeAll() { document.getElementById('overlay').classList.remove('show'); document.querySelectorAll('.modal').forEach(m=>m.classList.remove('show')); }
+    function goCheckout() { alert('进入订单确认页'); }
+    function addToCart(id) { cartCount++; cartTotal += 228; updateCartUI(); }
+    function changeQty(id, delta) { cartCount += delta; cartTotal += delta * 228; if (cartCount < 1) cartCount = 0; updateCartUI(); }
+    function updateCartUI() { document.getElementById('cartBadge').textContent = cartCount; document.getElementById('cartTotal').textContent = '¥' + cartTotal.toLocaleString(); }
+    function showProductDetail(id) { alert('显示商品详情弹窗'); }
+    function toggleMember() { alert('展开/收起会员信息'); }
+    function clearCart() { cartCount=0; cartTotal=0; updateCartUI(); closeAll(); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>优惠券选择</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .coupon { background: linear-gradient(135deg,#fef3c7,#fde68a); border-radius: 14px; transition: all 0.2s; cursor: pointer; }
+    .coupon.selected { border: 2px solid #f59e0b; background: linear-gradient(135deg,#fde68a,#fbbf24); }
+    .coupon.disabled { background: #f3f4f6; border: 2px solid #e5e7eb; opacity: 0.6; cursor: not-allowed; }
+    .coupon-used { background: linear-gradient(135deg,#d1fae5,#a7f3d0); }
+    .coupon-expiry { background: linear-gradient(135deg,#f3f4f6,#e5e7eb); }
+  </style>
+</head>
+<body class="bg-gray-100 pb-24">
+
+  <!-- 顶部 -->
+  <div class="bg-white fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between border-b border-gray-100">
+    <button onclick="closeModal()" class="p-2 -ml-2 rounded-full active:bg-gray-100">
+      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <span class="text-base font-semibold text-gray-800">选择优惠券</span>
+    <div class="w-10"></div>
+  </div>
+
+  <div class="pt-14 px-4 space-y-3 pt-4">
+
+    <!-- Tab -->
+    <div class="flex gap-2 mb-2">
+      <button class="px-4 py-2 rounded-full text-sm font-medium bg-white shadow-sm text-blue-600">可用（1）</button>
+      <button class="px-4 py-2 rounded-full text-sm font-medium text-gray-500 bg-gray-200">不可用（3）</button>
+    </div>
+
+    <!-- 可用优惠券1 - 选中 -->
+    <div class="coupon selected p-4" onclick="toggleCoupon(this)">
+      <div class="flex">
+        <div class="text-center pr-4 border-r border-orange-200 mr-4">
+          <div class="text-2xl font-black text-orange-600">¥120</div>
+          <div class="text-xs text-orange-500 mt-0.5">满500可用</div>
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold text-gray-800 mb-1">母亲节专享券</div>
+          <div class="text-xs text-gray-500 mb-2">有效期至 2025-05-20</div>
+          <div class="text-xs text-orange-600">✓ 已选中，可省 ¥120</div>
+        </div>
+        <div class="flex items-center">
+          <div class="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 不可用优惠券们 -->
+    <div class="text-xs text-gray-400 mb-1 mt-4">— 不可用优惠券 —</div>
+
+    <div class="coupon disabled p-4">
+      <div class="flex">
+        <div class="text-center pr-4 border-r border-gray-300 mr-4">
+          <div class="text-2xl font-black text-gray-400">¥50</div>
+          <div class="text-xs text-gray-400 mt-0.5">满1000可用</div>
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold text-gray-400 mb-1">新人专享券</div>
+          <div class="text-xs text-gray-400">未满足金额条件（需满¥1000）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="coupon disabled p-4">
+      <div class="flex">
+        <div class="text-center pr-4 border-r border-gray-300 mr-4">
+          <div class="text-2xl font-black text-gray-400">¥30</div>
+          <div class="text-xs text-gray-400 mt-0.5">无门槛</div>
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold text-gray-400 mb-1">生日礼券</div>
+          <div class="text-xs text-red-400">⚠ 已过期（有效期至 2025-05-10）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="coupon disabled p-4">
+      <div class="flex">
+        <div class="text-center pr-4 border-r border-gray-300 mr-4">
+          <div class="text-2xl font-black text-gray-400">¥80</div>
+          <div class="text-xs text-gray-400 mt-0.5">指定商品可用</div>
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold text-gray-400 mb-1">钻石专享券</div>
+          <div class="text-xs text-gray-400">⚠ 钻戒类商品不可用</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部固定 -->
+  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-xl border-t border-gray-100">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-gray-500">不使用优惠券</span>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer">
+        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+    <div class="flex items-center justify-between mb-3 text-sm">
+      <span class="text-gray-500">已选优惠</span>
+      <span class="text-lg font-bold text-orange-500" id="selectedDiscount">-¥120</span>
+    </div>
+    <button onclick="confirmCoupon()" class="w-full py-4 rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-orange-400 to-orange-500 active:scale-[0.98] transition-transform">
+      确认使用
+    </button>
+  </div>
+
+  <script>
+    function closeModal() { alert('关闭弹窗'); }
+    function toggleCoupon(el) {
+      if (el.classList.contains('disabled')) return;
+      document.querySelectorAll('.coupon:not(.disabled)').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('selectedDiscount').textContent = '-¥120';
+    }
+    function confirmCoupon() { alert('确认使用优惠券，返回订单确认页'); }
+  </script>
+</body>
+</html>
