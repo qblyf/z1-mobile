@@ -2,24 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../injection.dart';
 import '../../data/models/member_model.dart';
 import '../bloc/member_home_bloc.dart';
 
-class MemberHomePage extends StatefulWidget {
+class MemberHomePage extends StatelessWidget {
   const MemberHomePage({super.key});
 
   @override
-  State<MemberHomePage> createState() => _MemberHomePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<MemberHomeBloc>()..add(const MemberHomeLoadRequested()),
+      child: const _MemberHomePageContent(),
+    );
+  }
 }
 
-class _MemberHomePageState extends State<MemberHomePage> {
-  final _searchController = TextEditingController();
+class _MemberHomePageContent extends StatefulWidget {
+  const _MemberHomePageContent();
 
   @override
-  void initState() {
-    super.initState();
-    context.read<MemberHomeBloc>().add(const MemberHomeLoadRequested());
-  }
+  State<_MemberHomePageContent> createState() => _MemberHomePageContentState();
+}
+
+class _MemberHomePageContentState extends State<_MemberHomePageContent> {
+  final _searchController = TextEditingController();
 
   @override
   void dispose() {
@@ -80,6 +87,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
+                          setState(() {});
                           context.read<MemberHomeBloc>().add(const MemberHomeClearSearch());
                         },
                       )

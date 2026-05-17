@@ -11,8 +11,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController(text: '99999999999');
+  final _passwordController = TextEditingController(text: 'ncxSEpbZ\$20m\$W6O');
   bool _rememberMe = false;
   bool _isObscure = true;
 

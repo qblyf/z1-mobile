@@ -86,7 +86,6 @@ class MemberHomeError extends MemberHomeState {
 
 class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
   final MemberRemoteDataSource _dataSource;
-  Timer? _debounce;
 
   MemberHomeBloc({required MemberRemoteDataSource dataSource})
       : _dataSource = dataSource,
@@ -121,32 +120,35 @@ class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
     MemberHomeSearchRequested event,
     Emitter<MemberHomeState> emit,
   ) async {
-    _debounce?.cancel();
-
     if (event.keyword.isEmpty) {
       add(const MemberHomeLoadRequested());
       return;
     }
 
-    _debounce = Timer(const Duration(milliseconds: 300), () async {
-      final result = await _dataSource.searchByPhone(event.keyword);
+    // 使用 loading 状态显示搜索中
+    emit(MemberHomeLoaded(
+      members: const [],
+      isSearchResult: true,
+      searchKeyword: event.keyword,
+    ));
 
-      if (result.isFailure) {
-        emit(MemberHomeError(result.failure!.message));
-        return;
-      }
+    final result = await _dataSource.searchByPhone(event.keyword);
 
-      final members = result.value!;
-      if (members.isEmpty) {
-        emit(MemberHomeEmpty(searchKeyword: event.keyword));
-      } else {
-        emit(MemberHomeLoaded(
-          members: members,
-          isSearchResult: true,
-          searchKeyword: event.keyword,
-        ));
-      }
-    });
+    if (result.isFailure) {
+      emit(MemberHomeError(result.failure!.message));
+      return;
+    }
+
+    final members = result.value!;
+    if (members.isEmpty) {
+      emit(MemberHomeEmpty(searchKeyword: event.keyword));
+    } else {
+      emit(MemberHomeLoaded(
+        members: members,
+        isSearchResult: true,
+        searchKeyword: event.keyword,
+      ));
+    }
   }
 
   Future<void> _onClearSearch(
