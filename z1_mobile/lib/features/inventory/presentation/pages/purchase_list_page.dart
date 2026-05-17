@@ -343,13 +343,14 @@ class _PurchaseCard extends StatelessWidget {
             },
             child: const Text('查看详情'),
           ),
-          CupertinoActionSheetAction(
-            onPressed: () {
-              Navigator.pop(context);
-              context.push('/inventory/purchase-inbound/${item.id}');
-            },
-            child: const Text('采购入库'),
-          ),
+          if (item.state != PurchaseState.completed)
+            CupertinoActionSheetAction(
+              onPressed: () {
+                Navigator.pop(context);
+                context.push('/inventory/purchase-inbound/${item.id}');
+              },
+              child: const Text('采购入库'),
+            ),
         ],
         cancelButton: CupertinoActionSheetAction(
           onPressed: () => Navigator.pop(context),

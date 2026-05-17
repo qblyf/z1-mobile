@@ -29,6 +29,14 @@ class PurchaseListParams extends Equatable {
 
 abstract class PurchaseRemoteDataSource {
   Future<Result<List<PurchaseModel>>> getPurchaseList(PurchaseListParams params);
+  Future<Result<PurchaseDetailModel>> getPurchaseDetail(int id);
+  Future<Result<void>> purchaseIntoWarehouse({
+    required int purchaseId,
+    required int warehouseId,
+    required List<Map<String, dynamic>> products,
+    String? remarks,
+  });
+  Future<Result<List<WarehouseModel>>> getWarehouseList();
 }
 
 class PurchaseRemoteDataSourceImpl implements PurchaseRemoteDataSource {
@@ -47,6 +55,52 @@ class PurchaseRemoteDataSourceImpl implements PurchaseRemoteDataSource {
     return response.map((data) {
       final list = data['data'] as List<dynamic>? ?? [];
       return list.map((json) => PurchaseModel.fromJson(json as Map<String, dynamic>)).toList();
+    });
+  }
+
+  @override
+  Future<Result<PurchaseDetailModel>> getPurchaseDetail(int id) async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.purchaseDetail(id),
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      return PurchaseDetailModel.fromJson(data);
+    });
+  }
+
+  @override
+  Future<Result<void>> purchaseIntoWarehouse({
+    required int purchaseId,
+    required int warehouseId,
+    required List<Map<String, dynamic>> products,
+    String? remarks,
+  }) async {
+    final response = await apiClient.post<Map<String, dynamic>>(
+      ApiEndpoints.purchaseIntoWarehouse,
+      data: {
+        'purchaseID': purchaseId,
+        'warehouseID': warehouseId,
+        'products': products,
+        if (remarks != null && remarks.isNotEmpty) 'remarks': remarks,
+      },
+      parser: (data) => data,
+    );
+
+    return response.map((data) => null);
+  }
+
+  @override
+  Future<Result<List<WarehouseModel>>> getWarehouseList() async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.warehouseList,
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      final list = data['data'] as List<dynamic>? ?? [];
+      return list.map((json) => WarehouseModel.fromJson(json as Map<String, dynamic>)).toList();
     });
   }
 }
