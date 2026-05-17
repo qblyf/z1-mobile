@@ -1,26 +1,26 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../constants/app_constants.dart';
 import '../constants/api_constants.dart';
-import 'api_error.dart';
+import '../services/token_service.dart';
 
 /// Token 拦截器 - 自动处理 Token 刷新
 class TokenInterceptor extends Interceptor {
   final Dio dio;
-  final FlutterSecureStorage secureStorage;
+  final TokenService tokenService;
   final Future<void> Function()? onUnauthorized;
 
   TokenInterceptor({
     required this.dio,
-    required this.secureStorage,
+    required this.tokenService,
     this.onUnauthorized,
   });
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    // 从安全存储获取 Token
-    final accessToken = await secureStorage.read(key: AppConstants.accessTokenKey);
-    final refreshToken = await secureStorage.read(key: AppConstants.refreshTokenKey);
+    // 从 TokenService 获取 Token
+    final accessToken = tokenService.getAccessToken();
+    final refreshToken = tokenService.getRefreshToken();
 
     if (accessToken != null) {
       options.headers['Authorization'] = 'Bearer $accessToken';
@@ -33,20 +33,16 @@ class TokenInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
       // Token 过期，尝试刷新
-      final refreshToken = await secureStorage.read(key: AppConstants.refreshTokenKey);
+      final refreshToken = tokenService.getRefreshToken();
 
       if (refreshToken != null) {
         try {
           final response = await _refreshToken(refreshToken);
           if (response != null) {
-            // 重新保存新 Token
-            await secureStorage.write(
-              key: AppConstants.accessTokenKey,
-              value: response['access_token'],
-            );
-            await secureStorage.write(
-              key: AppConstants.refreshTokenKey,
-              value: response['refresh_token'],
+            // 保存新 Token
+            await tokenService.saveTokens(
+              accessToken: response['access_token'] as String,
+              refreshToken: response['refresh_token'] as String? ?? refreshToken,
             );
 
             // 重试原请求
@@ -58,7 +54,7 @@ class TokenInterceptor extends Interceptor {
           }
         } catch (_) {
           // 刷新失败，清除 Token
-          await _clearTokens();
+          tokenService.clearTokens();
         }
       }
 
@@ -82,12 +78,6 @@ class TokenInterceptor extends Interceptor {
     } catch (_) {
       return null;
     }
-  }
-
-  Future<void> _clearTokens() async {
-    await secureStorage.delete(key: AppConstants.accessTokenKey);
-    await secureStorage.delete(key: AppConstants.refreshTokenKey);
-    await secureStorage.delete(key: AppConstants.tokenExpiryKey);
   }
 }
 

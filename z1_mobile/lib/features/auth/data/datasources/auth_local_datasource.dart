@@ -1,6 +1,4 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/token_service.dart';
 import '../../domain/entities/user.dart';
 
 /// 本地数据源接口
@@ -12,14 +10,14 @@ abstract class AuthLocalDataSource {
   });
 
   /// 获取 Token
-  Future<String?> getAccessToken();
-  Future<String?> getRefreshToken();
+  String? getAccessToken();
+  String? getRefreshToken();
 
   /// 清除 Token
   Future<void> clearTokens();
 
   /// 检查是否已登录
-  Future<bool> isAuthenticated();
+  bool isAuthenticated();
 
   /// 保存用户信息
   Future<void> saveUser(User user);
@@ -33,39 +31,36 @@ abstract class AuthLocalDataSource {
 
 /// 本地数据源实现
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
-  final FlutterSecureStorage secureStorage;
+  final TokenService tokenService;
 
-  AuthLocalDataSourceImpl({required this.secureStorage});
+  AuthLocalDataSourceImpl({required this.tokenService});
 
   @override
   Future<void> saveTokens({
     required String accessToken,
     required String refreshToken,
   }) async {
-    await secureStorage.write(key: AppConstants.accessTokenKey, value: accessToken);
-    await secureStorage.write(key: AppConstants.refreshTokenKey, value: refreshToken);
+    tokenService.saveTokens(accessToken: accessToken, refreshToken: refreshToken);
   }
 
   @override
-  Future<String?> getAccessToken() async {
-    return await secureStorage.read(key: AppConstants.accessTokenKey);
+  String? getAccessToken() {
+    return tokenService.getAccessToken();
   }
 
   @override
-  Future<String?> getRefreshToken() async {
-    return await secureStorage.read(key: AppConstants.refreshTokenKey);
+  String? getRefreshToken() {
+    return tokenService.getRefreshToken();
   }
 
   @override
   Future<void> clearTokens() async {
-    await secureStorage.delete(key: AppConstants.accessTokenKey);
-    await secureStorage.delete(key: AppConstants.refreshTokenKey);
+    tokenService.clearTokens();
   }
 
   @override
-  Future<bool> isAuthenticated() async {
-    final token = await secureStorage.read(key: AppConstants.accessTokenKey);
-    return token != null && token.isNotEmpty;
+  bool isAuthenticated() {
+    return tokenService.isLoggedIn();
   }
 
   @override

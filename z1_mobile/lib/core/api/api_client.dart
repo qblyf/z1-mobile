@@ -1,214 +1,197 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../services/token_service.dart';
+import 'api_endpoints.dart';
+import 'result.dart';
 
-import '../constants/app_constants.dart';
-import '../constants/api_constants.dart';
-import 'api_error.dart';
-import 'api_interceptor.dart';
+/// API 拦截器
+/// 自动添加 Token、处理错误
+class ApiInterceptor extends Interceptor {
+  final TokenService _tokenService;
+  final String _baseUrl;
 
-/// API 客户端封装
+  ApiInterceptor({required TokenService tokenService, required String baseUrl})
+      : _tokenService = tokenService,
+        _baseUrl = baseUrl;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    // 添加 Authorization header
+    final token = _tokenService.getAccessToken();
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
+    }
+
+    // 添加 Use-Permissions header（用于权限验证）
+    // TODO: 从配置获取 permission token
+
+    handler.next(options);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode == 401) {
+      // Token 过期，尝试刷新
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        // 重新发起请求
+        final retryResponse = await _retry(err.requestOptions);
+        handler.resolve(retryResponse);
+        return;
+      }
+    }
+
+    handler.next(err);
+  }
+
+  Future<bool> _refreshToken() async {
+    try {
+      final refreshToken = _tokenService.getRefreshToken();
+      if (refreshToken == null) return false;
+
+      final dio = Dio(BaseOptions(baseUrl: _getBaseUrl()));
+      final response = await dio.post(
+        ApiEndpoints.refreshToken,
+        data: {'refresh_token': refreshToken},
+      );
+
+      if (response.statusCode == 200) {
+        final newAccessToken = response.data['access_token'];
+        if (newAccessToken != null) {
+          await _tokenService.saveTokens(
+            accessToken: newAccessToken,
+            refreshToken: refreshToken,
+          );
+          return true;
+        }
+      }
+    } catch (e) {
+      // 刷新失败
+    }
+    return false;
+  }
+
+  Future<Response> _retry(RequestOptions requestOptions) async {
+    final token = _tokenService.getAccessToken();
+    final options = Options(
+      method: requestOptions.method,
+      headers: {
+        ...requestOptions.headers,
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final dio = Dio(BaseOptions(baseUrl: _getBaseUrl()));
+    return dio.request(
+      requestOptions.path,
+      data: requestOptions.data,
+      queryParameters: requestOptions.queryParameters,
+      options: options,
+    );
+  }
+
+  String _getBaseUrl() {
+    return _baseUrl;
+  }
+}
+
+/// API 客户端
 class ApiClient {
   final Dio _dio;
-  final FlutterSecureStorage _secureStorage;
+  final TokenService _tokenService;
+  final String _baseUrl;
 
   ApiClient({
     required Dio dio,
-    required FlutterSecureStorage secureStorage,
+    required TokenService tokenService,
   })  : _dio = dio,
-        _secureStorage = secureStorage {
-    _setupInterceptors();
-  }
-
-  void _setupInterceptors() {
-    _dio.interceptors.addAll([
-      TokenInterceptor(
-        dio: _dio,
-        secureStorage: _secureStorage,
-        onUnauthorized: _onUnauthorized,
-      ),
-      LoggingInterceptor(),
-    ]);
-  }
-
-  Future<void> _onUnauthorized() async {
-    // 清除本地 Token
-    await _secureStorage.delete(key: AppConstants.accessTokenKey);
-    await _secureStorage.delete(key: AppConstants.refreshTokenKey);
+        _tokenService = tokenService,
+        _baseUrl = dio.options.baseUrl {
+    _dio.interceptors.add(ApiInterceptor(tokenService: tokenService, baseUrl: _baseUrl));
   }
 
   /// GET 请求
-  Future<Response<T>> get<T>(
-    String path, {
+  Future<Result<T>> get<T>(
+    String url, {
     Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
+    T Function(dynamic)? parser,
   }) async {
     try {
-      return await _dio.get<T>(
-        '${ApiConstants.apiPrefix}$path',
+      final response = await _dio.get(
+        url,
         queryParameters: queryParameters,
-        options: options,
-        cancelToken: cancelToken,
       );
+      return _parseResponse(response, parser);
     } on DioException catch (e) {
-      throw _handleError(e);
+      return _handleError(e);
     }
   }
 
   /// POST 请求
-  Future<Response<T>> post<T>(
-    String path, {
+  Future<Result<T>> post<T>(
+    String url, {
     dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
+    T Function(dynamic)? parser,
   }) async {
     try {
-      return await _dio.post<T>(
-        '${ApiConstants.apiPrefix}$path',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        cancelToken: cancelToken,
-      );
+      final response = await _dio.post(url, data: data);
+      return _parseResponse(response, parser);
     } on DioException catch (e) {
-      throw _handleError(e);
+      return _handleError(e);
     }
   }
 
-  /// PUT 请求
-  Future<Response<T>> put<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      return await _dio.put<T>(
-        '${ApiConstants.apiPrefix}$path',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        cancelToken: cancelToken,
-      );
-    } on DioException catch (e) {
-      throw _handleError(e);
+  Result<T> _parseResponse<T>(
+    Response response,
+    T Function(dynamic)? parser,
+  ) {
+    final data = response.data;
+
+    if (data == null) {
+      return Failure(ApiFailure.serverError('空响应'));
     }
+
+    if (parser != null) {
+      try {
+        return Success(parser(data));
+      } catch (e) {
+        return Failure(ApiFailure.serverError('解析失败: $e'));
+      }
+    }
+
+    // 默认返回 data
+    return Success(data as T);
   }
 
-  /// DELETE 请求
-  Future<Response<T>> delete<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      return await _dio.delete<T>(
-        '${ApiConstants.apiPrefix}$path',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        cancelToken: cancelToken,
-      );
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
-  }
+  Result<T> _handleError<T>(DioException e) {
+    final statusCode = e.response?.statusCode;
+    final message = _extractErrorMessage(e.response?.data);
 
-  /// PATCH 请求
-  Future<Response<T>> patch<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      return await _dio.patch<T>(
-        '${ApiConstants.apiPrefix}$path',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        cancelToken: cancelToken,
-      );
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
-  }
-
-  /// 统一错误处理
-  ApiException _handleError(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        return const TimeoutException();
-      case DioExceptionType.connectionError:
-        return const NetworkException();
-      case DioExceptionType.badResponse:
-        final statusCode = e.response?.statusCode;
-        if (statusCode == 401) {
-          return const UnauthorizedException();
-        } else if (statusCode != null && statusCode >= 500) {
-          return ServerException(message: e.response?.statusMessage ?? '服务器错误');
-        } else if (statusCode != null && statusCode >= 400) {
-          // 业务错误
-          final data = e.response?.data;
-          if (data is Map && data.containsKey('code')) {
-            return BusinessException(
-              code: data['code'].toString(),
-              message: data['message'] ?? '请求失败',
-              statusCode: statusCode,
-              data: data,
-            );
-          }
-          return ApiException(
-            message: data?['message'] ?? '请求失败',
-            statusCode: statusCode,
-            data: data,
-          );
-        }
-        return const ServerException();
-      case DioExceptionType.cancel:
-        return const ApiException(message: '请求已取消');
-      case DioExceptionType.badCertificate:
-        return const ApiException(message: '证书错误');
-      case DioExceptionType.unknown:
+    switch (statusCode) {
+      case 400:
+        return Failure(ApiFailure.validationError(message));
+      case 401:
+        return Failure(ApiFailure.unauthorized(message));
+      case 500:
+      case null:
+        return Failure(ApiFailure.serverError(message));
       default:
-        if (e.message?.contains('SocketException') ?? false) {
-          return const NetworkException();
-        }
-        return ApiException(message: e.message ?? '未知错误');
+        return Failure(ApiFailure.unknown(message));
     }
   }
 
-  /// 保存 Token
-  Future<void> saveTokens({
-    required String accessToken,
-    required String refreshToken,
-    int? expiresIn,
-  }) async {
-    await _secureStorage.write(key: AppConstants.accessTokenKey, value: accessToken);
-    await _secureStorage.write(key: AppConstants.refreshTokenKey, value: refreshToken);
-    if (expiresIn != null) {
-      final expiryTime = DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
-      await _secureStorage.write(key: AppConstants.tokenExpiryKey, value: expiryTime);
+  String _extractErrorMessage(dynamic data) {
+    if (data == null) return '请求失败';
+    if (data is Map) {
+      return data['message'] ?? data['msg'] ?? data['error'] ?? '请求失败';
     }
+    return '请求失败';
   }
 
-  /// 清除 Token
-  Future<void> clearTokens() async {
-    await _secureStorage.delete(key: AppConstants.accessTokenKey);
-    await _secureStorage.delete(key: AppConstants.refreshTokenKey);
-    await _secureStorage.delete(key: AppConstants.tokenExpiryKey);
+  /// 设置 Base URL
+  void setBaseUrl(String url) {
+    _dio.options.baseUrl = url;
   }
 
-  /// 检查是否已登录
-  Future<bool> isAuthenticated() async {
-    final token = await _secureStorage.read(key: AppConstants.accessTokenKey);
-    return token != null && token.isNotEmpty;
-  }
+  /// 获取 Token 服务
+  TokenService get tokenService => _tokenService;
 }

@@ -27,7 +27,7 @@ class Z1App extends StatelessWidget {
           brightness: Brightness.light,
           scaffoldBackgroundColor: CupertinoColors.systemGroupedBackground,
         ),
-        routerConfig: AppRouter.router,
+        routerConfig: appRouter,
       ),
     );
   }

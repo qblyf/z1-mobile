@@ -1,21 +1,21 @@
 import '../../../../core/api/api_client.dart';
-import '../../../../core/api/api_error.dart';
-import '../../../../core/constants/api_constants.dart';
-import '../../domain/repositories/auth_repository.dart';
+import '../../../../core/api/result.dart';
+import '../../../../core/api/api_endpoints.dart';
+import '../../data/models/user_model.dart';
 
 /// 远程数据源接口
 abstract class AuthRemoteDataSource {
   /// 登录
-  Future<Map<String, dynamic>> login(String account, String password);
+  Future<Result<LoginResponse>> login(LoginRequest request);
 
   /// 获取用户信息
-  Future<Map<String, dynamic>> getUserInfo();
+  Future<Result<AuthUser>> getUserInfo();
 
   /// 刷新 Token
-  Future<Map<String, dynamic>> refreshToken(String refreshToken);
+  Future<Result<TokenModel>> refreshToken(String refreshToken);
 
   /// 登出
-  Future<void> logout();
+  Future<Result<void>> logout();
 }
 
 /// 远程数据源实现
@@ -25,34 +25,54 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<Map<String, dynamic>> login(String phone, String pwd) async {
-    final response = await apiClient.post(
-      ApiConstants.login,
+  Future<Result<LoginResponse>> login(LoginRequest request) async {
+    final response = await apiClient.post<Map<String, dynamic>>(
+      ApiEndpoints.login,
       data: {
-        'phone': phone,
-        'pwd': pwd,
+        'phone': request.mobilePhone,
+        'pwd': request.password,
       },
+      parser: (data) => data,
     );
-    return response.data as Map<String, dynamic>;
+
+    // 处理 {code, res: {token}} 格式，映射为前端期望的格式
+    return response.map((data) {
+      final res = data['res'] as Map<String, dynamic>?;
+      return LoginResponse(
+        accessToken: res?['token'] as String? ?? '',
+        refreshToken: res?['refresh_token'] as String?,
+        expiresIn: res?['expires_in'] as int? ?? 604800,
+      );
+    });
   }
 
   @override
-  Future<Map<String, dynamic>> getUserInfo() async {
-    final response = await apiClient.get(ApiConstants.userSelf);
-    return response.data as Map<String, dynamic>;
+  Future<Result<AuthUser>> getUserInfo() async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.userSelf,
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      final res = data['res'] as Map<String, dynamic>? ?? {};
+      return AuthUser.fromJson(res);
+    });
   }
 
   @override
-  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
-    final response = await apiClient.post(
-      ApiConstants.refreshToken,
+  Future<Result<TokenModel>> refreshToken(String refreshToken) async {
+    final response = await apiClient.post<Map<String, dynamic>>(
+      ApiEndpoints.refreshToken,
       data: {'refresh_token': refreshToken},
+      parser: (data) => data,
     );
-    return response.data as Map<String, dynamic>;
+
+    return response.map((data) => TokenModel.fromJson(data));
   }
 
   @override
-  Future<void> logout() async {
-    await apiClient.post(ApiConstants.logout);
+  Future<Result<void>> logout() async {
+    final response = await apiClient.post(ApiEndpoints.logout);
+    return response.map((_) => {});
   }
 }

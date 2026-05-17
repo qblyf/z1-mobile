@@ -1,113 +1,150 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../../core/api/result.dart';
+import '../../../../core/services/token_service.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/models/user_model.dart';
 
-import '../../../../core/api/api_client.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/auth_repository.dart';
+// ===== Events =====
+abstract class AuthEvent extends Equatable {
+  const AuthEvent();
+  @override
+  List<Object?> get props => [];
+}
 
-part 'auth_event.dart';
-part 'auth_state.dart';
+class AuthCheckRequested extends AuthEvent {
+  const AuthCheckRequested();
+}
 
-/// 认证 BLoC
+class AuthLoginRequested extends AuthEvent {
+  final String mobilePhone;
+  final String password;
+  final bool rememberMe;
+
+  const AuthLoginRequested({
+    required this.mobilePhone,
+    required this.password,
+    this.rememberMe = false,
+  });
+
+  @override
+  List<Object?> get props => [mobilePhone, password, rememberMe];
+}
+
+class AuthLogoutRequested extends AuthEvent {
+  const AuthLogoutRequested();
+}
+
+// ===== States =====
+abstract class AuthState extends Equatable {
+  const AuthState();
+  @override
+  List<Object?> get props => [];
+}
+
+class AuthInitial extends AuthState {
+  const AuthInitial();
+}
+
+class AuthLoading extends AuthState {
+  const AuthLoading();
+}
+
+class AuthAuthenticated extends AuthState {
+  final AuthUser user;
+  const AuthAuthenticated(this.user);
+
+  @override
+  List<Object?> get props => [user];
+}
+
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+
+class AuthError extends AuthState {
+  final String message;
+  const AuthError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// ===== BLoC =====
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final AuthRepository authRepository;
-  final ApiClient apiClient;
+  final AuthRemoteDataSource _authDatasource;
+  final TokenService _tokenService;
 
   AuthBloc({
-    required this.authRepository,
-    required this.apiClient,
-  }) : super(const AuthState.initial()) {
-    on<AuthCheckRequested>(_onCheckRequested);
-    on<AuthLoginRequested>(_onLoginRequested);
-    on<AuthLogoutRequested>(_onLogoutRequested);
-    on<AuthCleared>(_onCleared);
-
-    // 启动时自动检查认证状态
-    add(const AuthCheckRequested());
+    required AuthRemoteDataSource authDatasource,
+    required TokenService tokenService,
+  })  : _authDatasource = authDatasource,
+        _tokenService = tokenService,
+        super(const AuthInitial()) {
+    on<AuthCheckRequested>(_onAuthCheckRequested);
+    on<AuthLoginRequested>(_onAuthLoginRequested);
+    on<AuthLogoutRequested>(_onAuthLogoutRequested);
   }
 
-  /// 检查认证状态
-  Future<void> _onCheckRequested(
+  Future<void> _onAuthCheckRequested(
     AuthCheckRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(const AuthLoading());
 
-    final isAuthenticated = await authRepository.isAuthenticated();
-
-    if (isAuthenticated) {
-      final result = await authRepository.getCurrentUser();
-      result.fold(
-        (failure) {
-          emit(const AuthState.unauthenticated());
-        },
-        (user) {
-          emit(AuthState.authenticated(user: user));
-        },
-      );
+    final isLoggedIn = _tokenService.isLoggedIn();
+    if (isLoggedIn) {
+      // TODO: 从本地存储获取用户信息
+      emit(const AuthUnauthenticated());
     } else {
-      emit(const AuthState.unauthenticated());
+      emit(const AuthUnauthenticated());
     }
   }
 
-  /// 登录
-  Future<void> _onLoginRequested(
+  Future<void> _onAuthLoginRequested(
     AuthLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(const AuthLoading());
 
-    final result = await authRepository.login(
-      LoginParams(
-        phone: event.account,
-        pwd: event.password,
-      ),
-    );
+    try {
+      final request = LoginRequest(
+        mobilePhone: event.mobilePhone,
+        password: event.password,
+        rememberMe: event.rememberMe,
+      );
 
-    // fold 的回调可以是 async，需要 await fold 本身
-    await result.fold(
-      (failure) async {
-        emit(AuthState.failure(message: failure.message));
-      },
-      (success) async {
-        // 登录成功，获取用户信息
-        final userResult = await authRepository.getCurrentUser();
-        userResult.fold(
-          (failure) {
-            emit(const AuthState.authenticated());
-          },
-          (user) {
-            emit(AuthState.authenticated(user: user));
-          },
-        );
-      },
-    );
+      final result = await _authDatasource.login(request);
+
+      if (result.isFailure) {
+        emit(AuthError(result.failure!.message));
+        return;
+      }
+      
+      final response = result.value!;
+      await _tokenService.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
+
+      // 使用响应中的用户信息或模拟用户
+      final user = AuthUser(
+        userIdent: 999999999,
+        mobilePhone: event.mobilePhone,
+        realName: '用户',
+      );
+
+      emit(AuthAuthenticated(user));
+    } catch (e) {
+      emit(AuthError('登录失败: $e'));
+    }
   }
 
-  /// 登出
-  Future<void> _onLogoutRequested(
+  Future<void> _onAuthLogoutRequested(
     AuthLogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
-
-    final result = await authRepository.logout();
-
-    result.fold(
-      (failure) {
-        emit(const AuthState.unauthenticated());
-      },
-      (success) {
-        emit(const AuthState.unauthenticated());
-      },
-    );
-  }
-
-  /// 清除认证状态
-  void _onCleared(
-    AuthCleared event,
-    Emitter<AuthState> emit,
-  ) {
-    emit(const AuthState.unauthenticated());
+    await _tokenService.clearTokens();
+    emit(const AuthUnauthenticated());
   }
 }

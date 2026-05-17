@@ -1,15 +1,16 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api/api_client.dart';
-import 'core/constants/api_constants.dart';
-import 'features/auth/data/datasources/auth_local_datasource.dart';
+import 'core/services/token_service.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
-import 'features/auth/data/repositories/auth_repository_impl.dart';
-import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/home/data/datasources/home_remote_datasource.dart';
+import 'features/home/presentation/bloc/home_bloc.dart';
+import 'features/member/data/datasources/member_remote_datasource.dart';
+import 'features/member/presentation/bloc/member_home_bloc.dart';
+import 'features/member/presentation/bloc/member_detail_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -19,21 +20,15 @@ Future<void> configureDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
 
-  const secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-    iOptions: IOSOptions(
-      accessibility: KeychainAccessibility.first_unlock_this_device,
-    ),
-  );
-  getIt.registerSingleton<FlutterSecureStorage>(secureStorage);
+  // Token Service
+  final tokenService = TokenService(prefs: sharedPreferences);
+  getIt.registerSingleton<TokenService>(tokenService);
 
   // Dio
   final dio = Dio(BaseOptions(
-    baseUrl: ApiConstants.apiPrefix,
-    connectTimeout: const Duration(milliseconds: ApiConstants.connectTimeout),
-    receiveTimeout: const Duration(milliseconds: ApiConstants.receiveTimeout),
+    baseUrl: 'https://z1-fun.zsqk.com.cn/deno',
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -42,34 +37,38 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<Dio>(dio);
 
   // API Client
-  getIt.registerSingleton<ApiClient>(
-    ApiClient(
-      dio: dio,
-      secureStorage: secureStorage,
-    ),
-  );
+  final apiClient = ApiClient(dio: dio, tokenService: tokenService);
+  getIt.registerSingleton<ApiClient>(apiClient);
 
   // Data Sources
-  getIt.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(secureStorage: getIt()),
-  );
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(apiClient: getIt()),
-  );
-
-  // Repositories
-  getIt.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-      remoteDataSource: getIt(),
-      localDataSource: getIt(),
-    ),
+    () => AuthRemoteDataSourceImpl(apiClient: apiClient),
   );
 
   // BLoCs
   getIt.registerSingleton<AuthBloc>(
     AuthBloc(
-      authRepository: getIt(),
-      apiClient: getIt(),
+      authDatasource: getIt<AuthRemoteDataSource>(),
+      tokenService: tokenService,
     ),
+  );
+
+  // Home BLoC
+  getIt.registerLazySingleton<HomeBloc>(
+    () => HomeBloc(dataSource: HomeRemoteDataSourceImpl(apiClient: getIt())),
+  );
+
+  // Member DataSource
+  getIt.registerLazySingleton<MemberRemoteDataSource>(
+    () => MemberRemoteDataSourceImpl(apiClient: getIt()),
+  );
+
+  // Member BLoCs
+  getIt.registerFactory<MemberHomeBloc>(
+    () => MemberHomeBloc(dataSource: getIt<MemberRemoteDataSource>()),
+  );
+
+  getIt.registerFactory<MemberDetailBloc>(
+    () => MemberDetailBloc(dataSource: getIt<MemberRemoteDataSource>()),
   );
 }
