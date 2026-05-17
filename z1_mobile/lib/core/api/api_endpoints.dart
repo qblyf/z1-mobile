@@ -49,12 +49,15 @@ class ApiEndpoints {
   static const String couponSelf = '/coupons/self';
 
   // ===== 仓库 =====
-  /// 仓库列表
-  static const String warehouseList = '/warehouse/list-base';
+  /// 仓库列表（添加 state=1 过滤禁用仓库）
+  static String warehouseList({int? state}) {
+    return state != null ? '/warehouse/list-base?state=$state' : '/warehouse/list-base';
+  }
 
   // ===== 盘库 =====
-  /// 盘库列表
-  static const String stocktakingList = '/stock-taking/list';
+  /// 盘库列表（添加分页参数）
+  static String stocktakingList({int page = 1, int pageSize = 20}) =>
+      '/stock-taking/list?page=$page&pageSize=$pageSize';
 
   // ===== 采购 =====
   /// 采购列表
@@ -95,10 +98,16 @@ class ApiEndpoints {
   static const String logout = '/auth/logout';
 
   // ===== 序列号查询 =====
-  /// 序列号查询
-  static const String serialSearch = '/goods/serial-search';
-  /// 条码查商品
+  /// 序列号查询（模糊搜索）
+  static const String serialSearch = '/serial/search';
+  /// 序列号查询（全匹配）
+  static const String serialSearchFullMatch = '/serial/search/full-match';
+  /// 条码查商品（遗留接口）
   static String productBarcode(String code) => '/product/barcode/$code';
+
+  // ===== 商品价格 =====
+  /// 商品价格列表（批量获取价格）
+  static const String productPriceList = '/product-price/list';
 }
 
 /// 辅助方法：URL 参数编码

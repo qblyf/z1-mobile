@@ -54,3 +54,26 @@ class ProductListParams extends Equatable {
   @override
   List<Object?> get props => [keyword, category, page, pageSize];
 }
+
+class ProductPriceModel extends Equatable {
+  final int productId;
+  final int price;
+  final String? unit;
+
+  const ProductPriceModel({
+    required this.productId,
+    required this.price,
+    this.unit,
+  });
+
+  factory ProductPriceModel.fromJson(Map<String, dynamic> json) {
+    return ProductPriceModel(
+      productId: json['productId'] ?? json['id'] ?? 0,
+      price: json['price'] ?? 0,
+      unit: json['unit'],
+    );
+  }
+
+  @override
+  List<Object?> get props => [productId, price, unit];
+}

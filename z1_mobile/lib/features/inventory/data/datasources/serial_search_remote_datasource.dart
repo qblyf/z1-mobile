@@ -38,6 +38,18 @@ class SerialSearchRemoteDataSourceImpl implements SerialSearchRemoteDataSource {
   @override
   Future<Result<SerialSearchResultModel>> searchSerial(SerialSearchParams params) async {
     final response = await apiClient.post<Map<String, dynamic>>(
+      ApiEndpoints.serialSearchFullMatch,
+      data: params.toQueryParams(),
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      return SerialSearchResultModel.fromJson(data['data'] as Map<String, dynamic>? ?? {});
+    });
+  }
+
+  Future<Result<SerialSearchResultModel>> searchSerialFuzzy(SerialSearchParams params) async {
+    final response = await apiClient.post<Map<String, dynamic>>(
       ApiEndpoints.serialSearch,
       data: params.toQueryParams(),
       parser: (data) => data,
@@ -51,7 +63,7 @@ class SerialSearchRemoteDataSourceImpl implements SerialSearchRemoteDataSource {
   @override
   Future<Result<List<WarehouseModel>>> getWarehouseList() async {
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.warehouseList,
+      ApiEndpoints.warehouseList(state: 1),
       parser: (data) => data,
     );
 

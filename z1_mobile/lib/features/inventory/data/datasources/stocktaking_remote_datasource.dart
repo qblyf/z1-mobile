@@ -46,7 +46,7 @@ class StocktakingRemoteDataSourceImpl implements StocktakingRemoteDataSource {
   Future<Result<List<StocktakingModel>>> getStocktakingList(
       StocktakingListParams params) async {
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.stocktakingList,
+      ApiEndpoints.stocktakingList(page: params.page, pageSize: params.pageSize),
       queryParameters: params.toQueryParams(),
       parser: (data) => data,
     );
@@ -133,7 +133,7 @@ class StocktakingRemoteDataSourceImpl implements StocktakingRemoteDataSource {
   @override
   Future<Result<List<WarehouseModel>>> getWarehouseList() async {
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.warehouseList,
+      ApiEndpoints.warehouseList(state: 1),
       parser: (data) => data,
     );
 

@@ -94,7 +94,7 @@ class PurchaseRemoteDataSourceImpl implements PurchaseRemoteDataSource {
   @override
   Future<Result<List<WarehouseModel>>> getWarehouseList() async {
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.warehouseList,
+      ApiEndpoints.warehouseList(state: 1),
       parser: (data) => data,
     );
 

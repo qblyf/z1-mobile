@@ -6,6 +6,7 @@ import '../models/product_model.dart';
 abstract class ProductRemoteDataSource {
   Future<Result<List<ProductModel>>> getProductList(ProductListParams params);
   Future<Result<List<ProductModel>>> searchProducts(String keyword);
+  Future<Result<List<ProductPriceModel>>> getProductPriceList(List<int> productIds);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -31,5 +32,19 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<Result<List<ProductModel>>> searchProducts(String keyword) async {
     final params = ProductListParams(keyword: keyword);
     return getProductList(params);
+  }
+
+  @override
+  Future<Result<List<ProductPriceModel>>> getProductPriceList(List<int> productIds) async {
+    final response = await apiClient.post<Map<String, dynamic>>(
+      ApiEndpoints.productPriceList,
+      data: {'productIds': productIds},
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      final list = data['data'] as List<dynamic>? ?? [];
+      return list.map((json) => ProductPriceModel.fromJson(json as Map<String, dynamic>)).toList();
+    });
   }
 }
