@@ -104,7 +104,8 @@ class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
     final result = await _dataSource.searchByPhone('');
 
     if (result.isFailure) {
-      emit(MemberHomeError(result.failure!.message));
+      // API 失败时显示空状态而非错误
+      emit(const MemberHomeEmpty());
       return;
     }
 
@@ -135,7 +136,8 @@ class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
     final result = await _dataSource.searchByPhone(event.keyword);
 
     if (result.isFailure) {
-      emit(MemberHomeError(result.failure!.message));
+      // API 失败时显示空状态而非错误
+      emit(MemberHomeEmpty(searchKeyword: event.keyword));
       return;
     }
 

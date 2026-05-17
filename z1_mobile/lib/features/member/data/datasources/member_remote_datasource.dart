@@ -18,10 +18,9 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
   @override
   Future<Result<List<MemberModel>>> searchByPhone(String keyword) async {
     return _apiClient.get<List<MemberModel>>(
-      ApiEndpoints.memberSearchByPhones,
-      queryParameters: {'keyword': keyword},
+      ApiEndpoints.memberList(keyword: keyword),
       parser: (data) {
-        final list = data['data'] as List<dynamic>? ?? [];
+        final list = data['list'] as List<dynamic>? ?? [];
         return list.map((e) => MemberModel.fromJson(e as Map<String, dynamic>)).toList();
       },
     );
@@ -30,9 +29,9 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
   @override
   Future<Result<MemberModel>> getMemberDetail(int memberId) async {
     return _apiClient.get<MemberModel>(
-      ApiEndpoints.memberDetail(memberId),
+      ApiEndpoints.memberSpecified(memberId),
       parser: (data) {
-        return MemberModel.fromJson(data['data'] as Map<String, dynamic>);
+        return MemberModel.fromJson(data['member'] as Map<String, dynamic>);
       },
     );
   }

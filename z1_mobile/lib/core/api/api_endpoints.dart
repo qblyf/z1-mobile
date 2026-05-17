@@ -27,8 +27,11 @@ class ApiEndpoints {
   // ===== 会员 =====
   /// 手机号搜索会员（GET）
   static const String memberSearchByPhones = '/members/list-phones';
-  /// 会员详情
-  static String memberDetail(int ident) => '/members/$ident';
+  /// 会员列表（GET）
+  static String memberList({String keyword = '', int page = 1, int pageSize = 20}) =>
+      '/members/list?keyword=$keyword&page=$page&pageSize=$pageSize';
+  /// 会员详情（GET）
+  static String memberSpecified(int memberId) => '/members/specified?memberId=$memberId';
   /// 新增会员
   static const String memberAdd = '/members/add';
   /// 积分查询：直接用 GET /members/self 返回的 experience 字段
