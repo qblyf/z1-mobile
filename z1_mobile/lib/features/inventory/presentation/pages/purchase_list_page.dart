@@ -339,7 +339,7 @@ class _PurchaseCard extends StatelessWidget {
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(context);
-              context.push('/inventory/purchase-list/${item.id}');
+              context.push('/inventory/purchase/${item.id}');
             },
             child: const Text('查看详情'),
           ),

@@ -35,7 +35,7 @@ class InventoryHomePage extends StatelessWidget {
                 icon: CupertinoIcons.cart,
                 label: '采购',
                 color: CupertinoColors.activeOrange,
-                onTap: () => context.go('/inventory/purchase'),
+                onTap: () => context.go('/inventory/purchase-list'),
               ),
               _MenuCard(
                 icon: CupertinoIcons.barcode,

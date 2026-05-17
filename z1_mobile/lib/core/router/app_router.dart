@@ -205,16 +205,14 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'purchase-list',
               builder: (context, state) => const PurchaseListPage(),
-              routes: [
-                GoRoute(
-                  path: ':id',
-                  name: 'purchaseDetail',
-                  builder: (context, state) {
-                    final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-                    return PurchaseDetailPage(id: id);
-                  },
-                ),
-              ],
+            ),
+            GoRoute(
+              path: 'purchase/:id',
+              name: 'purchaseDetail',
+              builder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                return PurchaseDetailPage(id: id);
+              },
             ),
             GoRoute(
               path: 'purchase-inbound/:id',
