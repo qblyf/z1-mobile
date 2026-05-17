@@ -27,13 +27,15 @@ class ApiEndpoints {
   // ===== 会员 =====
   /// 手机号搜索会员（GET）
   static const String memberSearchByPhones = '/members/list-phones';
+  /// 手机号搜索会员（带 phone 查询参数）
+  static String memberSearchByPhone(String phone) => '/members/list-phones?phone=$phone';
   /// 会员详情
   static String memberDetail(int ident) => '/members/$ident';
   /// 新增会员
   static const String memberAdd = '/members/add';
+  /// 积分调整（POST）
+  static const String memberExperience = '/members/experience';
   /// 积分查询：直接用 GET /members/self 返回的 experience 字段
-  /// POST /members/experience 是积分调整接口
-  static const String memberExperienceEdit = '/members/experience/edit';
 
   // ===== 商品 =====
   /// 商品列表
@@ -56,6 +58,10 @@ class ApiEndpoints {
   // ===== 采购 =====
   /// 采购列表
   static const String purchaseList = '/purchase/list';
+  /// 采购单详情（urlKey 格式：detail?id=）
+  static String purchaseDetail(int id) => '/purchase/detail?id=$id';
+  /// 采购入库
+  static const String purchaseIntoWarehouse = '/purchase/into-warehouse';
   /// 盘库详情
   static String stocktakingDetail(int id) => '/stock-taking/detail?ids[]=$id';
   /// 新建盘库
@@ -72,6 +78,14 @@ class ApiEndpoints {
   // ===== 调拨 =====
   /// 调拨列表
   static const String transferList = '/transfer/list';
+  /// 创建调拨单
+  static const String transferAdd = '/transfer/add';
+  /// 调拨单详情（urlKey 格式：detail?id=）
+  static String transferDetail(int id) => '/transfer/detail?id=$id';
+  /// 确认发货
+  static const String transferShipping = '/transfer-lock/shipping';
+  /// 确认入库
+  static const String transferReceived = '/transfer-lock/received';
 
   // ===== 通用 =====
   /// 用户信息（登录后获取）
