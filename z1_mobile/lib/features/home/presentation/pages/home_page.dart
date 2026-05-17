@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../injection.dart';
@@ -93,13 +94,13 @@ class _HomePageContent extends StatelessWidget {
                         icon: CupertinoIcons.cart,
                         title: '零售开单',
                         color: CupertinoColors.activeBlue,
-                        onTap: () {},
+                        onTap: () => context.go('/order/retail/entry'),
                       ),
                       _MenuCard(
                         icon: CupertinoIcons.doc_text,
-                        title: '订单列表',
+                        title: '销售订单',
                         color: CupertinoColors.activeGreen,
-                        onTap: () {},
+                        onTap: () => context.go('/order/list'),
                       ),
                       _MenuCard(
                         icon: CupertinoIcons.cube_box,
