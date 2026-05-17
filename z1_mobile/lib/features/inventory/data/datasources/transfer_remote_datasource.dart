@@ -31,13 +31,13 @@ class TransferListParams extends Equatable {
 class TransferCreateParams extends Equatable {
   final int outWarehouseID;
   final int inWarehouseID;
-  final List<Map<String, dynamic>> goodsInfo;
+  final List<Map<String, dynamic>> items;
   final int type;
 
   const TransferCreateParams({
     required this.outWarehouseID,
     required this.inWarehouseID,
-    required this.goodsInfo,
+    required this.items,
     this.type = 1,
   });
 
@@ -45,20 +45,20 @@ class TransferCreateParams extends Equatable {
     return {
       'outWarehouseID': outWarehouseID,
       'inWarehouseID': inWarehouseID,
-      'goodsInfo': goodsInfo,
+      'items': items,
       'type': type,
     };
   }
 
   @override
-  List<Object?> get props => [outWarehouseID, inWarehouseID, goodsInfo, type];
+  List<Object?> get props => [outWarehouseID, inWarehouseID, items, type];
 }
 
 abstract class TransferRemoteDataSource {
   Future<Result<List<TransferModel>>> getTransferList(TransferListParams params);
   Future<Result<TransferDetailModel>> getTransferDetail(int id);
   Future<Result<int>> createTransfer(TransferCreateParams params);
-  Future<Result<void>> shipping(int transferID);
+  Future<Result<void>> shipping(int transferID, int inWarehouseID);
   Future<Result<void>> received(int transferID);
   Future<Result<List<WarehouseModel>>> getWarehouseList();
 }
@@ -119,10 +119,10 @@ class TransferRemoteDataSourceImpl implements TransferRemoteDataSource {
   }
 
   @override
-  Future<Result<void>> shipping(int transferID) async {
+  Future<Result<void>> shipping(int transferID, int inWarehouseID) async {
     final response = await apiClient.post<Map<String, dynamic>>(
       ApiEndpoints.transferShipping,
-      data: {'transferID': transferID},
+      data: {'transferID': transferID, 'inWarehouseID': inWarehouseID},
       parser: (data) => data,
     );
 

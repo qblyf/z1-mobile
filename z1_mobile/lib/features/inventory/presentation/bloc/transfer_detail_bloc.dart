@@ -108,7 +108,7 @@ class TransferDetailBloc extends Bloc<TransferDetailEvent, TransferDetailState> 
 
     emit(TransferDetailOperating(currentState.transfer));
 
-    final result = await _dataSource.shipping(event.id);
+    final result = await _dataSource.shipping(event.id, currentState.transfer.toWarehouseID);
 
     if (result.isFailure) {
       emit(TransferDetailLoaded(currentState.transfer));

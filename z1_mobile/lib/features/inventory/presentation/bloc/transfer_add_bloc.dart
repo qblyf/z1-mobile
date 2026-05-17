@@ -269,7 +269,7 @@ class TransferAddBloc extends Bloc<TransferAddEvent, TransferAddState> {
     final params = TransferCreateParams(
       outWarehouseID: currentState.outWarehouse!.id,
       inWarehouseID: currentState.inWarehouse!.id,
-      goodsInfo: currentState.products.map((p) => p.toJson()).toList(),
+      items: currentState.products.map((p) => p.toJson()).toList(),
     );
 
     final result = await _transferDataSource.createTransfer(params);

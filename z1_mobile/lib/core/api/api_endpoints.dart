@@ -31,7 +31,7 @@ class ApiEndpoints {
   static String memberList({String keyword = '', int page = 1, int pageSize = 20}) =>
       '/members/list?keyword=$keyword&page=$page&pageSize=$pageSize';
   /// 会员详情（GET）
-  static String memberSpecified(int memberId) => '/members/specified?memberId=$memberId';
+  static String memberSpecified(int memberId) => '/members/specified?userIdents=$memberId';
   /// 新增会员
   static const String memberAdd = '/members/add';
   /// 积分查询：直接用 GET /members/self 返回的 experience 字段
