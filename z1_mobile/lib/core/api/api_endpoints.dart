@@ -52,6 +52,10 @@ class ApiEndpoints {
   // ===== 盘库 =====
   /// 盘库列表
   static const String stocktakingList = '/stock-taking/list';
+
+  // ===== 采购 =====
+  /// 采购列表
+  static const String purchaseList = '/purchase/list';
   /// 盘库详情
   static String stocktakingDetail(int id) => '/stock-taking/detail?ids[]=$id';
   /// 新建盘库
@@ -65,11 +69,21 @@ class ApiEndpoints {
   /// 盘库方案列表
   static const String stocktakingPlanList = '/stock-taking-plan/list';
 
+  // ===== 调拨 =====
+  /// 调拨列表
+  static const String transferList = '/transfer/list';
+
   // ===== 通用 =====
   /// 用户信息（登录后获取）
   static const String userSelf = '/members/self';
   /// 登出
   static const String logout = '/auth/logout';
+
+  // ===== 序列号查询 =====
+  /// 序列号查询
+  static const String serialSearch = '/goods/serial-search';
+  /// 条码查商品
+  static String productBarcode(String code) => '/product/barcode/$code';
 }
 
 /// 辅助方法：URL 参数编码

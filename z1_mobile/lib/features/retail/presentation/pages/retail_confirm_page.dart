@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/retail_order_model.dart';
+import '../../data/models/coupon_model.dart';
 import '../bloc/coin_discount_bloc.dart';
 
 class RetailConfirmPage extends StatefulWidget {
@@ -19,6 +20,8 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
   late RetailOrder _order;
   final TextEditingController _remarksController = TextEditingController();
   int _useCouponCount = 0;
+  int _couponDiscount = 0;
+  List<CouponModel> _selectedCoupons = [];
 
   @override
   void initState() {
@@ -42,7 +45,7 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
 
   double get _productsTotalYuan => _order.productsTotalYuan;
 
-  double get _couponDiscountYuan => _useCouponCount * 10 / 100;
+  double get _couponDiscountYuan => _couponDiscount / 100;
 
   double _getCoinDiscountYuan() {
     final state = context.read<CoinDiscountBloc>().state;
@@ -282,7 +285,9 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                   child: Row(
                                     children: [
                                       Text(
-                                        _useCouponCount > 0 ? '已选 $_useCouponCount 张' : '选择',
+                                        _useCouponCount > 0
+                                            ? '已选 $_useCouponCount 张 (-¥${(_couponDiscount / 100).toStringAsFixed(2)})'
+                                            : '选择',
                                         style: const TextStyle(color: CupertinoColors.activeBlue),
                                       ),
                                       const Icon(CupertinoIcons.chevron_right, size: 16, color: CupertinoColors.activeBlue),
@@ -470,11 +475,16 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
   void _showCouponPicker() {
     context.push('/order/retail/coupon-select', extra: {
       'order': _order,
-      'onSelected': (couponCount, discount) {
+    }).then((result) {
+      if (result != null && result is Map<String, dynamic>) {
         setState(() {
-          _useCouponCount = couponCount;
+          _useCouponCount = result['couponCount'] ?? 0;
+          _couponDiscount = result['discount'] ?? 0;
+          _selectedCoupons = (result['coupons'] as List<dynamic>?)
+                  ?.cast<CouponModel>() ??
+              [];
         });
-      },
+      }
     });
   }
 }

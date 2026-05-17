@@ -23,7 +23,11 @@ import '../../features/inventory/presentation/pages/stocktaking_list_page.dart';
 import '../../features/inventory/presentation/pages/stocktaking_add_page.dart';
 import '../../features/inventory/presentation/pages/stocktaking_detail_page.dart';
 import '../../features/inventory/presentation/pages/transfer_list_page.dart';
+import '../../features/inventory/presentation/pages/transfer_add_page.dart';
+import '../../features/inventory/presentation/pages/transfer_detail_page.dart';
 import '../../features/inventory/presentation/pages/purchase_list_page.dart';
+import '../../features/inventory/presentation/pages/purchase_detail_page.dart';
+import '../../features/inventory/presentation/pages/purchase_inbound_page.dart';
 import '../../features/inventory/presentation/pages/serial_search_page.dart';
 import '../../features/retail/presentation/bloc/product_bloc.dart';
 import '../../features/retail/presentation/bloc/member_bloc.dart';
@@ -182,10 +186,43 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'transfer',
               builder: (context, state) => const TransferListPage(),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  name: 'transferAdd',
+                  builder: (context, state) => const TransferAddPage(),
+                ),
+                GoRoute(
+                  path: ':id',
+                  name: 'transferDetail',
+                  builder: (context, state) {
+                    final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                    return TransferDetailPage(id: id);
+                  },
+                ),
+              ],
             ),
             GoRoute(
-              path: 'purchase',
+              path: 'purchase-list',
               builder: (context, state) => const PurchaseListPage(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  name: 'purchaseDetail',
+                  builder: (context, state) {
+                    final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                    return PurchaseDetailPage(id: id);
+                  },
+                ),
+              ],
+            ),
+            GoRoute(
+              path: 'purchase-inbound/:id',
+              name: 'purchaseInbound',
+              builder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                return PurchaseInboundPage(id: id);
+              },
             ),
             GoRoute(
               path: 'serial-search',
