@@ -11,6 +11,12 @@ import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/member/data/datasources/member_remote_datasource.dart';
 import 'features/member/presentation/bloc/member_home_bloc.dart';
 import 'features/member/presentation/bloc/member_detail_bloc.dart';
+import 'features/retail/data/datasources/product_remote_datasource.dart';
+import 'features/retail/data/datasources/member_remote_datasource.dart';
+import 'features/retail/data/datasources/coin_discount_remote_datasource.dart';
+import 'features/retail/presentation/bloc/product_bloc.dart';
+import 'features/retail/presentation/bloc/member_bloc.dart';
+import 'features/retail/presentation/bloc/coin_discount_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -70,5 +76,31 @@ Future<void> configureDependencies() async {
 
   getIt.registerFactory<MemberDetailBloc>(
     () => MemberDetailBloc(dataSource: getIt<MemberRemoteDataSource>()),
+  );
+
+  // Retail DataSources
+  getIt.registerLazySingleton<ProductRemoteDataSource>(
+    () => ProductRemoteDataSourceImpl(apiClient: getIt()),
+  );
+
+  getIt.registerLazySingleton<RetailMemberRemoteDataSource>(
+    () => RetailMemberRemoteDataSourceImpl(apiClient: getIt()),
+  );
+
+  // Retail BLoCs
+  getIt.registerFactory<ProductBloc>(
+    () => ProductBloc(dataSource: getIt<ProductRemoteDataSource>()),
+  );
+
+  getIt.registerFactory<MemberBloc>(
+    () => MemberBloc(dataSource: getIt<RetailMemberRemoteDataSource>()),
+  );
+
+  getIt.registerLazySingleton<CoinDiscountRemoteDataSource>(
+    () => CoinDiscountRemoteDataSourceImpl(apiClient: getIt()),
+  );
+
+  getIt.registerFactory<CoinDiscountBloc>(
+    () => CoinDiscountBloc(dataSource: getIt<CoinDiscountRemoteDataSource>()),
   );
 }

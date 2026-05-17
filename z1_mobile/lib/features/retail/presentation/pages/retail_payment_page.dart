@@ -98,7 +98,7 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
     try {
       final dio = getIt<Dio>();
       final response = await dio.post(
-        '/order/create',
+        '/order/shop-sale/add',
         data: {
           'warehouseID': _order.warehouseID,
           'customerIdent': _order.customerIdent,

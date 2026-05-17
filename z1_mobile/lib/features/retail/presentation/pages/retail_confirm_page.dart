@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Divider;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/retail_order_model.dart';
+import '../bloc/coin_discount_bloc.dart';
 
-/// 订单确认页
 class RetailConfirmPage extends StatefulWidget {
   final RetailOrder order;
 
@@ -17,14 +18,20 @@ class RetailConfirmPage extends StatefulWidget {
 class _RetailConfirmPageState extends State<RetailConfirmPage> {
   late RetailOrder _order;
   final TextEditingController _remarksController = TextEditingController();
-  int _useCoins = 0; // 使用积分
-  int _useCouponCount = 0; // 使用优惠券数量
+  int _useCouponCount = 0;
 
   @override
   void initState() {
     super.initState();
     _order = widget.order;
     _remarksController.text = _order.remarks ?? '';
+    if (_order.customerIdent != null) {
+      final orderAmount = (_order.productsTotalYuan * 100).toInt();
+      context.read<CoinDiscountBloc>().add(CoinDiscountLoadRequested(
+        customerIdent: _order.customerIdent!,
+        orderAmount: orderAmount,
+      ));
+    }
   }
 
   @override
@@ -35,17 +42,26 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
 
   double get _productsTotalYuan => _order.productsTotalYuan;
 
-  double get _coinDiscountYuan => _useCoins / 100;
+  double get _couponDiscountYuan => _useCouponCount * 10 / 100;
 
-  double get _couponDiscountYuan => _useCouponCount * 10 / 100; // 假设每张券抵10元
+  double _getCoinDiscountYuan() {
+    final state = context.read<CoinDiscountBloc>().state;
+    if (state is CoinDiscountLoaded) {
+      return state.discountAmount / 100;
+    }
+    return 0;
+  }
 
-  double get _actualPayYuan {
-    return _productsTotalYuan - _coinDiscountYuan - _couponDiscountYuan;
+  double _getActualPayYuan() {
+    return _productsTotalYuan - _getCoinDiscountYuan() - _couponDiscountYuan;
   }
 
   void _goToPayment() {
+    final coinState = context.read<CoinDiscountBloc>().state;
+    final decreaseCoins = coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
+
     final order = _order.copyWith(
-      decreaseCoins: _useCoins,
+      decreaseCoins: decreaseCoins,
       remarks: _remarksController.text.trim(),
     );
     context.push('/order/retail/payment', extra: order);
@@ -67,12 +83,10 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
       child: SafeArea(
         child: Column(
           children: [
-            // 商品列表
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // 会员信息
                   if (_order.customerName != null)
                     _buildSection(
                       title: '会员信息',
@@ -99,7 +113,6 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
 
                   const SizedBox(height: 16),
 
-                  // 商品列表
                   _buildSection(
                     title: '商品清单',
                     child: Container(
@@ -158,7 +171,6 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
 
                   const SizedBox(height: 16),
 
-                  // 优惠抵扣
                   _buildSection(
                     title: '优惠抵扣',
                     child: Container(
@@ -168,35 +180,95 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                       ),
                       child: Column(
                         children: [
-                          // 积分抵扣
                           if (_order.customerIdent != null)
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: const BoxDecoration(
-                                border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
-                                  const SizedBox(width: 8),
-                                  const Expanded(child: Text('积分抵扣')),
-                                  CupertinoButton(
-                                    padding: EdgeInsets.zero,
-                                    onPressed: () => _showCoinPicker(),
-                                    child: Row(
+                            BlocBuilder<CoinDiscountBloc, CoinDiscountState>(
+                              builder: (context, state) {
+                                if (state is CoinDiscountLoading) {
+                                  return Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: const BoxDecoration(
+                                      border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+                                    ),
+                                    child: const Row(
                                       children: [
-                                        Text(
-                                          _useCoins > 0 ? '-${currencyFormat.format(_coinDiscountYuan)}' : '使用',
-                                          style: const TextStyle(color: CupertinoColors.activeBlue),
-                                        ),
-                                        const Icon(CupertinoIcons.chevron_right, size: 16, color: CupertinoColors.activeBlue),
+                                        Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
+                                        SizedBox(width: 8),
+                                        Text('积分抵扣'),
+                                        SizedBox(width: 12),
+                                        CupertinoActivityIndicator(radius: 8),
                                       ],
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  );
+                                }
+                                if (state is CoinDiscountLoaded) {
+                                  return Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: const BoxDecoration(
+                                      border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text('积分抵扣'),
+                                              Text(
+                                                '可用 ${state.availableCoins} 积分',
+                                                style: const TextStyle(
+                                                  color: CupertinoColors.secondaryLabel,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        CupertinoButton(
+                                          padding: EdgeInsets.zero,
+                                          onPressed: () => _showCoinPicker(state.availableCoins),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                state.selectedCoins > 0
+                                                    ? '-${currencyFormat.format(state.discountAmount / 100)}'
+                                                    : '使用',
+                                                style: const TextStyle(color: CupertinoColors.activeBlue),
+                                              ),
+                                              const Icon(CupertinoIcons.chevron_right, size: 16, color: CupertinoColors.activeBlue),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                if (state is CoinDiscountError) {
+                                  return Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: const BoxDecoration(
+                                      border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
+                                        const SizedBox(width: 8),
+                                        const Expanded(child: Text('积分抵扣')),
+                                        Text(
+                                          '加载失败',
+                                          style: const TextStyle(
+                                            color: CupertinoColors.destructiveRed,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
                             ),
-                          // 优惠券
                           Container(
                             padding: const EdgeInsets.all(12),
                             child: Row(
@@ -227,7 +299,6 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
 
                   const SizedBox(height: 16),
 
-                  // 备注
                   _buildSection(
                     title: '订单备注',
                     child: CupertinoTextField(
@@ -245,67 +316,75 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
               ),
             ),
 
-            // 底部汇总
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: CupertinoColors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: CupertinoColors.black.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2),
+            BlocBuilder<CoinDiscountBloc, CoinDiscountState>(
+              builder: (context, coinState) {
+                final coinDiscountYuan = coinState is CoinDiscountLoaded
+                    ? coinState.discountAmount / 100
+                    : 0.0;
+                final actualPayYuan = _productsTotalYuan - coinDiscountYuan - _couponDiscountYuan;
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: CupertinoColors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: SafeArea(
+                    top: false,
+                    child: Column(
                       children: [
-                        const Text('商品总额'),
-                        Text(currencyFormat.format(_productsTotalYuan)),
-                      ],
-                    ),
-                    if (_coinDiscountYuan > 0 || _couponDiscountYuan > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('优惠抵扣', style: TextStyle(color: CupertinoColors.activeGreen)),
+                            const Text('商品总额'),
+                            Text(currencyFormat.format(_productsTotalYuan)),
+                          ],
+                        ),
+                        if (coinDiscountYuan > 0 || _couponDiscountYuan > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('优惠抵扣', style: TextStyle(color: CupertinoColors.activeGreen)),
+                                Text(
+                                  '-${currencyFormat.format(coinDiscountYuan + _couponDiscountYuan)}',
+                                  style: const TextStyle(color: CupertinoColors.activeGreen),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Divider(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('应付金额', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                             Text(
-                              '-${currencyFormat.format(_coinDiscountYuan + _couponDiscountYuan)}',
-                              style: const TextStyle(color: CupertinoColors.activeGreen),
+                              currencyFormat.format(actualPayYuan > 0 ? actualPayYuan : 0),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: CupertinoColors.destructiveRed),
                             ),
                           ],
                         ),
-                      ),
-                    Divider(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('应付金额', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                        Text(
-                          currencyFormat.format(_actualPayYuan > 0 ? _actualPayYuan : 0),
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: CupertinoColors.destructiveRed),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: CupertinoButton.filled(
+                            borderRadius: BorderRadius.circular(12),
+                            onPressed: actualPayYuan > 0 ? _goToPayment : null,
+                            child: const Text('去收款', style: TextStyle(fontWeight: FontWeight.w600)),
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: CupertinoButton.filled(
-                        borderRadius: BorderRadius.circular(12),
-                        onPressed: _actualPayYuan > 0 ? _goToPayment : null,
-                        child: const Text('去收款', style: TextStyle(fontWeight: FontWeight.w600)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -331,7 +410,11 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
     );
   }
 
-  void _showCoinPicker() {
+  void _showCoinPicker(int availableCoins) {
+    final coinState = context.read<CoinDiscountBloc>().state;
+    final currentSelected = coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
+    int tempSelected = currentSelected;
+
     showCupertinoModalPopup(
       context: context,
       builder: (ctx) => Container(
@@ -351,6 +434,12 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                     padding: EdgeInsets.zero,
                     child: const Text('确定'),
                     onPressed: () {
+                      final orderAmount = (_order.productsTotalYuan * 100).toInt();
+                      context.read<CoinDiscountBloc>().add(CoinDiscountCalculateRequested(
+                        customerIdent: _order.customerIdent!,
+                        coins: tempSelected,
+                        orderAmount: orderAmount,
+                      ));
                       Navigator.pop(ctx);
                     },
                   ),
@@ -360,11 +449,14 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
             Expanded(
               child: CupertinoPicker(
                 itemExtent: 40,
+                scrollController: FixedExtentScrollController(
+                  initialItem: currentSelected ~/ 100,
+                ),
                 onSelectedItemChanged: (index) {
-                  setState(() => _useCoins = index * 100); // 每次使用100积分
+                  tempSelected = index * 100;
                 },
                 children: List.generate(
-                  21,
+                  (availableCoins ~/ 100) + 1,
                   (index) => Center(child: Text('${index * 100} 积分 (可抵扣 ¥${index})')),
                 ),
               ),

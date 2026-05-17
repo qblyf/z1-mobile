@@ -29,6 +29,8 @@ class ApiEndpoints {
   static const String memberSearchByPhones = '/members/list-phones';
   /// 会员详情
   static String memberDetail(int ident) => '/members/$ident';
+  /// 新增会员
+  static const String memberAdd = '/members/add';
   /// 积分查询：直接用 GET /members/self 返回的 experience 字段
   /// POST /members/experience 是积分调整接口
   static const String memberExperienceEdit = '/members/experience/edit';

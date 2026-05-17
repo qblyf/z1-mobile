@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/retail_order_model.dart';
+import '../bloc/product_bloc.dart';
 
 /// 商品选购页
 class RetailProductPage extends StatefulWidget {
@@ -18,29 +21,34 @@ class _RetailProductPageState extends State<RetailProductPage> {
   final TextEditingController _searchController = TextEditingController();
   final List<ProductItem> _cart = [];
   int _selectedCategoryIndex = 0;
+  Timer? _debounceTimer;
 
   final List<String> _categories = ['全部', '黄金', '钻石', '翡翠', '银饰', '定制'];
-  final List<Map<String, dynamic>> _products = [
-    {'id': 1, 'name': '黄金手镯 999', 'price': 59800, 'category': '黄金'},
-    {'id': 2, 'name': '黄金项链 999', 'price': 36800, 'category': '黄金'},
-    {'id': 3, 'name': '黄金戒指 999', 'price': 22800, 'category': '黄金'},
-    {'id': 4, 'name': '钻戒 50分', 'price': 358000, 'category': '钻石'},
-    {'id': 5, 'name': '钻戒 30分', 'price': 188000, 'category': '钻石'},
-    {'id': 6, 'name': '翡翠吊坠', 'price': 128000, 'category': '翡翠'},
-    {'id': 7, 'name': '银手链', 'price': 1280, 'category': '银饰'},
-    {'id': 8, 'name': '银戒指', 'price': 680, 'category': '银饰'},
-  ];
 
   @override
   void initState() {
     super.initState();
     _order = widget.initialOrder ?? const RetailOrder();
+    context.read<ProductBloc>().add(const ProductLoadRequested());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      context.read<ProductBloc>().add(ProductSearchRequested(value));
+    });
+  }
+
+  void _onCategoryChanged(int index) {
+    setState(() => _selectedCategoryIndex = index);
+    context.read<ProductBloc>().add(ProductCategoryChanged(_categories[index]));
   }
 
   double get _cartTotalYuan {
@@ -131,17 +139,16 @@ class _RetailProductPageState extends State<RetailProductPage> {
       child: SafeArea(
         child: Column(
           children: [
-            // 搜索栏
             Container(
               padding: const EdgeInsets.all(12),
               color: CupertinoColors.systemGroupedBackground,
               child: CupertinoSearchTextField(
                 controller: _searchController,
                 placeholder: '搜索商品名称/编码',
+                onChanged: _onSearchChanged,
               ),
             ),
 
-            // 分类选择
             Container(
               height: 44,
               color: CupertinoColors.white,
@@ -152,7 +159,7 @@ class _RetailProductPageState extends State<RetailProductPage> {
                 itemBuilder: (context, index) {
                   final isSelected = index == _selectedCategoryIndex;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedCategoryIndex = index),
+                    onTap: () => _onCategoryChanged(index),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       alignment: Alignment.center,
@@ -173,39 +180,68 @@ class _RetailProductPageState extends State<RetailProductPage> {
               ),
             ),
 
-            // 商品网格
             Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.85,
-                ),
-                itemCount: _products.length,
-                itemBuilder: (context, index) {
-                  final product = _products[index];
-                  return _ProductCard(
-                    name: product['name'],
-                    price: product['price'],
-                    onAdd: () {
-                      final item = ProductItem(
-                        productID: product['id'],
-                        productName: product['name'],
-                        price: product['price'],
-                        quantity: 1,
-                        discountPrice: product['price'],
-                        totalDiscountPrice: product['price'],
-                      );
-                      _addToCart(item);
-                    },
-                  );
+              child: BlocBuilder<ProductBloc, ProductState>(
+                builder: (context, state) {
+                  if (state is ProductLoading) {
+                    return const Center(child: CupertinoActivityIndicator());
+                  }
+                  if (state is ProductError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(state.message, style: const TextStyle(color: CupertinoColors.destructiveRed)),
+                          const SizedBox(height: 12),
+                          CupertinoButton(
+                            child: const Text('重试'),
+                            onPressed: () => context.read<ProductBloc>().add(const ProductLoadRequested()),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  if (state is ProductLoaded || state is ProductSearching) {
+                    final products = state is ProductLoaded
+                        ? state.filteredProducts
+                        : (state as ProductSearching).allProducts;
+                    if (products.isEmpty) {
+                      return const Center(child: Text('暂无商品'));
+                    }
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.85,
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return _ProductCard(
+                          name: product.productName,
+                          price: product.price,
+                          onAdd: () {
+                            final item = ProductItem(
+                              productID: product.productID,
+                              productName: product.productName,
+                              price: product.price,
+                              quantity: 1,
+                              discountPrice: product.price,
+                              totalDiscountPrice: product.price,
+                            );
+                            _addToCart(item);
+                          },
+                        );
+                      },
+                    );
+                  }
+                  return const Center(child: Text('请搜索商品'));
                 },
               ),
             ),
 
-            // 底部购物车栏
             if (_cart.isNotEmpty)
               Container(
                 padding: const EdgeInsets.all(12),

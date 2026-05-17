@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../data/models/retail_order_model.dart';
+import '../bloc/member_bloc.dart';
 
-/// 零售开单入口页
 class RetailEntryPage extends StatefulWidget {
   const RetailEntryPage({super.key});
 
@@ -17,11 +17,26 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
   final TextEditingController _phoneController = TextEditingController();
   MemberInfo? _boundMember;
   bool _isWalkIn = false;
+  Timer? _debounceTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<MemberBloc>().add(const MemberLoadRecentRequested());
+  }
 
   @override
   void dispose() {
     _phoneController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  void _onPhoneChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      context.read<MemberBloc>().add(MemberSearchByPhoneRequested(value));
+    });
   }
 
   void _selectSalesType(SalesType type) {
@@ -45,14 +60,12 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
   }
 
   void _startOrder() {
-    // 构建初始订单数据，传递给后续页面
     final order = RetailOrder(
       salesType: _selectedType,
       customerIdent: _boundMember?.ident,
       customerName: _boundMember?.realName,
     );
 
-    // 跳转到商品选购页
     context.push('/order/retail/product', extra: order);
   }
 
@@ -171,7 +184,6 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
           ),
           const SizedBox(height: 12),
 
-          // 已绑定会员显示
           if (_boundMember != null) ...[
             Container(
               padding: const EdgeInsets.all(12),
@@ -224,7 +236,6 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
               ),
             ),
           ] else ...[
-            // 企微扫码
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: () {},
@@ -282,7 +293,6 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
             ),
 
             const SizedBox(height: 12),
-            // 分隔线
             Row(
               children: [
                 Expanded(child: Container(height: 1, color: CupertinoColors.separator)),
@@ -301,7 +311,6 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
             ),
             const SizedBox(height: 12),
 
-            // 手机号绑定
             Row(
               children: [
                 Expanded(
@@ -314,6 +323,7 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
                       color: CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    onChanged: _onPhoneChanged,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -321,11 +331,105 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                   borderRadius: BorderRadius.circular(12),
                   onPressed: () {
-                    // TODO: 调用会员搜索接口
+                    context.read<MemberBloc>().add(
+                      MemberSearchByPhoneRequested(_phoneController.text),
+                    );
                   },
                   child: const Text('查找'),
                 ),
               ],
+            ),
+
+            const SizedBox(height: 12),
+            BlocBuilder<MemberBloc, MemberState>(
+              builder: (context, state) {
+                if (state is MemberLoading) {
+                  return const Center(child: CupertinoActivityIndicator());
+                }
+                if (state is MemberLoaded && state.searchResults.isNotEmpty) {
+                  return Container(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: CupertinoColors.separator),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: state.searchResults.length,
+                      itemBuilder: (context, index) {
+                        final member = state.searchResults[index];
+                        return CupertinoButton(
+                          padding: const EdgeInsets.all(12),
+                          onPressed: () {
+                            _bindMember(MemberInfo(
+                              ident: member.ident,
+                              realName: member.realName,
+                              mobilePhone: member.mobilePhone,
+                              experience: member.experience,
+                            ));
+                            context.read<MemberBloc>().add(const MemberSearchCleared());
+                          },
+                          child: Row(
+                            children: [
+                              const Icon(CupertinoIcons.person, size: 18),
+                              const SizedBox(width: 8),
+                              Text(member.realName),
+                              const SizedBox(width: 8),
+                              Text(
+                                member.mobilePhone,
+                                style: const TextStyle(color: CupertinoColors.secondaryLabel),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
+                if (state is MemberLoaded && state.recentMembers.isNotEmpty && _phoneController.text.isEmpty) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '最近会员',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: CupertinoColors.secondaryLabel,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: state.recentMembers.take(5).map((member) {
+                          return GestureDetector(
+                            onTap: () {
+                              _bindMember(MemberInfo(
+                                ident: member.ident,
+                                realName: member.realName,
+                                mobilePhone: member.mobilePhone,
+                                experience: member.experience,
+                              ));
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: CupertinoColors.systemGrey6,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Text(
+                                member.mobilePhone,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             ),
           ],
         ],
@@ -397,7 +501,7 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
 
   Widget _buildStartButton() {
     final canStart = _selectedType != null && (_boundMember != null || _isWalkIn);
-    
+
     return CupertinoButton.filled(
       borderRadius: BorderRadius.circular(14),
       onPressed: canStart ? _startOrder : null,
