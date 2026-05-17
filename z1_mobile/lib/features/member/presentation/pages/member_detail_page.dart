@@ -231,14 +231,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () => context.push('/member/${widget.memberId}/creditscore'),
                     child: const Text('积分查询'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => context.push('/member/${widget.memberId}/creditscore/edit'),
                     child: const Text('积分调整'),
                   ),
                 ),

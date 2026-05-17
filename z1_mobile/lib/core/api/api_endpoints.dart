@@ -49,6 +49,22 @@ class ApiEndpoints {
   /// 仓库列表
   static const String warehouseList = '/warehouse/list-base';
 
+  // ===== 盘库 =====
+  /// 盘库列表
+  static const String stocktakingList = '/stock-taking/list';
+  /// 盘库详情
+  static String stocktakingDetail(int id) => '/stock-taking/detail?ids[]=$id';
+  /// 新建盘库
+  static const String stocktakingAdd = '/stock-taking/add';
+  /// 盘库商品列表
+  static String stocktakingProducts(int id) => '/stock-taking/$id/products';
+  /// 完成盘库
+  static String stocktakingEnd(int id) => '/stock-taking/end';
+  /// 重新盘库
+  static String stocktakingRestart(int id) => '/stock-taking/restocktaking';
+  /// 盘库方案列表
+  static const String stocktakingPlanList = '/stock-taking-plan/list';
+
   // ===== 通用 =====
   /// 用户信息（登录后获取）
   static const String userSelf = '/members/self';

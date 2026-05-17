@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -16,9 +15,13 @@ import '../../features/retail/data/models/retail_order_model.dart';
 import '../../features/member/presentation/pages/member_home_page.dart';
 import '../../features/member/presentation/pages/member_detail_page.dart';
 import '../../features/member/presentation/pages/member_add_page.dart';
+import '../../features/member/presentation/pages/member_creditscore_page.dart';
+import '../../features/member/presentation/pages/member_creditscore_edit_page.dart';
 import '../../features/task/presentation/pages/task_home_page.dart';
 import '../../features/inventory/presentation/pages/inventory_home_page.dart';
 import '../../features/inventory/presentation/pages/stocktaking_list_page.dart';
+import '../../features/inventory/presentation/pages/stocktaking_add_page.dart';
+import '../../features/inventory/presentation/pages/stocktaking_detail_page.dart';
 import '../../features/inventory/presentation/pages/transfer_list_page.dart';
 import '../../features/inventory/presentation/pages/purchase_list_page.dart';
 import '../../features/inventory/presentation/pages/serial_search_page.dart';
@@ -118,6 +121,22 @@ final appRouter = GoRouter(
               builder: (context, state) => const MemberAddPage(),
             ),
             GoRoute(
+              path: ':memberId/creditscore',
+              name: 'memberCreditscore',
+              builder: (context, state) {
+                final memberId = int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
+                return MemberCreditscorePage(memberId: memberId);
+              },
+            ),
+            GoRoute(
+              path: ':memberId/creditscore/edit',
+              name: 'memberCreditscoreEdit',
+              builder: (context, state) {
+                final memberId = int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
+                return MemberCreditscoreEditPage(memberId: memberId);
+              },
+            ),
+            GoRoute(
               path: ':memberId',
               builder: (context, state) {
                 final memberId = int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
@@ -144,6 +163,21 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'stocktaking',
               builder: (context, state) => const StocktakingListPage(),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  name: 'stocktakingAdd',
+                  builder: (context, state) => const StocktakingAddPage(),
+                ),
+                GoRoute(
+                  path: ':id',
+                  name: 'stocktakingDetail',
+                  builder: (context, state) {
+                    final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                    return StocktakingDetailPage(id: id);
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: 'transfer',
