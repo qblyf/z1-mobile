@@ -91,16 +91,14 @@
 |------|------|------|
 | id | int | 采购单 ID |
 | code | string | 采购单号 |
-| supplierId | int | 供应商 ID |
 | supplierName | string | 供应商名称 |
-| warehouseId | int | 仓库 ID |
-| warehouseName | string | 仓库名称 |
-| status | enum | 状态：`pending`/`partial`/`completed` |
-| totalItems | int | 总品项数 |
-| receivedItems | int | 已入库品项数 |
+| state | enum | 状态：`pending`/`partial`/`completed` |
 | totalAmount | int | 采购总金额（分）|
-| createdAt | datetime | 创建时间 |
-| expectedAt | datetime | 预计到货时间（可选）|
+| createdAt | int | 创建时间戳（秒）|
+| productCount | int | 总品项数 |
+| warehouseId | int | 仓库 ID（预留）|
+| warehouseName | string | 仓库名称（预留）|
+| receivedItems | int | 已入库品项数（预留）|
 
 ### 2.5 异常/边界情况
 

@@ -96,16 +96,14 @@
 |------|------|------|
 | id | int | 调拨单 ID |
 | code | string | 调拨单号 |
-| fromWarehouseId | int | 源仓库 ID |
+| fromWarehouseID | int | 源仓库 ID |
 | fromWarehouseName | string | 源仓库名称 |
-| toWarehouseId | int | 目标仓库 ID |
+| toWarehouseID | int | 目标仓库 ID |
 | toWarehouseName | string | 目标仓库名称 |
-| status | enum | 状态：`pending`/`shipped`/`received`/`completed` |
-| totalItems | int | 总品项数 |
-| totalQuantity | int | 总数量 |
-| createdAt | datetime | 创建时间 |
-| shippedAt | datetime | 发货时间（可选）|
-| receivedAt | datetime | 入库时间（可选）|
+| state | enum | 状态：`pending`/`shipping`/`completed` |
+| productCount | int | 总品项数 |
+| createdAt | int | 创建时间戳（秒）|
+| createdBy | int | 创建人 ID |
 
 ### 2.5 异常/边界情况
 
@@ -131,18 +129,15 @@
 ```
 pending（待发货）
     ↓ 用户点击"确认发货"
-shipped（待入库）
+shipping（待入库）
     ↓ 目标仓库确认收货
-received（已入库）
-    ↓ 系统自动或手动完成
 completed（已完成）
 ```
 
 | 状态 | 说明 | 可执行操作 |
 |------|------|-----------|
 | pending | 调拨单创建，等待发货 | 发货 |
-| shipped | 已发货，等待目标仓库入库 | 查看物流 |
-| received | 目标仓库已收货 | 确认完成 |
+| shipping | 已发货，等待目标仓库入库 | 查看物流 |
 | completed | 调拨完成 | 查看详情 |
 
 ---
