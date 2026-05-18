@@ -53,6 +53,10 @@ class ApiEndpoints {
   static String warehouseList({int? state}) {
     return state != null ? '/warehouse/list-base?state=$state' : '/warehouse/list-base';
   }
+  /// 仓库列表（条件查询，state=1 仅返回启用状态）
+  static String warehouseListCondition({int? state, int limit = 100, int offset = 0}) {
+    return '/warehouse/list-condition?state=${state ?? 1}&limit=$limit&offset=$offset';
+  }
 
   // ===== 盘库 =====
   /// 盘库列表（添加分页参数）

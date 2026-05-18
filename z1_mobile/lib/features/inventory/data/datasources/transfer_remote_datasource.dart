@@ -143,12 +143,12 @@ class TransferRemoteDataSourceImpl implements TransferRemoteDataSource {
   @override
   Future<Result<List<WarehouseModel>>> getWarehouseList() async {
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.warehouseList(state: 1),
+      ApiEndpoints.warehouseListCondition(state: 1),
       parser: (data) => data,
     );
 
     return response.map((data) {
-      final list = data['data'] as List<dynamic>? ?? [];
+      final list = data['data']['warehouses'] as List<dynamic>? ?? [];
       return list.map((json) => WarehouseModel.fromJson(json as Map<String, dynamic>)).toList();
     });
   }
