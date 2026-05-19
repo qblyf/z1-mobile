@@ -164,9 +164,10 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 调拨列表 | `/transfer/list` | GET | 调拨列表（支持 status 筛选）|
-| 新建调拨 | `/warehouse/list-base` | GET | 仓库列表（选择仓库用）|
-| 调拨详情 | `/transfer/:id` | GET | 调拨单详情 |
+| 调拨列表 | `/transfer/list` | GET | 调拨列表（支持 status 筛选，参数：status, limit, offset）|
+| 新建调拨 | `/warehouse/list-base` | GET | 仓库列表（选择仓库用，**过滤条件**：可通过 `state=1` 过滤禁用仓库，仅返回启用状态的仓库）|
+| 新建调拨 | `/transfer/add` | POST | 创建调拨单 [urlKey: /transfer/add, POST, 参数：outWarehouseID, inWarehouseID, products[], type] **注意**：请求体中商品字段为 `products` 而非 `goodsInfo` |
+| 新建调拨 | `/transfer-lock/shipping` | POST | 确认发货 [urlKey: /transfer-lock/shipping, POST, 参数：transferID, inWarehouseID] **注意**：`inWarehouseID` 为目标仓库 ID，发货时必传 |
 
 ---
 

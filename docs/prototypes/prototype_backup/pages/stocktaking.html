@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盘库 - Z1 全网连锁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #F2F2F7; margin: 0; }
+        .status-bar { height: 54px; padding: 14px 24px 0; display: flex; justify-content: space-between; align-items: center; color: #000; font-size: 15px; font-weight: 600; }
+        .nav-bar { height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 0.5px solid #E5E5EA; }
+        .scan-btn { background: linear-gradient(135deg, #007AFF, #5856D6); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 17px; font-weight: 600; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .scan-btn:active { transform: scale(0.98); }
+        .item-card { background: white; border-radius: 12px; margin: 12px 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .input-qty { width: 80px; padding: 8px; border: 1px solid #E5E5EA; border-radius: 8px; text-align: center; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex gap-1 items-center"><i class="fas fa-signal text-xs"></i><i class="fas fa-wifi text-xs"></i><i class="fas fa-battery-full text-xs"></i></div>
+    </div>
+
+    <div class="nav-bar">
+        <button onclick="history.back()" class="text-blue-500"><i class="fas fa-chevron-left text-lg"></i></button>
+        <span class="font-semibold text-lg">盘库</span>
+        <button class="text-blue-500"><i class="fas fa-history text-lg"></i></button>
+    </div>
+
+    <!-- Scan Button -->
+    <div class="px-4 pt-4">
+        <button class="scan-btn" onclick="showScanModal()">
+            <i class="fas fa-barcode text-2xl"></i>
+            <span>扫描商品条码</span>
+        </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex gap-3 px-4 pt-4 mb-2">
+        <div class="flex-1 bg-white rounded-xl p-4 text-center shadow-sm">
+            <div class="text-2xl font-bold text-blue-500">12</div>
+            <div class="text-gray-500 text-sm">已扫描</div>
+        </div>
+        <div class="flex-1 bg-white rounded-xl p-4 text-center shadow-sm">
+            <div class="text-2xl font-bold text-orange-500">3</div>
+            <div class="text-gray-500 text-sm">盘盈</div>
+        </div>
+        <div class="flex-1 bg-white rounded-xl p-4 text-center shadow-sm">
+            <div class="text-2xl font-bold text-red-500">2</div>
+            <div class="text-gray-500 text-sm">盘亏</div>
+        </div>
+    </div>
+
+    <!-- Items List -->
+    <div class="pb-32">
+        <div class="text-gray-500 text-sm px-4 pt-2 mb-2">扫描记录</div>
+
+        <div class="item-card">
+            <div class="flex gap-3">
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-box text-gray-400 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="font-semibold">iPhone 15 Pro 256GB 黑色</div>
+                    <div class="text-gray-500 text-sm mt-1">条码：6901234567890</div>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-gray-400 text-sm">系统库存：50</span>
+                        <input type="number" class="input-qty" value="52">
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <span class="text-green-500 font-bold text-lg">+2</span>
+                    <span class="text-gray-400 text-xs">盘盈</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="item-card">
+            <div class="flex gap-3">
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-box text-gray-400 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="font-semibold">AirPods Pro 2</div>
+                    <div class="text-gray-500 text-sm mt-1">条码：6909876543210</div>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-gray-400 text-sm">系统库存：30</span>
+                        <input type="number" class="input-qty" value="28">
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <span class="text-red-500 font-bold text-lg">-2</span>
+                    <span class="text-gray-400 text-xs">盘亏</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="item-card">
+            <div class="flex gap-3">
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-box text-gray-400 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="font-semibold">MagSafe 磁吸充电器</div>
+                    <div class="text-gray-500 text-sm mt-1">条码：6905555555555</div>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-gray-400 text-sm">系统库存：45</span>
+                        <input type="number" class="input-qty" value="45">
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <span class="text-gray-400 font-bold text-lg">0</span>
+                    <span class="text-gray-400 text-xs">正常</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Submit -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+        <button class="bg-blue-500 text-white rounded-xl py-4 text-lg font-semibold w-full" onclick="submitStocktaking()">
+            提交盘库结果
+        </button>
+    </div>
+
+    <!-- Scan Modal -->
+    <div id="scan-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl w-80 p-6 text-center">
+            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-barcode text-4xl text-blue-500"></i>
+            </div>
+            <div class="font-semibold text-lg mb-2">扫描条码</div>
+            <div class="text-gray-500 text-sm mb-4">请扫描商品条码或输入条码号</div>
+            <input type="text" placeholder="输入条码号" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-center mb-4 outline-none focus:border-blue-400">
+            <div class="flex gap-3">
+                <button onclick="hideScanModal()" class="flex-1 py-3 rounded-xl border border-gray-200 font-medium">取消</button>
+                <button onclick="hideScanModal(); addMockItem();" class="flex-1 py-3 rounded-xl bg-blue-500 text-white font-medium">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScanModal() {
+            document.getElementById('scan-modal').classList.remove('hidden');
+        }
+        function hideScanModal() {
+            document.getElementById('scan-modal').classList.add('hidden');
+        }
+        function submitStocktaking() {
+            alert('盘库结果已提交');
+        }
+        function addMockItem() {
+            alert('已添加商品到盘点列表');
+        }
+    </script>
+
+</body>
+</html>

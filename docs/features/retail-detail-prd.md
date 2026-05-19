@@ -849,6 +849,7 @@ API 调用序列：
 |------|------|------|------|
 | 开单入口 | `/members/list-phones` | POST | 手机号查找会员 |
 | 商品选购 | `/product/list` | GET | 商品列表（按分类/搜索）|
+| 商品选购 | `/product-price/list` | GET | 获取商品价格（零售价/批发价/工程价，根据 saleType 筛选）|
 | 订单确认 | `/coupons/self` | GET | 获取当前会员可用优惠券 |
 | 订单确认 | `/members/experience` | POST | 获取/计算会员积分抵扣（需传会员ID） |
 | 收款 | `/order/shop-sale/add` | POST | 创建零售单 |

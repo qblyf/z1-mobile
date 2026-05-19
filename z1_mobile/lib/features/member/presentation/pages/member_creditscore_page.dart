@@ -31,7 +31,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
     setState(() => _state = MemberCreditscoreLoading());
     try {
       final apiClient = getIt<ApiClient>();
-      final response = await apiClient.get('/members/creditscore', queryParameters: {'memberId': widget.memberId});
+      final response = await apiClient.get('/members/creditscore', queryParameters: {'userIdents': widget.memberId});
       if (response is Success && response.value != null) {
         final data = response.value as Map<String, dynamic>;
         _member = MemberModel.fromJson(data['member'] ?? {});

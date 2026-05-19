@@ -1,0 +1,127 @@
+0 verbose cli /usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.4.1
+2 info using node@v22.15.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/fan/.npmrc
+5 silly config load:file:/Users/fan/.npm-global/etc/npmrc
+6 verbose title npm exec bore-cli@latest pub 8001
+7 verbose argv "exec" "--yes" "--" "bore-cli@latest" "pub" "8001"
+8 verbose logfile logs-max:10 dir:/Users/fan/www/AI/phone/Flutter/z1-nextapp/.npm-cache/_logs/2026-05-16T12_55_13_414Z-
+9 verbose logfile /Users/fan/www/AI/phone/Flutter/z1-nextapp/.npm-cache/_logs/2026-05-16T12_55_13_414Z-debug-0.log
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+12 http fetch GET 200 https://registry.npmmirror.com/bore-cli 120ms (cache miss)
+13 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+14 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+15 silly idealTree buildDeps
+16 silly fetch manifest bore-cli@0.1.11
+17 silly packumentCache full:https://registry.npmmirror.com/bore-cli cache-miss
+18 http fetch GET 200 https://registry.npmmirror.com/bore-cli 73ms (cache miss)
+19 silly packumentCache full:https://registry.npmmirror.com/bore-cli set size:6457 disposed:false
+20 silly placeDep ROOT bore-cli@0.1.11 OK for:  want: 0.1.11
+21 silly fetch manifest tar@^7.5.6
+22 silly packumentCache full:https://registry.npmmirror.com/tar cache-miss
+23 http fetch GET 200 https://registry.npmmirror.com/tar 68ms (cache miss)
+24 silly packumentCache full:https://registry.npmmirror.com/tar set size:73048 disposed:false
+25 silly placeDep ROOT tar@7.5.15 OK for: bore-cli@0.1.11 want: ^7.5.6
+26 silly fetch manifest @isaacs/fs-minipass@^4.0.0
+27 silly packumentCache full:https://registry.npmmirror.com/@isaacs%2ffs-minipass cache-miss
+28 silly fetch manifest chownr@^3.0.0
+29 silly packumentCache full:https://registry.npmmirror.com/chownr cache-miss
+30 silly fetch manifest minipass@^7.1.2
+31 silly packumentCache full:https://registry.npmmirror.com/minipass cache-miss
+32 silly fetch manifest minizlib@^3.1.0
+33 silly packumentCache full:https://registry.npmmirror.com/minizlib cache-miss
+34 silly fetch manifest yallist@^5.0.0
+35 silly packumentCache full:https://registry.npmmirror.com/yallist cache-miss
+36 http fetch GET 200 https://registry.npmmirror.com/chownr 43ms (cache miss)
+37 silly packumentCache full:https://registry.npmmirror.com/chownr set size:4259 disposed:false
+38 http fetch GET 200 https://registry.npmmirror.com/@isaacs%2ffs-minipass 44ms (cache miss)
+39 silly packumentCache full:https://registry.npmmirror.com/@isaacs%2ffs-minipass set size:2989 disposed:false
+40 http fetch GET 200 https://registry.npmmirror.com/minizlib 45ms (cache miss)
+41 silly packumentCache full:https://registry.npmmirror.com/minizlib set size:9513 disposed:false
+42 http fetch GET 200 https://registry.npmmirror.com/yallist 45ms (cache miss)
+43 silly packumentCache full:https://registry.npmmirror.com/yallist set size:7662 disposed:false
+44 http fetch GET 200 https://registry.npmmirror.com/minipass 54ms (cache miss)
+45 silly packumentCache full:https://registry.npmmirror.com/minipass set size:57428 disposed:false
+46 silly placeDep ROOT @isaacs/fs-minipass@4.0.1 OK for: tar@7.5.15 want: ^4.0.0
+47 silly placeDep ROOT chownr@3.0.0 OK for: tar@7.5.15 want: ^3.0.0
+48 silly placeDep ROOT minipass@7.1.3 OK for: tar@7.5.15 want: ^7.1.2
+49 silly placeDep ROOT minizlib@3.1.0 OK for: tar@7.5.15 want: ^3.1.0
+50 silly placeDep ROOT yallist@5.0.0 OK for: tar@7.5.15 want: ^5.0.0
+51 silly fetch manifest minipass@^7.0.4
+52 silly packumentCache full:https://registry.npmmirror.com/minipass cache-hit
+53 silly reify moves {}
+54 silly audit bulk request {
+54 silly audit   'bore-cli': [ '0.1.11' ],
+54 silly audit   tar: [ '7.5.15' ],
+54 silly audit   '@isaacs/fs-minipass': [ '4.0.1' ],
+54 silly audit   chownr: [ '3.0.0' ],
+54 silly audit   minipass: [ '7.1.3' ],
+54 silly audit   minizlib: [ '3.1.0' ],
+54 silly audit   yallist: [ '5.0.0' ]
+54 silly audit }
+55 http cache yallist@https://registry.npmmirror.com/yallist/-/yallist-5.0.0.tgz 0ms (cache hit)
+56 http cache minizlib@https://registry.npmmirror.com/minizlib/-/minizlib-3.1.0.tgz 0ms (cache hit)
+57 http cache minipass@https://registry.npmmirror.com/minipass/-/minipass-7.1.3.tgz 0ms (cache hit)
+58 http cache @isaacs/fs-minipass@https://registry.npmmirror.com/@isaacs/fs-minipass/-/fs-minipass-4.0.1.tgz 0ms (cache hit)
+59 http cache bore-cli@https://registry.npmmirror.com/bore-cli/-/bore-cli-0.1.11.tgz 0ms (cache hit)
+60 http cache chownr@https://registry.npmmirror.com/chownr/-/chownr-3.0.0.tgz 0ms (cache hit)
+61 http cache tar@https://registry.npmmirror.com/tar/-/tar-7.5.15.tgz 0ms (cache hit)
+62 silly tarball no local data for yallist@https://registry.npmmirror.com/yallist/-/yallist-5.0.0.tgz. Extracting by manifest.
+63 silly tarball no local data for minizlib@https://registry.npmmirror.com/minizlib/-/minizlib-3.1.0.tgz. Extracting by manifest.
+64 silly tarball no local data for minipass@https://registry.npmmirror.com/minipass/-/minipass-7.1.3.tgz. Extracting by manifest.
+65 silly tarball no local data for @isaacs/fs-minipass@https://registry.npmmirror.com/@isaacs/fs-minipass/-/fs-minipass-4.0.1.tgz. Extracting by manifest.
+66 silly tarball no local data for bore-cli@https://registry.npmmirror.com/bore-cli/-/bore-cli-0.1.11.tgz. Extracting by manifest.
+67 silly tarball no local data for chownr@https://registry.npmmirror.com/chownr/-/chownr-3.0.0.tgz. Extracting by manifest.
+68 silly tarball no local data for tar@https://registry.npmmirror.com/tar/-/tar-7.5.15.tgz. Extracting by manifest.
+69 http fetch POST 404 https://registry.npmmirror.com/-/npm/v1/security/advisories/bulk 12ms
+70 verbose audit error HttpErrorGeneral: 404 Not Found - POST https://registry.npmmirror.com/-/npm/v1/security/advisories/bulk - [NOT_IMPLEMENTED] /-/npm/v1/security/* not implemented yet
+70 verbose audit error     at /usr/local/lib/node_modules/npm/node_modules/npm-registry-fetch/lib/check-response.js:103:15
+70 verbose audit error     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+70 verbose audit error     at async [getReport] (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/audit-report.js:294:19)
+70 verbose audit error     at async AuditReport.run (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/audit-report.js:106:19) {
+70 verbose audit error   headers: [Object: null prototype] {
+70 verbose audit error     server: [ 'Tengine' ],
+70 verbose audit error     date: [ 'Sat, 16 May 2026 12:55:18 GMT' ],
+70 verbose audit error     'content-type': [ 'application/json' ],
+70 verbose audit error     'transfer-encoding': [ 'chunked' ],
+70 verbose audit error     connection: [ 'keep-alive' ],
+70 verbose audit error     'strict-transport-security': [ 'max-age=5184000' ],
+70 verbose audit error     via: [ 'kunlun9.cn7968[,404666]' ],
+70 verbose audit error     'timing-allow-origin': [ '*' ],
+70 verbose audit error     eagleid: [ 'b7c9e99d17789361186215588e' ],
+70 verbose audit error     'x-fetch-attempts': [ '1' ]
+70 verbose audit error   },
+70 verbose audit error   statusCode: 404,
+70 verbose audit error   code: 'E404',
+70 verbose audit error   method: 'POST',
+70 verbose audit error   uri: 'https://registry.npmmirror.com/-/npm/v1/security/advisories/bulk',
+70 verbose audit error   body: {
+70 verbose audit error     error: '[NOT_IMPLEMENTED] /-/npm/v1/security/* not implemented yet'
+70 verbose audit error   },
+70 verbose audit error   pkgid: undefined
+70 verbose audit error }
+71 silly audit error [object Object]
+72 silly audit report null
+73 http fetch GET 200 https://cdn.npmmirror.com/packages/%40isaacs/fs-minipass/4.0.1/fs-minipass-4.0.1.tgz 229ms (cache miss)
+74 http fetch GET 200 https://cdn.npmmirror.com/packages/chownr/3.0.0/chownr-3.0.0.tgz 277ms (cache miss)
+75 http fetch GET 200 https://cdn.npmmirror.com/packages/yallist/5.0.0/yallist-5.0.0.tgz 322ms (cache miss)
+76 http fetch GET 200 https://cdn.npmmirror.com/packages/minizlib/3.1.0/minizlib-3.1.0.tgz 326ms (cache miss)
+77 http fetch GET 200 https://cdn.npmmirror.com/packages/minipass/7.1.3/minipass-7.1.3.tgz 370ms (cache miss)
+78 http fetch GET 200 https://cdn.npmmirror.com/packages/tar/7.5.15/tar-7.5.15.tgz 463ms (cache miss)
+79 http fetch GET 200 https://cdn.npmmirror.com/packages/bore-cli/0.1.11/bore-cli-0.1.11.tgz 14770ms (cache miss)
+80 verbose stack Error: process terminated
+80 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:304:39
+80 verbose stack     at process.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/signal-handling.js:53:5)
+80 verbose stack     at process.emit (node:events:518:28)
+81 error process terminated
+82 error signal SIGTERM
+83 silly unfinished npm timer reify 1778936113861
+84 verbose cwd /Users/fan/www/AI/phone/Flutter/z1-nextapp
+85 verbose os Darwin 24.6.0
+86 verbose node v22.15.0
+87 verbose npm  v11.4.1
+88 verbose exit 1
+89 verbose code 1
+90 error A complete log of this run can be found in: /Users/fan/www/AI/phone/Flutter/z1-nextapp/.npm-cache/_logs/2026-05-16T12_55_13_414Z-debug-0.log

@@ -128,20 +128,27 @@ Tab：TabBar 第 3 项（工作台）
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| status | string | 否 | 审批状态（`to-audit`/`rejected`/`audited`/`terminate`）|
+| status | string | 否 | 审批状态（`to-audit`/`rejected`/`audited`/`terminate`，逗号分隔多个）|
 | approvalTypes | string | 否 | 审批类型（逗号分隔，如 `discountLog,priceChange`）|
 | platforms | string | 否 | 平台类型（逗号分隔，如 `dingtalk,feishu`）|
-| createdBy | string | 否 | 创建人 ID |
+| createdBy | string | 否 | 创建人 ID（逗号分隔多个）|
+| instanceIDs | string | 否 | 审批实例 ID（逗号分隔，用于筛选特定审批）|
 | minCreatedAt | number | 否 | 创建时间范围起点（Unix 秒）|
 | maxCreatedAt | number | 否 | 创建时间范围终点（Unix 秒）|
-| page | number | 否 | 页码（默认 1）|
-| pageSize | number | 否 | 每页条数（默认 20）|
+| limit | number | 否 | 每页条数（默认 20）|
+| offset | number | 否 | 偏移量（默认 0）|
+| orderBy | string | 否 | 排序（如 `createdAt:DESC`）|
 
 **`/approval/count` 参数**：
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | status | string | 否 | 审批状态（传 `to-audit` 获取待审批数）|
+| approvalTypes | string | 否 | 审批类型（逗号分隔）|
+| platforms | string | 否 | 平台类型（逗号分隔）|
+| createdBy | string | 否 | 创建人 ID（逗号分隔多个）|
+| minCreatedAt | number | 否 | 创建时间范围起点（Unix 秒）|
+| maxCreatedAt | number | 否 | 创建时间范围终点（Unix 秒）|
 
 ### 2.5 异常/边界情况
 
@@ -193,13 +200,35 @@ Tab：无（独立页面）
 
 ### 3.3 接口清单
 
-> **注意**：当前 z1-deno 未发现审批详情接口 `/approval/:id`，待确认：
-> - 方案 A：前端用 `/approval/list?status=xxx&instanceID=xxx` 筛选详情
-> - 方案 B：后端新增 `/approval/detail/:id` 接口
+审批详情通过 `/approval/list` 接口查询，使用 `instanceIDs` 参数筛选。
 
-**待确认事项**：
-1. 审批详情接口是否存在？若不存在，需要后端补充
-2. 审批操作（通过/驳回）的接口路径？
+| 页面区块 | 接口 | 方法 | 说明 |
+|----------|------|------|------|
+| 审批详情 | `/approval/list` | GET | 通过 `instanceIDs` 参数获取单条审批详情 |
+
+**`/approval/list` 查询单条详情参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| instanceIDs | string | 是 | 审批实例 ID（如 `123456`）|
+
+### 3.4 审批操作接口
+
+审批操作通过各业务类型对应的接口实现，非统一审批中心接口：
+
+| 操作 | 接口路径 | 方法 | 说明 |
+|------|----------|------|------|
+| 折扣审批通过 | `/discount-log/audit` | POST | 折扣记录审批通过 |
+| 折扣审批拒绝 | `/discount-log/reject` | POST | 折扣记录审批拒绝 |
+| 采购订单提交审核 | `/purchase-order/unaudit-to-audit` | POST | 采购订单提交审核 |
+| 采购订单审核通过 | `/purchase-order/item/unaudit-to-audit` | POST | 采购订单明细审核 |
+| 采购订单审核拒绝 | `/purchase-order/item/unaudit-to-reject` | POST | 采购订单明细拒绝 |
+| 退货退款审批通过 | `/return-refund-application/audit` | POST | 退货退款审批通过 |
+| 退货退款审批拒绝 | `/return-refund-application/reject-audit` | POST | 退货退款审批拒绝 |
+| 价格调整审批通过 | `/price-adjustment/audit` | POST | 价格调整审批通过 |
+| 价格调整审批拒绝 | `/price-adjustment/reject-audit` | POST | 价格调整审批拒绝 |
+
+> 具体业务类型的审批接口不同，前端需根据 `approvalType` 调用对应接口。
 
 ---
 
@@ -215,7 +244,6 @@ Tab：无（独立页面）
 
 ## 五、待确认事项
 
-1. **审批详情接口**：`/approval/:id` 是否存在？需后端补充还是前端筛选？
-2. **审批操作接口**：通过/驳回的操作接口路径？
-3. **approvalData 字段**：JSON 内容结构是什么？各审批类型不同？
-4. **关联单据跳转**：点击关联订单号是否跳转订单详情？
+1. **approvalData 字段**：JSON 内容结构是什么？各审批类型不同？
+2. **关联单据跳转**：点击关联订单号是否跳转订单详情？
+3. **不同业务审批接口**：前端需根据 `approvalType` 调用对应业务审批接口，接口路径已在上文列出。

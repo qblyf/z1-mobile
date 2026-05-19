@@ -156,9 +156,10 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 采购列表 | `/purchase/list` | GET | 采购列表（支持 status 筛选）|
-| 采购详情 | `/purchase/:id` | GET | 采购单详情 |
-| 采购入库 | `/purchase/:id/inbound` | POST | 采购入库 |
+| 采购列表 | `/purchase/list` | GET | 采购列表（**筛选参数**：支持 `states[]` 状态筛选、**`creatorIDs`** 创建人筛选、排序 `orderBy`、分页 `offset`/`limit`）|
+| 采购详情 | `/purchase/detail` | GET | 采购单详情 [urlKey: /purchase/detail?id={id}, GET] |
+| 采购入库 | `/purchase/into-warehouse` | POST | 采购入库 [urlKey: /purchase/into-warehouse, POST, 参数：purchaseID, warehouseID, products[], remarks] **注意**：仅限 `state=1`（待入库）的采购单可入库 |
+| 采购新增 | `/purchase/add` | POST | 根据采购订单新增采购入库单 [urlKey: /purchase/add, POST, 参数：purchaseOrderID, warehouseID, products[], isChangeCostPrice] |
 
 ---
 

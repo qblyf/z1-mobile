@@ -1,0 +1,529 @@
+version: 1
+plan:
+  name: 'z1-mobile-phase1'
+  description: 'Z1 Flutter App 第一阶段实现 - 零售开单核心功能'
+  max_concurrency: 3
+  max_consecutive_failures: 2
+  max_cycles: 15
+
+tasks:
+  # ===== Task 1: Core API Layer =====
+  - id: core-api-layer
+    title: '核心 API 层'
+    prompt: |
+      在 /Users/fan/www/Ai/Phone/Flutter/z1-nextapp/z1_mobile/ 项目中实现核心 API 层。
+
+      ## 工作内容
+
+      1. 创建 `lib/core/api/api_client.dart`:
+         - 基于 Dio 的 HTTP 客户端
+         - 支持 Token 自动注入（从 flutter_secure_storage）
+         - 错误处理封装
+         - 参考 z1-mid/src/model/z1/order.ts 的 API 模式
+
+      2. 创建 `lib/core/api/api_interceptor.dart`:
+         - 请求拦截器：自动添加 Authorization header
+         - 响应拦截器：处理 401 自动刷新 Token
+         - 错误拦截器：统一错误格式
+
+      3. 创建 `lib/core/api/api_endpoints.dart`:
+         - 定义所有 API 端点常量
+         - 参考 z1-mid 的 API 路径
+
+      4. 创建 `lib/core/api/result.dart`:
+         - 统一返回结果类型
+         - Either<Failure, Success> 模式
+
+      5. 创建 Token 存储服务 `lib/core/services/token_service.dart`:
+         - flutter_secure_storage 存储
+         - Token 读取/写入/清除
+         - 自动刷新逻辑
+
+      ## API 端点（参考 z1-mid）
+
+      ```dart
+      // 认证
+      POST /auth/login           → 登录
+      POST /auth/refresh-token  → 刷新 Token
+
+      // 订单
+      POST /order/sale-shop-add        → 创建零售单
+      POST /order/shop-sale-list       → 查询零售单列表
+      GET  /order/shop-sale-count      → 查询零售单数量
+
+      // 会员
+      POST /members/search-by-phones   → 手机号查会员
+      GET  /members/:ident             → 会员详情
+      GET  /members/experience/:ident → 积分查询
+
+      // 商品
+      POST /product/search              → 商品搜索
+      GET  /product/list                → 商品列表
+
+      // 货品
+      POST /goods/serial-trace          → 序列号查询
+      ```
+
+      ## 代码规范
+
+      - 使用 json_serializable 生成 model
+      - 所有 API 调用返回 Result<T> 类型
+      - 错误使用 Either<Failure, T>
+      - 遵循 Flutter 风格指南
+
+      ## 验证标准
+
+      - 代码编译通过（flutter analyze）
+      - API 端点定义完整
+      - Token 管理逻辑正确
+      - 有单元测试覆盖核心逻辑
+
+      工作完成后报告：创建的文件列表、关键类型定义、验证结果。
+    assigned_to: coder
+    verified_by: verifier
+    verify_prompt: |
+      验证 core-api-layer 的实现：
+
+      1. 运行 `flutter analyze` 确认无编译错误
+      2. 检查 API 端点是否覆盖核心功能（订单/会员/商品）
+      3. 检查 Token 管理是否正确（存储/读取/刷新）
+      4. 检查 Result 类型是否符合 Either 模式
+      5. 检查是否有基础单元测试
+
+      如有问题，说明具体位置和修复建议。
+    timeout_ms: 1800000
+
+  # ===== Task 2: Auth Module =====
+  - id: auth-module
+    title: '认证模块'
+    prompt: |
+      在 /Users/fan/www/Ai/Phone/Flutter/z1-nextapp/z1_mobile/ 项目中实现认证模块。
+
+      ## 工作内容
+
+      1. 创建 `lib/features/auth/data/models/`:
+         - `user_model.dart` - 用户信息模型
+         - `login_request.dart` - 登录请求
+         - `login_response.dart` - 登录响应
+         - `token_model.dart` - Token 模型
+
+      2. 创建 `lib/features/auth/data/datasources/`:
+         - `auth_remote_datasource.dart` - 远程数据源
+         - `auth_local_datasource.dart` - 本地存储
+
+      3. 创建 `lib/features/auth/data/repositories/`:
+         - `auth_repository_impl.dart` - 仓库实现
+
+      4. 创建 `lib/features/auth/domain/`:
+         - `entities/user.dart` - 用户实体
+         - `repositories/auth_repository.dart` - 仓库接口
+         - `usecases/login_usecase.dart` - 登录用例
+         - `usecases/logout_usecase.dart` - 退出用例
+         - `usecases/check_auth_usecase.dart` - 检查登录状态
+
+      5. 创建 `lib/features/auth/presentation/bloc/`:
+         - `auth_bloc.dart` - AuthBloc
+         - `auth_event.dart` - 事件定义
+         - `auth_state.dart` - 状态定义
+
+      6. 创建 `lib/features/auth/presentation/pages/`:
+         - `login_page.dart` - 登录页面
+         - 参考 docs/prototypes/ 下的 UI 设计
+
+      7. 更新路由配置 `lib/core/router/app_router.dart`:
+         - 添加 /login 路由
+         - AuthGuard 路由守卫
+
+      ## 登录页面要求（参考 HTML 原型）
+
+      - 手机号 + 密码输入
+      - 记住我选项
+      - 登录按钮
+      - 错误提示
+      - Loading 状态
+
+      ## 代码规范
+
+      - 遵循 Clean Architecture 模式
+      - BLoC 状态管理
+      - 使用 json_serializable
+
+      工作完成后报告：创建的文件列表、BLoC 状态机设计、页面 UI 布局。
+    assigned_to: coder
+    verified_by: verifier
+    verify_prompt: |
+      验证 auth-module 的实现：
+
+      1. 运行 `flutter analyze` 确认无编译错误
+      2. 检查 Clean Architecture 分层是否正确（data/domain/presentation）
+      3. 检查 BLoC 是否完整（Event/State/Bloc）
+      4. 检查登录页面 UI 是否符合原型（手机号、密码、记住我）
+      5. 检查路由是否正确配置
+
+      如有问题，说明具体位置和修复建议。
+    timeout_ms: 1800000
+
+  # ===== Task 3: Home Module with TabBar =====
+  - id: home-module
+    title: '首页模块 + 底部导航'
+    prompt: |
+      在 /Users/fan/www/Ai/Phone/Flutter/z1-nextapp/z1_mobile/ 项目中实现首页模块和底部导航栏。
+
+      ## 工作内容
+
+      1. 创建 `lib/shared/widgets/bottom_nav_bar.dart`:
+         - 5 个 Tab：首页、会员、工作台、任务、我的
+         - 参考 HTML 原型 docs/prototypes/home/index.html
+
+      2. 创建 `lib/core/router/app_router.dart` 完整配置:
+         - ShellRoute 用于底部导航
+         - 5 个一级页面路由
+         - 零售开单子路由
+
+      3. 创建 `lib/features/home/presentation/pages/`:
+         - `home_page.dart` - 首页
+         - 包含：门店信息、快捷操作、今日数据、功能卡片、最近订单
+
+      4. 创建 `lib/features/workbench/presentation/pages/`:
+         - `workbench_page.dart` - 工作台
+         - 包含：待办审批、任务、快捷操作
+
+      5. 创建 `lib/features/profile/presentation/pages/`:
+         - `profile_page.dart` - 我的页面
+         - 包含：个人信息、收入构成、业绩排行、审批中心入口
+
+      ## 页面布局（参考 HTML 原型）
+
+      ### 首页 (home)
+      - 顶部：门店名称 + 通知按钮
+      - 欢迎语 + 快捷操作
+      - 今日销售额 / 订单数
+      - 6 个功能卡片（零售开单、订单列表等）
+      - 最近订单列表
+      - 底部 TabBar
+
+      ### 工作台 (workbench)
+      - 快捷操作入口
+      - 待办审批列表
+      - 今日任务列表
+      - 消息通知
+
+      ### 我的 (profile)
+      - 用户信息卡片
+      - 本月收入构成（基础薪资/销售提成/工分奖金/保险纳税）
+      - 业绩排行
+      - 审批中心入口
+      - 门店切换、设置、退出登录
+
+      ## 代码规范
+
+      - 使用 GoRouter 的 ShellRoute
+      - 页面组件使用 StatelessWidget 或 ConsumerWidget
+      - 参考 Flutter 风格指南
+
+      工作完成后报告：创建的文件列表、路由配置、页面布局说明。
+    assigned_to: coder
+    verified_by: verifier
+    verify_prompt: |
+      验证 home-module 的实现：
+
+      1. 运行 `flutter analyze` 确认无编译错误
+      2. 检查 TabBar 是否有 5 个入口
+      3. 检查路由是否正确配置 ShellRoute
+      4. 检查首页是否包含：门店信息、功能卡片、最近订单
+      5. 检查工作台是否包含：待办审批、任务列表
+      6. 检查我的页面是否包含：收入构成、业绩排行
+
+      如有问题，说明具体位置和修复建议。
+    timeout_ms: 1800000
+
+  # ===== Task 4: Retail Feature (Part 1) =====
+  - id: retail-part1
+    title: '零售开单模块（上）'
+    prompt: |
+      在 /Users/fan/www/Ai/Phone/Flutter/z1-nextapp/z1_mobile/ 项目中实现零售开单模块（核心流程）。
+
+      ## 工作内容
+
+      1. 创建 `lib/features/retail/data/models/`:
+         - `retail_order_model.dart` - 零售订单模型
+         - `cart_item_model.dart` - 购物车项模型
+         - `product_model.dart` - 商品模型
+         - `member_model.dart` - 会员模型
+         - `coupon_model.dart` - 优惠券模型
+
+      2. 创建 `lib/features/retail/data/datasources/`:
+         - `retail_remote_datasource.dart` - 远程数据源
+         - 调用 Core API 层
+
+      3. 创建 `lib/features/retail/data/repositories/`:
+         - `retail_repository_impl.dart` - 仓库实现
+
+      4. 创建 `lib/features/retail/domain/`:
+         - `entities/retail_order.dart`
+         - `entities/cart_item.dart`
+         - `repositories/retail_repository.dart`
+         - `usecases/create_retail_order_usecase.dart`
+         - `usecases/get_products_usecase.dart`
+         - `usecases/get_member_usecase.dart`
+
+      5. 创建 `lib/features/retail/presentation/bloc/`:
+         - `retail_bloc.dart`
+         - `retail_event.dart`
+         - `retail_state.dart`
+
+      6. 创建 `lib/features/retail/presentation/pages/`:
+         - `retail_entry_page.dart` - 开单入口
+         - 参考 docs/prototypes/retail/index.html
+
+      7. 创建 `lib/features/retail/presentation/widgets/`:
+         - `sales_type_selector.dart` - 销售类型选择
+         - `member_bind_section.dart` - 会员绑定区
+
+      ## 开单入口页面要求
+
+      - 销售类型选择（零售/批发/工程）
+      - 会员绑定区（企微扫码/手机号查找）
+      - 散客直接开单
+      - 开始开单按钮
+
+      ## 数据模型（参考 z1-mid）
+
+      ```dart
+      // 零售单参数
+      class AddShopSaleParams {
+        final List<ProductInfo> productInfos;
+        final int? warehouseID;
+        final int customerIdent;
+        final int sellerIdent;
+        final int decreaseCoins;
+        final List<AddOrderPayMode> payMode;
+        final List<AddOrderCoupon>? coupons;
+        final String? remarks;
+      }
+      ```
+
+      工作完成后报告：创建的文件列表、数据模型定义、BLoC 状态设计。
+    assigned_to: coder
+    verified_by: verifier
+    verify_prompt: |
+      验证 retail-part1 的实现：
+
+      1. 运行 `flutter analyze` 确认无编译错误
+      2. 检查数据模型是否包含核心字段（productInfos, customerIdent, payMode 等）
+      3. 检查 BLoC 是否覆盖完整流程
+      4. 检查开单入口页面 UI 是否符合原型
+
+      如有问题，说明具体位置和修复建议。
+    timeout_ms: 1800000
+
+  # ===== Task 5: Retail Feature (Part 2) =====
+  - id: retail-part2
+    title: '零售开单模块（下）'
+    prompt: |
+      在 /Users/fan/www/Ai/Phone/Flutter/z1-nextapp/z1_mobile/ 项目中实现零售开单模块（商品选购到收款）。
+
+      ## 工作内容
+
+      1. 创建 `lib/features/retail/presentation/pages/`:
+         - `product_list_page.dart` - 商品选购页
+         - `order_confirm_page.dart` - 订单确认页
+         - `payment_page.dart` - 收款页
+
+      2. 创建 `lib/features/retail/presentation/widgets/`:
+         - `product_grid.dart` - 商品网格
+         - `category_sidebar.dart` - 分类侧边栏
+         - `cart_float_bar.dart` - 购物车浮动栏
+         - `cart_drawer.dart` - 购物车抽屉
+         - `order_summary.dart` - 订单汇总
+         - `payment_type_selector.dart` - 支付方式选择
+         - `scanner_button.dart` - 扫码按钮
+
+      3. 创建 `lib/shared/services/scanner_service.dart`:
+         - 封装 mobile_scanner
+         - 扫码回调处理
+
+      4. 更新 RetailBloc:
+         - 添加商品相关事件/状态
+         - 添加购物车管理逻辑
+         - 添加收款逻辑
+
+      ## 页面要求
+
+      ### 商品选购页 (product-list)
+      - 顶部：搜索框 + 扫码按钮
+      - 左侧：分类（黄金/钻石/银饰等）
+      - 右侧：商品网格（图片/名称/价格/库存）
+      - 底部：购物车浮动栏（数量/金额/去结算）
+
+      ### 订单确认页 (order-confirm)
+      - 商品明细列表
+      - 会员信息（积分抵扣）
+      - 优惠合计
+      - 应收金额
+
+      ### 收款页 (payment)
+      - 应收金额显示
+      - 支付方式选择（现金/微信/支付宝/其他）
+      - 找零计算
+      - 确认收款按钮
+
+      ## UI 参考
+
+      参考 docs/prototypes/retail/ 下的 HTML 原型。
+
+      工作完成后报告：创建的文件列表、页面路由、UI 组件说明。
+    assigned_to: coder
+    depends_on: [retail-part1]
+    verified_by: verifier
+    verify_prompt: |
+      验证 retail-part2 的实现：
+
+      1. 运行 `flutter analyze` 确认无编译错误
+      2. 检查商品选购页是否包含：分类侧边栏、商品网格、购物车浮动栏
+      3. 检查订单确认页是否包含：商品明细、优惠合计
+      4. 检查收款页是否包含：支付方式、找零计算
+      5. 检查扫码服务是否正确封装
+
+      如有问题，说明具体位置和修复建议。
+    timeout_ms: 1800000
+
+  # ===== Task 6: Order Feature =====
+  - id: order-feature
+    title: '订单模块'
+    prompt: |
+      在 /Users/fan/www/Ai/Phone/Flutter/z1-nextapp/z1_mobile/ 项目中实现订单模块。
+
+      ## 工作内容
+
+      1. 创建 `lib/features/order/data/models/`:
+         - `order_model.dart` - 订单模型
+         - `order_list_params.dart` - 列表查询参数
+
+      2. 创建 `lib/features/order/data/datasources/`:
+         - `order_remote_datasource.dart`
+
+      3. 创建 `lib/features/order/data/repositories/`:
+         - `order_repository_impl.dart`
+
+      4. 创建 `lib/features/order/domain/`:
+         - `entities/order.dart`
+         - `repositories/order_repository.dart`
+         - `usecases/get_order_list_usecase.dart`
+         - `usecases/get_order_detail_usecase.dart`
+
+      5. 创建 `lib/features/order/presentation/bloc/`:
+         - `order_bloc.dart`
+         - `order_event.dart`
+         - `order_state.dart`
+
+      6. 创建 `lib/features/order/presentation/pages/`:
+         - `order_list_page.dart` - 订单列表
+         - `order_detail_page.dart` - 订单详情
+
+      7. 创建 `lib/features/order/presentation/widgets/`:
+         - `order_list_tile.dart` - 订单列表项
+         - `order_product_item.dart` - 订单商品项
+         - `order_status_badge.dart` - 订单状态标签
+
+      ## 页面要求
+
+      ### 订单列表页 (order-list)
+      - 筛选条件：今日/本周/本月
+      - 订单列表（订单号/时间/金额/状态）
+      - 下拉刷新、上拉加载
+      - 点击进入详情
+
+      ### 订单详情页 (order-detail)
+      - 订单信息（订单号/时间/客户/状态）
+      - 商品明细列表
+      - 支付信息
+      - 操作按钮（打印小票/申请退款）
+
+      ## UI 参考
+
+      参考 docs/prototypes/retail/order-list.html 和 order-detail.html。
+
+      工作完成后报告：创建的文件列表、订单状态定义、页面布局。
+    assigned_to: coder
+    verified_by: verifier
+    verify_prompt: |
+      验证 order-feature 的实现：
+
+      1. 运行 `flutter analyze` 确认无编译错误
+      2. 检查订单列表页是否包含：筛选条件、列表、下拉刷新
+      3. 检查订单详情页是否包含：订单信息、商品明细、支付信息、操作按钮
+      4. 检查订单模型是否包含核心字段
+
+      如有问题，说明具体位置和修复建议。
+    timeout_ms: 1800000
+
+  # ===== Task 7: Integration & Summary =====
+  - id: integration-summary
+    title: '集成测试 + 文档更新'
+    prompt: |
+      在 /Users/fan/www/Ai/Phone/Flutter/z1-nextapp/z1_mobile/ 项目中完成集成测试和文档更新。
+
+      ## 工作内容
+
+      1. 更新 `lib/core/router/app_router.dart`:
+         - 确保所有路由正确配置
+         - 添加页面过渡动画
+         - 测试路由跳转
+
+      2. 更新 `lib/injection.dart`:
+         - 确保所有依赖正确注册
+         - 测试依赖注入
+
+      3. 创建 `lib/main.dart` 完整实现:
+         - 初始化配置
+         - 全局错误处理
+         - App 启动
+
+      4. 更新 `docs/phase1-implementation.md`:
+         - 添加实际的类名和方法名
+         - 更新状态设计
+         - 记录实现过程中的关键决策
+
+      5. 运行完整测试:
+         - `flutter analyze`
+         - `flutter test`
+         - 确保无编译错误
+
+      6. 生成实现报告:
+         - 列出所有创建的文件
+         - 记录 API 端点映射
+         - 记录 BLoC 状态机
+         - 记录页面路由
+
+      ## 验证标准
+
+      - 所有代码编译通过
+      - 路由配置正确
+      - 依赖注入正常
+      - 文档完整更新
+
+      工作完成后报告：文件列表、实现摘要、测试结果。
+    assigned_to: coder
+    depends_on: [core-api-layer, auth-module, home-module, retail-part1, retail-part2, order-feature]
+    verified_by: verifier
+    verify_prompt: |
+      验证 integration-summary 的完成度：
+
+      1. 运行 `flutter analyze` 确认无编译错误
+      2. 检查 lib/main.dart 是否正确初始化
+      3. 检查 lib/injection.dart 依赖是否完整
+      4. 检查路由配置是否覆盖所有页面
+      5. 检查文档是否更新
+
+      如有问题，说明具体位置和修复建议。
+    timeout_ms: 1800000
+
+# 任务依赖关系
+# core-api-layer: 无依赖
+# auth-module: 无依赖（但依赖 core-api-layer 的 Token 服务）
+# home-module: 无依赖
+# retail-part1: 无依赖
+# retail-part2: 依赖 retail-part1
+# order-feature: 无依赖
+# integration-summary: 依赖所有其他任务

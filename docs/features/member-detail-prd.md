@@ -601,12 +601,14 @@ API 调用序列：
 |------|------|------|------|
 | 会员首页 | `/members/list` | GET | 会员列表（keyword 搜索）|
 | 会员首页 | `/members/recent` | GET | 最近访问会员 |
-| 会员详情 | `/members/specified` | GET | 会员详情（含积分）|
+| 会员首页 | `/members/list` | GET | 会员列表（keyword 搜索）|
+| 会员详情 | `/members/specified` | GET | 会员详情（含积分，参数：**userIdents** 而非 memberId）|
 | 会员详情 | `/order/list` | GET | 会员消费记录（按 memberId 筛选）|
 | 新增会员 | `/members/add` | POST | 新增会员 |
-| 新增会员 | `/members/check-phone` | POST | 手机号唯一性校验 |
+| 新增会员 | `/members/check-phone` | POST | 手机号唯一性校验 [缺失，后端未实现] |
 | 积分查询 | `/members/self` | GET | 获取当前会员积分（experience 字段）|
-| 积分调整 | `/members/experience` | POST | 调整会员积分 |
+| 积分调整 | `/members/experience` | POST | 调整会员积分 [urlKey: /members/experience, POST, 参数：memberId, direction, amount, reason, remark] |
+| 积分明细 | `/members/experience-log` | — | [缺失，后端未实现] |
 
 ---
 

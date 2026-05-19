@@ -41,7 +41,7 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
     return _apiClient.get<List<MemberOrderModel>>(
       ApiEndpoints.shopSaleList,
       queryParameters: {
-        'memberId': memberId.toString(),
+        'userIdents': memberId.toString(),
         'page': page.toString(),
         'pageSize': pageSize.toString(),
       },

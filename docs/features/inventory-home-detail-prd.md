@@ -224,10 +224,12 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 库存管理首页 | `/stock-taking/list` | GET | 盘库列表（获取待盘数量）|
-| 库存管理首页 | `/transfer/list` | GET | 调拨列表（获取待发货数量）|
-| 库存管理首页 | `/purchase/list` | GET | 采购列表（获取待入库数量）|
-| 库存管理首页 | `/warehouse/list-base` | GET | 仓库列表（确认当前仓库）|
+| 库存管理首页 | `/stock-taking/list` | GET | 盘库列表（获取待盘数量，**支持分页**：参数 `limit`/`offset`）|
+| 库存管理首页 | `/transfer/list` | GET | 调拨列表（获取待发货数量，参数：status, limit, offset）|
+| 库存管理首页 | `/purchase/list` | GET | 采购列表（获取待入库数量，参数：states[], orderBy, offset, limit）|
+| 库存管理首页 | `/warehouse/list-base` | GET | 仓库列表（确认当前仓库，**过滤条件**：可通过 `state=1` 过滤禁用仓库，仅返回启用状态的仓库）|
+| 库存概览 | `/inventory/summary` | — | [缺失，后端未实现] |
+| 最近操作 | `/inventory/recent` | — | [缺失，后端未实现] |
 
 ---
 

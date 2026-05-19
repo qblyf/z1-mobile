@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>会员中心 - Z1 全网连锁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #F2F2F7; margin: 0; }
+        .status-bar { height: 54px; padding: 14px 24px 0; display: flex; justify-content: space-between; align-items: center; color: #000; font-size: 15px; font-weight: 600; }
+        .nav-bar { height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 0.5px solid #E5E5EA; }
+        .search-bar { background: white; margin: 12px 16px; padding: 12px 16px; border-radius: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .member-card { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; }
+        .member-card:active { transform: scale(0.98); }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex gap-1 items-center"><i class="fas fa-signal text-xs"></i><i class="fas fa-wifi text-xs"></i><i class="fas fa-battery-full text-xs"></i></div>
+    </div>
+
+    <div class="nav-bar">
+        <button onclick="history.back()" class="text-blue-500"><i class="fas fa-chevron-left text-lg"></i></button>
+        <span class="font-semibold text-lg">会员中心</span>
+        <button class="text-blue-500"><i class="fas fa-user-plus text-lg"></i></button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <i class="fas fa-search text-gray-400"></i>
+        <input type="text" placeholder="搜索会员手机号/姓名" class="flex-1 outline-none text-base">
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium">搜索</button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="flex gap-3 px-4 mb-4">
+        <div class="flex-1 bg-white rounded-xl p-4 text-center shadow-sm">
+            <div class="text-2xl font-bold text-blue-500">156</div>
+            <div class="text-gray-500 text-sm mt-1">今日新会员</div>
+        </div>
+        <div class="flex-1 bg-white rounded-xl p-4 text-center shadow-sm">
+            <div class="text-2xl font-bold text-orange-500">2,856</div>
+            <div class="text-gray-500 text-sm mt-1">总会员数</div>
+        </div>
+    </div>
+
+    <!-- Recent Members -->
+    <div class="text-gray-500 text-sm px-4 mb-2 flex justify-between items-center">
+        <span>最近访问</span>
+        <span class="text-blue-500">查看全部</span>
+    </div>
+
+    <div class="pb-24">
+
+        <div class="member-card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">张</div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold">张三</span>
+                        <span class="badge bg-purple-100 text-purple-700">VIP</span>
+                    </div>
+                    <div class="text-gray-500 text-sm mt-1">138****8888</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-orange-500">8,520</div>
+                    <div class="text-gray-500 text-xs">积分</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="member-card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">李</div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold">李四</span>
+                        <span class="badge bg-gray-100 text-gray-600">普通</span>
+                    </div>
+                    <div class="text-gray-500 text-sm mt-1">139****6666</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-orange-500">3,200</div>
+                    <div class="text-gray-500 text-xs">积分</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="member-card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-lg">王</div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold">王五</span>
+                        <span class="badge bg-blue-100 text-blue-700">银卡</span>
+                    </div>
+                    <div class="text-gray-500 text-sm mt-1">137****9999</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-orange-500">12,880</div>
+                    <div class="text-gray-500 text-xs">积分</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center py-4">
+            <button class="text-blue-500 font-medium">加载更多</button>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 flex justify-around py-3" style="padding-bottom: env(safe-area-inset-bottom, 16px);">
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='home.html'">
+            <i class="fas fa-home text-xl mb-1"></i><span class="text-xs">首页</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='order-list.html'">
+            <i class="fas fa-file-alt text-xl mb-1"></i><span class="text-xs">订单</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='stocktaking.html'">
+            <i class="fas fa-box text-xl mb-1"></i><span class="text-xs">库存</span>
+        </button>
+        <button class="flex flex-col items-center text-blue-500">
+            <i class="fas fa-users text-xl mb-1"></i><span class="text-xs">会员</span>
+        </button>
+    </div>
+
+</body>
+</html>

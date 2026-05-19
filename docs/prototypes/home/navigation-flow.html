@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Z1 全网连锁 · 页面跳转逻辑图</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+    .page { 
+      background: white; 
+      border-radius: 12px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 12px 16px;
+      min-width: 120px;
+      text-align: center;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .page:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .page-title { font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+    .page-route { font-size: 10px; color: #94a3b8; }
+    .page-badge { background: #ef4444; color: white; border-radius: 6px; font-size: 9px; padding: 1px 4px; margin-left: 4px; }
+    .arrow { color: #94a3b8; font-size: 20px; }
+    .tab-block {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .section-title {
+      background: #1e40af;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .flow-line {
+      border-left: 2px dashed #cbd5e1;
+      margin-left: 20px;
+      padding-left: 20px;
+    }
+    .sub-flow {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+    .sub-title {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .inline-block {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+  <!-- 标题 -->
+  <div class="text-center mb-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Z1 全网连锁 · 页面跳转逻辑图</h1>
+    <p class="text-sm text-gray-500">v1.0 · 基于最新 TabBar 设计（首页/会员/工作台/任务/我的）</p>
+  </div>
+
+  <!-- 底部导航栏 -->
+  <div class="mb-8">
+    <div class="section-title">🏠 底部导航栏（TabBar）</div>
+    <div class="flex justify-center gap-3 flex-wrap">
+      <div class="tab-block">🏠 首页<br><span class="text-xs font-normal opacity-80">/home</span></div>
+      <div class="text-gray-400 self-center">→</div>
+      <div class="tab-block">👥 会员<br><span class="text-xs font-normal opacity-80">/member/home</span></div>
+      <div class="text-gray-400 self-center">→</div>
+      <div class="tab-block">💼 工作台<br><span class="text-xs font-normal opacity-80">/workbench</span></div>
+      <div class="text-gray-400 self-center">→</div>
+      <div class="tab-block">📋 任务<br><span class="text-xs font-normal opacity-80">/task/home</span></div>
+      <div class="text-gray-400 self-center">→</div>
+      <div class="tab-block">👤 我的<br><span class="text-xs font-normal opacity-80">/profile</span></div>
+    </div>
+  </div>
+
+  <!-- 首页 Tab 流程 -->
+  <div class="mb-6">
+    <div class="section-title">🧭 Tab 1：首页 → 功能入口</div>
+    <div class="flex flex-col items-center gap-4">
+      
+      <div class="page">
+        <div class="page-title">🏠 首页</div>
+        <div class="page-route">/home</div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="page" style="border: 2px solid #fb923c;">
+          <div class="page-title">🛒 零售开单</div>
+          <div class="page-route">/order/retail/entry</div>
+        </div>
+        <div class="page" style="border: 2px solid #3b82f6;">
+          <div class="page-title">📋 订单列表</div>
+          <div class="page-route">/order/sales-list</div>
+        </div>
+        <div class="page" style="border: 2px solid #22c55e;">
+          <div class="page-title">📦 库存管理</div>
+          <div class="page-route">/inventory/home</div>
+        </div>
+        <div class="page" style="border: 2px solid #a855f7;">
+          <div class="page-title">👥 会员中心</div>
+          <div class="page-route">/member/home</div>
+        </div>
+        <div class="page" style="border: 2px solid #f59e0b;">
+          <div class="page-title">📅 行事历</div>
+          <div class="page-route">/task/calendar</div>
+        </div>
+        <div class="page" style="border: 2px solid #64748b;">
+          <div class="page-title">✅ 审批中心<span class="page-badge">2</span></div>
+          <div class="page-route">/approval/center</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 零售开单子流程 -->
+  <div class="mb-6">
+    <div class="section-title">🛒 零售开单全流程</div>
+    <div class="flex flex-col items-center gap-3 bg-blue-50 rounded-2xl p-6">
+      
+      <div class="flex flex-wrap justify-center gap-3">
+        <div class="page">
+          <div class="page-title">开单入口</div>
+          <div class="page-route">/order/retail/entry</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">商品选购</div>
+          <div class="page-route">/order/retail/product-list</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">购物车</div>
+          <div class="page-route">购物车弹窗</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">订单确认</div>
+          <div class="page-route">/order/retail/confirm</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page" style="background: #fef3c7;">
+          <div class="page-title">💰 收款</div>
+          <div class="page-route">/order/retail/payment</div>
+        </div>
+      </div>
+
+      <div class="text-sm text-gray-500 mt-2">↓ 完成后</div>
+
+      <div class="inline-flex gap-3">
+        <div class="page">
+          <div class="page-title">订单详情</div>
+          <div class="page-route">/order/:orderNumber</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">打印小票</div>
+          <div class="page-route">打印弹窗</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 会员中心流程 -->
+  <div class="mb-6">
+    <div class="section-title">👥 会员 Tab 流程</div>
+    <div class="flex flex-col items-center gap-3 bg-purple-50 rounded-2xl p-6">
+      
+      <div class="page">
+        <div class="page-title">👥 会员首页</div>
+        <div class="page-route">/member/home</div>
+      </div>
+
+      <div class="arrow">↓ 搜索/选择会员</div>
+
+      <div class="inline-flex gap-4 flex-wrap justify-center">
+        <div class="page">
+          <div class="page-title">会员详情</div>
+          <div class="page-route">/member/:memberId</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">积分查询</div>
+          <div class="page-route">/member/creditscore</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">积分调整</div>
+          <div class="page-route">/member/creditscore/edit</div>
+        </div>
+      </div>
+
+      <div class="mt-2">或从会员详情页 → 为该会员开单 → 跳转零售开单流程</div>
+
+    </div>
+  </div>
+
+  <!-- 工作台流程 -->
+  <div class="mb-6">
+    <div class="section-title">💼 工作台 Tab 流程</div>
+    <div class="flex flex-col items-center gap-4">
+      
+      <div class="page">
+        <div class="page-title">💼 工作台</div>
+        <div class="page-route">/workbench</div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="sub-flow text-center">
+          <div class="sub-title">🔔 待办审批</div>
+          <div class="page" style="border: 2px solid #ef4444;">
+            <div class="page-title">审批中心<span class="page-badge">2</span></div>
+            <div class="page-route">/approval/center</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">审批详情</div>
+            <div class="page-route">/approval/:id</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="flex gap-2 justify-center">
+            <div class="page" style="background: #dcfce7;">
+              <div class="page-title text-green-600">✓ 同意</div>
+            </div>
+            <div class="page" style="background: #fef2f2;">
+              <div class="page-title text-red-600">✗ 拒绝</div>
+            </div>
+          </div>
+        </div>
+        <div class="sub-flow text-center">
+          <div class="sub-title">📋 待办任务</div>
+          <div class="page" style="border: 2px solid #f59e0b;">
+            <div class="page-title">任务列表</div>
+            <div class="page-route">/task/home</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">任务详情</div>
+            <div class="page-route">/task/:id</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">完成任务/编辑</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-4 mt-2">
+        <div class="page">
+          <div class="page-title">📢 消息通知</div>
+          <div class="page-route">/notification</div>
+        </div>
+        <div class="page">
+          <div class="page-title">🔍 序列号查询</div>
+          <div class="page-route">/inventory/serial-search</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 任务 Tab 流程 -->
+  <div class="mb-6">
+    <div class="section-title">📋 任务 Tab 流程</div>
+    <div class="flex flex-col items-center gap-3 bg-yellow-50 rounded-2xl p-6">
+      
+      <div class="page">
+        <div class="page-title">📋 任务首页</div>
+        <div class="page-route">/task/home</div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="flex flex-wrap justify-center gap-3">
+        <div class="page">
+          <div class="page-title">📅 行事历</div>
+          <div class="page-route">/task/calendar</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">新建任务</div>
+          <div class="page-route">/task/calendar/new</div>
+        </div>
+        <div class="arrow self-center">→</div>
+        <div class="page">
+          <div class="page-title">任务详情</div>
+          <div class="page-route">/task/calendar/:id</div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-2">
+        <div class="page">
+          <div class="page-title">📋 任务管理</div>
+          <div class="page-route">/task/management</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 我的 Tab 流程 -->
+  <div class="mb-6">
+    <div class="section-title">👤 我的 Tab 流程</div>
+    <div class="flex flex-col items-center gap-3 bg-gray-50 rounded-2xl p-6">
+      
+      <div class="page">
+        <div class="page-title">👤 我的</div>
+        <div class="page-route">/profile</div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="page">
+          <div class="page-title">👤 个人信息</div>
+          <div class="page-route">/profile/info</div>
+        </div>
+        <div class="page">
+          <div class="page-title">🏪 门店切换</div>
+          <div class="page-route">/profile/store</div>
+        </div>
+        <div class="page">
+          <div class="page-title">⚙️ 设置</div>
+          <div class="page-route">/profile/settings</div>
+        </div>
+        <div class="page" style="background: #fef2f2; border: 2px solid #ef4444;">
+          <div class="page-title text-red-600">🚪 退出登录</div>
+          <div class="page-route">→ /login</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 库存管理子流程 -->
+  <div class="mb-6">
+    <div class="section-title">📦 库存管理（从首页/工作台进入）</div>
+    <div class="flex flex-col items-center gap-4">
+      
+      <div class="page">
+        <div class="page-title">📦 库存首页</div>
+        <div class="page-route">/inventory/home</div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="sub-flow">
+          <div class="sub-title">🟢 盘库</div>
+          <div class="page">
+            <div class="page-title">盘库列表</div>
+            <div class="page-route">/inventory/stocktaking</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">新建盘库</div>
+            <div class="page-route">/stocktaking/add</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">盘库详情</div>
+            <div class="page-route">/stocktaking/:id</div>
+          </div>
+        </div>
+        <div class="sub-flow">
+          <div class="sub-title">🔵 调拨</div>
+          <div class="page">
+            <div class="page-title">调拨列表</div>
+            <div class="page-route">/inventory/transfer</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">新建调拨</div>
+            <div class="page-route">/transfer/add</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">调拨详情</div>
+            <div class="page-route">/transfer/:id</div>
+          </div>
+        </div>
+        <div class="sub-flow">
+          <div class="sub-title">🟡 采购</div>
+          <div class="page">
+            <div class="page-title">采购列表</div>
+            <div class="page-route">/inventory/purchase-list</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">采购入库</div>
+            <div class="page-route">/purchase-inbound/:id</div>
+          </div>
+        </div>
+        <div class="sub-flow">
+          <div class="sub-title">🔍 查询</div>
+          <div class="page">
+            <div class="page-title">序列号查询</div>
+            <div class="page-route">/serial-search</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="page">
+            <div class="page-title">库存查询</div>
+            <div class="page-route">/stock-query</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 页面状态说明 -->
+  <div class="mt-8 bg-slate-100 rounded-xl p-6">
+    <div class="font-semibold text-gray-700 mb-3">📝 图例说明</div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-orange-400"></div>
+        <span>零售/收款（核心流程）</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-red-400"></div>
+        <span>待处理/审批</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-blue-400"></div>
+        <span>订单相关</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-green-400"></div>
+        <span>库存相关</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-purple-400"></div>
+        <span>会员相关</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-yellow-400"></div>
+        <span>任务/行事历</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-slate-400"></div>
+        <span>个人/设置</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">2</span>
+        <span>红点数字 = 待处理数量</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-6 text-sm text-gray-400">
+    Z1 全网连锁系统 · 移动端 App · 页面跳转逻辑图 v1.0
+  </div>
+
+</body>
+</html>

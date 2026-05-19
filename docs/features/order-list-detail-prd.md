@@ -260,10 +260,10 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 订单列表 | `/order/shop-sale-list` | GET | 订单列表（支持日期筛选）|
-| 订单列表 | `/order/shop-sale-count` | GET | 订单数量统计 |
-| 订单详情 | `/order/shop-sale-info/:orderNumber` | GET | 订单详情 |
-| 订单详情 | `/order-product/list?orderID=:orderId` | GET | 订单商品列表 |
+| 订单列表 | `/order/shop-sale-list` | POST | 订单列表（支持日期筛选，body 参数：dateRange, memberId, status, offset, limit）|
+| 订单列表 | `/order/shop-sale-count` | GET | 订单数量统计（参数：dateRange, memberId, status）|
+| 订单详情 | `/order/shop-sale-info/:orderNumber` | GET | 订单详情 [urlKey: /order/shop-sale-info/{orderNumber}, GET] **⚠️ 测试不通过**：该接口返回 404，需查找替代接口 |
+| 订单详情 | `/order-product/list` | GET | 订单商品列表（参数：orderID）|
 
 ---
 

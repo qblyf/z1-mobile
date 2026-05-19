@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
+import '../../data/datasources/home_remote_datasource.dart';
 import '../../data/models/order_model.dart';
 import '../bloc/home_bloc.dart';
 
@@ -13,15 +14,17 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<HomeBloc>()..add(const HomeLoadRequested()),
-      child: const _HomePageContent(),
+      create: (_) {
+        final bloc = HomeBloc(dataSource: HomeRemoteDataSourceImpl(apiClient: getIt()));
+        bloc.add(const HomeLoadRequested());
+        return bloc;
+      },
+      child: _HomePageContent(),
     );
   }
 }
 
 class _HomePageContent extends StatelessWidget {
-  const _HomePageContent();
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeBloc, HomeState>(
@@ -50,20 +53,25 @@ class _HomePageContent extends StatelessWidget {
 
     if (state is HomeError) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(CupertinoIcons.exclamationmark_triangle, size: 48, color: CupertinoColors.systemGrey),
-            const SizedBox(height: 16),
-            Text(state.message, style: const TextStyle(color: CupertinoColors.secondaryLabel)),
-            const SizedBox(height: 16),
-            Builder(
-              builder: (ctx) => CupertinoButton(
-                child: const Text('重试'),
-                onPressed: () => ctx.read<HomeBloc>().add(const HomeLoadRequested()),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(CupertinoIcons.exclamationmark_triangle, size: 48, color: CupertinoColors.systemGrey),
+              const SizedBox(height: 16),
+              Text(
+                '加载失败: ${state.message}',
+                style: const TextStyle(color: CupertinoColors.secondaryLabel),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              CupertinoButton(
+                child: const Text('重试'),
+                onPressed: () => context.read<HomeBloc>().add(const HomeLoadRequested()),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -72,7 +80,8 @@ class _HomePageContent extends StatelessWidget {
       return _buildLoadedContent(context, state);
     }
 
-    return const SizedBox.shrink();
+    // Initial or other states - show loading
+    return const Center(child: CupertinoActivityIndicator());
   }
 
   Widget _buildLoadedContent(BuildContext context, HomeLoaded state) {

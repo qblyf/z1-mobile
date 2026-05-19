@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>订单列表 - Z1 全网连锁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #F2F2F7; margin: 0; }
+        .status-bar { height: 54px; padding: 14px 24px 0; display: flex; justify-content: space-between; align-items: center; color: #000; font-size: 15px; font-weight: 600; }
+        .nav-bar { height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 0.5px solid #E5E5EA; }
+        .tab-btn { padding: 8px 16px; font-size: 15px; font-weight: 500; color: #8E8E93; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn.active { color: #007AFF; border-bottom-color: #007AFF; }
+        .order-card { background: white; border-radius: 12px; margin: 12px 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s; }
+        .order-card:active { transform: scale(0.98); background: #F9F9F9; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex gap-1 items-center"><i class="fas fa-signal text-xs"></i><i class="fas fa-wifi text-xs"></i><i class="fas fa-battery-full text-xs"></i></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+        <button onclick="history.back()" class="text-blue-500"><i class="fas fa-chevron-left text-lg"></i></button>
+        <span class="font-semibold text-lg">销售订单</span>
+        <button class="text-blue-500"><i class="fas fa-plus text-lg"></i></button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white flex justify-around">
+        <button class="tab-btn active" onclick="switchTab(this)">今日</button>
+        <button class="tab-btn" onclick="switchTab(this)">本周</button>
+        <button class="tab-btn" onclick="switchTab(this)">本月</button>
+        <button class="tab-btn" onclick="switchTab(this)">全部</button>
+    </div>
+
+    <!-- Order List -->
+    <div class="pb-24 pt-2">
+
+        <!-- Order Card 1 -->
+        <div class="order-card" onclick="location.href='order-detail.html'">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <span class="font-semibold text-lg">#SO20260514001</span>
+                    <span class="badge bg-green-100 text-green-700 ml-2">已完成</span>
+                </div>
+                <span class="text-xl font-bold text-orange-600">¥328.00</span>
+            </div>
+            <div class="flex items-center gap-4 text-gray-500 text-sm mb-2">
+                <span><i class="far fa-clock mr-1"></i>今天 14:32</span>
+                <span><i class="fas fa-user mr-1"></i>张三</span>
+            </div>
+            <div class="text-gray-600 text-sm">商品 3 件 · 微信支付</div>
+        </div>
+
+        <!-- Order Card 2 -->
+        <div class="order-card" onclick="location.href='order-detail.html'">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <span class="font-semibold text-lg">#SO20260514002</span>
+                    <span class="badge bg-green-100 text-green-700 ml-2">已完成</span>
+                </div>
+                <span class="text-xl font-bold text-orange-600">¥156.00</span>
+            </div>
+            <div class="flex items-center gap-4 text-gray-500 text-sm mb-2">
+                <span><i class="far fa-clock mr-1"></i>今天 11:20</span>
+                <span><i class="fas fa-user mr-1"></i>李四</span>
+            </div>
+            <div class="text-gray-600 text-sm">商品 2 件 · 现金</div>
+        </div>
+
+        <!-- Order Card 3 -->
+        <div class="order-card" onclick="location.href='order-detail.html'">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <span class="font-semibold text-lg">#SO20260513005</span>
+                    <span class="badge bg-red-100 text-red-700 ml-2">已退款</span>
+                </div>
+                <span class="text-xl font-bold text-gray-400">¥-89.00</span>
+            </div>
+            <div class="flex items-center gap-4 text-gray-500 text-sm mb-2">
+                <span><i class="far fa-clock mr-1"></i>昨天 16:45</span>
+                <span><i class="fas fa-user mr-1"></i>王五</span>
+            </div>
+            <div class="text-gray-600 text-sm">商品 1 件 · 支付宝</div>
+        </div>
+
+        <!-- Order Card 4 -->
+        <div class="order-card" onclick="location.href='order-detail.html'">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <span class="font-semibold text-lg">#SO20260513004</span>
+                    <span class="badge bg-blue-100 text-blue-700 ml-2">进行中</span>
+                </div>
+                <span class="text-xl font-bold text-orange-600">¥520.00</span>
+            </div>
+            <div class="flex items-center gap-4 text-gray-500 text-sm mb-2">
+                <span><i class="far fa-clock mr-1"></i>昨天 10:15</span>
+                <span><i class="fas fa-user mr-1"></i>赵六</span>
+            </div>
+            <div class="text-gray-600 text-sm">商品 5 件 · 微信支付</div>
+        </div>
+
+        <!-- Load More -->
+        <div class="text-center py-4">
+            <button class="text-blue-500 font-medium">加载更多</button>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 flex justify-around py-3" style="padding-bottom: env(safe-area-inset-bottom, 16px);">
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='home.html'">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span class="text-xs">首页</span>
+        </button>
+        <button class="flex flex-col items-center text-blue-500">
+            <i class="fas fa-file-alt text-xl mb-1"></i>
+            <span class="text-xs">订单</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='stocktaking.html'">
+            <i class="fas fa-box text-xl mb-1"></i>
+            <span class="text-xs">库存</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400" onclick="location.href='member-home.html'">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span class="text-xs">会员</span>
+        </button>
+    </div>
+
+    <script>
+        function switchTab(btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

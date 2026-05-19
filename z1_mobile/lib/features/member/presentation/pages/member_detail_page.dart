@@ -2,25 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../injection.dart';
 import '../../data/models/member_model.dart';
 import '../../data/models/member_order_model.dart';
 import '../bloc/member_detail_bloc.dart';
 
-class MemberDetailPage extends StatefulWidget {
+class MemberDetailPage extends StatelessWidget {
   final int memberId;
 
   const MemberDetailPage({super.key, required this.memberId});
 
   @override
-  State<MemberDetailPage> createState() => _MemberDetailPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) {
+        final bloc = MemberDetailBloc(dataSource: getIt());
+        bloc.add(MemberDetailLoadRequested(memberId));
+        return bloc;
+      },
+      child: _MemberDetailPageContent(memberId: memberId),
+    );
+  }
 }
 
-class _MemberDetailPageState extends State<MemberDetailPage> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<MemberDetailBloc>().add(MemberDetailLoadRequested(widget.memberId));
-  }
+class _MemberDetailPageContent extends StatelessWidget {
+  final int memberId;
+
+  const _MemberDetailPageContent({required this.memberId});
 
   @override
   Widget build(BuildContext context) {
@@ -45,24 +53,63 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
           }
 
           if (state is MemberDetailError) {
-            return _buildErrorView(state.message);
+            return _buildErrorView(context, state.message);
           }
 
           if (state is MemberDetailNotFound) {
-            return _buildNotFoundView();
+            return _buildNotFoundView(context);
           }
 
           if (state is MemberDetailLoaded) {
-            return _buildContent(state);
+            return _buildContent(context, state);
           }
 
-          return const SizedBox.shrink();
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
   }
 
-  Widget _buildContent(MemberDetailLoaded state) {
+  Widget _buildErrorView(BuildContext context, String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => context.pop(),
+              child: const Text('返回'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotFoundView(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.person_off, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text('会员不存在'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.pop(),
+            child: const Text('返回'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, MemberDetailLoaded state) {
     return RefreshIndicator(
       onRefresh: () async {
         context.read<MemberDetailBloc>().add(const MemberDetailRefreshRequested());
@@ -72,13 +119,13 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
         children: [
           _buildMemberCard(state.member),
           const SizedBox(height: 16),
-          _buildExperienceCard(state.member),
+          _buildExperienceCard(context, state.member),
           const SizedBox(height: 16),
-          _buildQuickActions(),
+          _buildQuickActions(context),
           const SizedBox(height: 16),
-          _buildConsumptionSummary(state.orders),
+          _buildConsumptionSummary(context, state.orders),
           const SizedBox(height: 16),
-          _buildOrderList(state.orders),
+          _buildOrderList(context, state.orders),
         ],
       ),
     );
@@ -192,7 +239,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildExperienceCard(MemberModel member) {
+  Widget _buildExperienceCard(BuildContext context, MemberModel member) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -231,14 +278,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => context.push('/member/${widget.memberId}/creditscore'),
+                    onPressed: () => context.push('/member/$memberId/creditscore'),
                     child: const Text('积分查询'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => context.push('/member/${widget.memberId}/creditscore/edit'),
+                    onPressed: () => context.push('/member/$memberId/creditscore/edit'),
                     child: const Text('积分调整'),
                   ),
                 ),
@@ -250,7 +297,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -309,7 +356,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildConsumptionSummary(List<MemberOrderModel> orders) {
+  Widget _buildConsumptionSummary(BuildContext context, List<MemberOrderModel> orders) {
     if (orders.isEmpty) return const SizedBox.shrink();
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -405,7 +452,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildOrderList(List<MemberOrderModel> orders) {
+  Widget _buildOrderList(BuildContext context, List<MemberOrderModel> orders) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -430,12 +477,12 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             ),
           )
         else
-          ...orders.map((order) => _buildOrderItem(order)),
+          ...orders.map((order) => _buildOrderItem(context, order)),
       ],
     );
   }
 
-  Widget _buildOrderItem(MemberOrderModel order) {
+  Widget _buildOrderItem(BuildContext context, MemberOrderModel order) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -500,61 +547,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNotFoundView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.person_off_outlined,
-            size: 64,
-            color: AppTheme.grey400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '该会员不存在',
-            style: TextStyle(
-              color: AppTheme.grey600,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context.pop(),
-            child: const Text('返回'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorView(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: AppTheme.errorColor,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: TextStyle(color: AppTheme.grey600),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              context.read<MemberDetailBloc>().add(MemberDetailLoadRequested(widget.memberId));
-            },
-            child: const Text('重试'),
-          ),
-        ],
       ),
     );
   }

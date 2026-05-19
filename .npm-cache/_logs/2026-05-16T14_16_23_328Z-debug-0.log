@@ -1,0 +1,65 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@11.4.1
+2 info using node@v22.15.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/fan/.npmrc
+5 silly config load:file:/Users/fan/.npm-global/etc/npmrc
+6 verbose title npm update @larksuite/cli
+7 verbose argv "update" "--global" "@larksuite/cli"
+8 verbose logfile logs-max:10 dir:/Users/fan/www/AI/phone/Flutter/z1-nextapp/.npm-cache/_logs/2026-05-16T14_16_23_328Z-
+9 verbose logfile /Users/fan/www/AI/phone/Flutter/z1-nextapp/.npm-cache/_logs/2026-05-16T14_16_23_328Z-debug-0.log
+10 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+11 silly logfile done cleaning log files
+12 silly idealTree buildDeps
+13 silly fetch manifest @larksuite/cli@*
+14 silly packumentCache full:https://registry.npmmirror.com/@larksuite%2fcli cache-miss
+15 http fetch GET 200 https://registry.npmmirror.com/@larksuite%2fcli 177ms (cache miss)
+16 silly packumentCache full:https://registry.npmmirror.com/@larksuite%2fcli set size:18387 disposed:false
+17 silly placeDep ROOT @larksuite/cli@1.0.32 REPLACE for:  want: *
+18 warn EBADENGINE Unsupported engine {
+18 warn EBADENGINE   package: 'undici@8.2.0',
+18 warn EBADENGINE   required: { node: '>=22.19.0' },
+18 warn EBADENGINE   current: { node: 'v22.15.0', npm: '11.4.1' }
+18 warn EBADENGINE }
+19 silly reify mark retired [
+19 silly reify   '/Users/fan/.npm-global/lib/node_modules/@larksuite/cli',
+19 silly reify   '/Users/fan/.npm-global/bin/lark-cli'
+19 silly reify ]
+20 silly reify moves {
+20 silly reify   '/Users/fan/.npm-global/lib/node_modules/@larksuite/cli': '/Users/fan/.npm-global/lib/node_modules/@larksuite/.cli-eeqKiagT',
+20 silly reify   '/Users/fan/.npm-global/bin/lark-cli': '/Users/fan/.npm-global/bin/.lark-cli-j2fXDwyY'
+20 silly reify }
+21 http cache @larksuite/cli@https://registry.npmmirror.com/@larksuite/cli/-/cli-1.0.32.tgz 0ms (cache hit)
+22 silly tarball no local data for @larksuite/cli@https://registry.npmmirror.com/@larksuite/cli/-/cli-1.0.32.tgz. Extracting by manifest.
+23 http fetch GET 200 https://cdn.npmmirror.com/packages/%40larksuite/cli/1.0.32/cli-1.0.32.tgz 252ms (cache miss)
+24 info run @larksuite/cli@1.0.32 postinstall node_modules/@larksuite/cli node scripts/install.js
+25 info run @larksuite/cli@1.0.32 postinstall { code: null, signal: 'SIGTERM' }
+26 verbose stack Error: command failed
+26 verbose stack     at promiseSpawn (/usr/local/lib/node_modules/npm/node_modules/@npmcli/promise-spawn/lib/index.js:22:22)
+26 verbose stack     at spawnWithShell (/usr/local/lib/node_modules/npm/node_modules/@npmcli/promise-spawn/lib/index.js:124:10)
+26 verbose stack     at promiseSpawn (/usr/local/lib/node_modules/npm/node_modules/@npmcli/promise-spawn/lib/index.js:12:12)
+26 verbose stack     at runScriptPkg (/usr/local/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script-pkg.js:79:13)
+26 verbose stack     at runScript (/usr/local/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script.js:9:12)
+26 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/rebuild.js:331:17
+26 verbose stack     at run (/usr/local/lib/node_modules/npm/node_modules/promise-call-limit/dist/commonjs/index.js:67:22)
+26 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/promise-call-limit/dist/commonjs/index.js:84:9
+26 verbose stack     at new Promise (<anonymous>)
+26 verbose stack     at callLimit (/usr/local/lib/node_modules/npm/node_modules/promise-call-limit/dist/commonjs/index.js:35:69)
+27 verbose pkgid @larksuite/cli@1.0.32
+28 error path /Users/fan/.npm-global/lib/node_modules/@larksuite/cli
+29 error command failed
+30 error signal SIGTERM
+31 error command sh -c node scripts/install.js
+32 silly unfinished npm timer reify 1778940983542
+33 silly unfinished npm timer reify:build 1778940984226
+34 silly unfinished npm timer build 1778940984226
+35 silly unfinished npm timer build:deps 1778940984226
+36 silly unfinished npm timer build:run:postinstall 1778940984228
+37 silly unfinished npm timer build:run:postinstall:node_modules/@larksuite/cli 1778940984228
+38 verbose cwd /Users/fan/www/AI/phone/Flutter/z1-nextapp
+39 verbose os Darwin 24.6.0
+40 verbose node v22.15.0
+41 verbose npm  v11.4.1
+42 verbose exit 1
+43 verbose code 1
+44 error A complete log of this run can be found in: /Users/fan/www/AI/phone/Flutter/z1-nextapp/.npm-cache/_logs/2026-05-16T14_16_23_328Z-debug-0.log

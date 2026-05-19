@@ -138,8 +138,11 @@ class StocktakingRemoteDataSourceImpl implements StocktakingRemoteDataSource {
     );
 
     return response.map((data) {
-      final list = data['data']['warehouses'] as List<dynamic>? ?? [];
-      return list.map((json) => WarehouseModel.fromJson(json as Map<String, dynamic>)).toList();
+      final list = data['data']['list'] as List<dynamic>? ?? [];
+      return list
+          .map((json) => WarehouseModel.fromJson(json as Map<String, dynamic>))
+          .where((w) => !w.name.contains('test') && !w.name.contains('测试'))
+          .toList();
     });
   }
 }

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我的 - Z1全网连锁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f2f3f7; min-height: 100vh; padding-bottom: 80px; }
+    .glass { background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .card { background: white; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+    .card:active { transform: scale(0.98); }
+    .badge { background: #ef4444; color: white; border-radius: 8px; font-size: 10px; padding: 1px 5px; min-width: 16px; text-align: center; }
+    .tab-item { transition: all 0.2s; }
+    .tab-item.active { color: #2563eb; }
+    .tab-item.active svg { stroke: #2563eb; }
+    .tab-item.active span { color: #2563eb; }
+    .income-card { border-radius: 16px; overflow: hidden; }
+    .rank-item { transition: all 0.2s; }
+    .rank-item:active { transform: scale(0.98); background: #f8fafc; }
+    .progress-bar { height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  </style>
+</head>
+<body>
+
+  <!-- 主内容区 -->
+  <div class="pt-4 px-4 space-y-4">
+
+    <!-- 用户信息卡片 -->
+    <div class="card p-5">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-blue-200">
+          李
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-bold text-gray-800">李明</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">收银员</span>
+          </div>
+          <div class="text-sm text-gray-500 mt-1">深圳华强北旗舰店</div>
+          <div class="text-xs text-gray-400 mt-0.5">入职 2 年 3 个月</div>
+        </div>
+        <button class="w-10 h-10 rounded-2xl bg-gray-100 flex items-center justify-center active:scale-95 transition-transform" onclick="goSettings()">
+          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 本月收入构成 -->
+    <div class="card income-card overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="text-sm text-white/70">本月收入（5月）</div>
+            <div class="text-3xl font-bold text-white mt-1">¥12,850</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-white/60">vs 上月</div>
+            <div class="text-lg font-bold text-green-300">↑ ¥1,230</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 收入构成详情 -->
+      <div class="p-4">
+        <div class="text-sm font-semibold text-gray-600 mb-3">💰 收入构成</div>
+        <div class="space-y-3">
+          <!-- 基础薪资 -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                <span class="text-lg">💵</span>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-800">基础薪资</div>
+                <div class="text-xs text-gray-400">固定发放</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-semibold text-gray-800">¥5,000</div>
+              <div class="text-xs text-gray-400">占比 38.9%</div>
+            </div>
+          </div>
+          
+          <!-- 销售提成 -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-orange-50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                <span class="text-lg">📈</span>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-800">销售提成</div>
+                <div class="text-xs text-gray-400">按销售额 2%</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-semibold text-orange-600">¥6,200</div>
+              <div class="text-xs text-gray-400">占比 48.2%</div>
+            </div>
+          </div>
+          
+          <!-- 工分奖金 -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-green-50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                <span class="text-lg">🏆</span>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-800">工分奖金</div>
+                <div class="text-xs text-gray-400">月绩效评分 A</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-semibold text-green-600">¥1,800</div>
+              <div class="text-xs text-gray-400">占比 14.0%</div>
+            </div>
+          </div>
+          
+          <!-- 保险纳税 -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-red-50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                <span class="text-lg">📉</span>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-800">保险纳税</div>
+                <div class="text-xs text-gray-400">社保+公积金+个税</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-semibold text-red-600">-¥1,150</div>
+              <div class="text-xs text-gray-400">占比 -8.9%</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 收入占比图 -->
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <div class="text-xs text-gray-500 mb-2">收入占比</div>
+          <div class="flex h-4 rounded-full overflow-hidden">
+            <div class="bg-blue-500" style="width: 38.9%"></div>
+            <div class="bg-orange-400" style="width: 48.2%"></div>
+            <div class="bg-green-500" style="width: 14.0%"></div>
+            <div class="bg-red-500" style="width: 8.9%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span>薪资</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-400"></span>提成</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span>奖金</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span>扣减</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 业绩排行 -->
+    <div class="card overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-purple-50 to-blue-50">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">🏅</span>
+          <span class="text-sm font-semibold text-gray-800">本月业绩排行</span>
+        </div>
+        <span class="text-xs text-gray-400">门店 12 人</span>
+      </div>
+      
+      <!-- 我的排名 -->
+      <div class="px-4 py-3 bg-yellow-50/50 border-b border-gray-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold text-sm">3</div>
+            <div>
+              <div class="text-sm font-semibold text-gray-800">我的排名</div>
+              <div class="text-xs text-gray-500">销售额 ¥285,600</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-green-600">↑ 2 名</div>
+            <div class="text-xs text-gray-400">较上月提升</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 排行列表 -->
+      <div class="divide-y divide-gray-50">
+        <!-- 第1名 -->
+        <div class="rank-item px-4 py-3 flex items-center justify-between cursor-pointer" onclick="showRankDetail(1)">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-white font-bold text-sm">1</div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">王小红</div>
+              <div class="text-xs text-gray-400">金牌销售</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-gray-800">¥352,800</div>
+            <div class="text-xs text-orange-500">本月销冠</div>
+          </div>
+        </div>
+        
+        <!-- 第2名 -->
+        <div class="rank-item px-4 py-3 flex items-center justify-between cursor-pointer" onclick="showRankDetail(2)">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold text-sm">2</div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">张伟</div>
+              <div class="text-xs text-gray-400">高级销售</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-gray-800">¥318,500</div>
+            <div class="text-xs text-gray-400">差距 ¥33,000</div>
+          </div>
+        </div>
+        
+        <!-- 第3名 - 当前用户 -->
+        <div class="rank-item px-4 py-3 flex items-center justify-between cursor-pointer bg-yellow-50/50" onclick="showRankDetail(3)">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-600 to-orange-500 flex items-center justify-center text-white font-bold text-sm border-2 border-yellow-400">3</div>
+            <div>
+              <div class="text-sm font-semibold text-gray-800">李明 <span class="text-xs text-blue-600 ml-1">我</span></div>
+              <div class="text-xs text-gray-400">销售</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-gray-800">¥285,600</div>
+            <div class="text-xs text-green-500">还需 ¥67,200</div>
+          </div>
+        </div>
+        
+        <!-- 第4名 -->
+        <div class="rank-item px-4 py-3 flex items-center justify-between cursor-pointer" onclick="showRankDetail(4)">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm">4</div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">赵丽</div>
+              <div class="text-xs text-gray-400">销售</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-gray-500">¥268,300</div>
+            <div class="text-xs text-gray-400">4</div>
+          </div>
+        </div>
+        
+        <!-- 第5名 -->
+        <div class="rank-item px-4 py-3 flex items-center justify-between cursor-pointer" onclick="showRankDetail(5)">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm">5</div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">刘强</div>
+              <div class="text-xs text-gray-400">销售</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-gray-500">¥245,000</div>
+            <div class="text-xs text-gray-400">5</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="px-4 py-3 text-center cursor-pointer active:bg-gray-50" onclick="showFullRank()">
+        <span class="text-sm text-blue-600 font-medium">查看完整排行 ></span>
+      </div>
+    </div>
+
+    <!-- 审批中心入口 -->
+    <div class="card overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">✅</span>
+          <span class="text-sm font-semibold text-gray-800">审批中心</span>
+        </div>
+        <span class="badge">2</span>
+      </div>
+      <div class="divide-y divide-gray-50">
+        <!-- 待我审批 -->
+        <div class="rank-item px-4 py-3 flex justify-between items-center cursor-pointer" onclick="goApprovalPending()">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+              <span class="text-lg">📋</span>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">待我审批</div>
+              <div class="text-xs text-gray-400">退换货、调拨、积分调整</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">2 项</span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+        <!-- 我发起的 -->
+        <div class="rank-item px-4 py-3 flex justify-between items-center cursor-pointer" onclick="goApprovalMy()">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <span class="text-lg">📤</span>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">我发起的</div>
+              <div class="text-xs text-gray-400">查看我提交的审批</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-400">3 项进行中</span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+        <!-- 审批历史 -->
+        <div class="rank-item px-4 py-3 flex justify-between items-center cursor-pointer" onclick="goApprovalHistory()">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
+              <span class="text-lg">📜</span>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">审批历史</div>
+              <div class="text-xs text-gray-400">已处理的审批记录</div>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 其他功能 -->
+    <div class="card overflow-hidden">
+      <div class="divide-y divide-gray-50">
+        <div class="rank-item px-4 py-3.5 flex items-center justify-between cursor-pointer" onclick="goStore()">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+              <span class="text-lg">🏪</span>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-gray-800">门店切换</div>
+              <div class="text-xs text-gray-400">深圳华强北旗舰店</div>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+        <div class="rank-item px-4 py-3.5 flex items-center justify-between cursor-pointer" onclick="goHistory()">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+              <span class="text-lg">📊</span>
+            </div>
+            <div class="text-sm font-medium text-gray-800">收入明细</div>
+          </div>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+        <div class="rank-item px-4 py-3.5 flex items-center justify-between cursor-pointer" onclick="goSettings()">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+              <span class="text-lg">⚙️</span>
+            </div>
+            <div class="text-sm font-medium text-gray-800">设置</div>
+          </div>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 退出登录 -->
+    <div class="card overflow-hidden">
+      <div class="rank-item px-4 py-3.5 flex items-center justify-center cursor-pointer active:bg-red-50" onclick="logout()">
+        <span class="text-base mr-2">🚪</span>
+        <span class="text-sm font-medium text-red-500">退出登录</span>
+      </div>
+    </div>
+
+    <!-- 版本信息 -->
+    <div class="text-center text-xs text-gray-400 py-4">
+      Z1 全网连锁 v2.3.0
+    </div>
+
+  </div>
+
+  <!-- 底部 TabBar -->
+  <div class="glass fixed bottom-0 left-0 right-0 z-50 px-2 py-2 border-t border-gray-200/50" style="padding-bottom: env(safe-area-inset-bottom, 8px);">
+    <div class="flex justify-around items-center">
+      <div class="tab-item flex flex-col items-center px-3 py-1 cursor-pointer" onclick="switchTab(0)">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <span class="text-xs font-medium text-gray-500">首页</span>
+      </div>
+      <div class="tab-item flex flex-col items-center px-3 py-1 cursor-pointer" onclick="switchTab(1)">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+        <span class="text-xs font-medium text-gray-500">会员</span>
+      </div>
+      <div class="tab-item flex flex-col items-center px-3 py-1 cursor-pointer" onclick="switchTab(2)">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        <span class="text-xs font-medium text-gray-500">工作台</span>
+      </div>
+      <div class="tab-item flex flex-col items-center px-3 py-1 cursor-pointer" onclick="switchTab(3)">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+        <span class="text-xs font-medium text-gray-500">任务</span>
+      </div>
+      <!-- 我的 - 选中 -->
+      <div class="tab-item active flex flex-col items-center px-3 py-1 cursor-pointer">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        <span class="text-xs font-medium">我的</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(index) {
+      const routes = ['/home', '/member/home', '/workbench', '/task/home', '/profile'];
+      alert('切换到: ' + ['首页', '会员', '工作台', '任务', '我的'][index]);
+    }
+    
+    function goSettings() { alert('跳转到设置页'); }
+    function goStore() { alert('跳转到门店切换'); }
+    function goHistory() { alert('跳转到收入明细'); }
+    function goApprovalPending() { alert('跳转到待我审批'); }
+    function goApprovalMy() { alert('跳转到我发起的'); }
+    function goApprovalHistory() { alert('跳转到审批历史'); }
+    function showFullRank() { alert('查看完整业绩排行'); }
+    function showRankDetail(rank) { alert('查看第 ' + rank + ' 名详情'); }
+    function logout() {
+      if (confirm('确定要退出登录吗？')) {
+        alert('退出登录，跳转登录页');
+      }
+    }
+  </script>
+</body>
+</html>

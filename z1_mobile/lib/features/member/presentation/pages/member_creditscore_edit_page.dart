@@ -56,7 +56,7 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
       final result = await apiClient.post(
         '/members/creditscore/adjust',
         data: {
-          'memberId': widget.memberId,
+          'userIdents': widget.memberId,
           'adjustValue': adjustValue,
           'reason': reason,
         },
