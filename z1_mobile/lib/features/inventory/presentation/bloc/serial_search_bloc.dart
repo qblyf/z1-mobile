@@ -11,13 +11,13 @@ abstract class SerialSearchEvent extends Equatable {
 }
 
 class SerialSearchCodeSubmitted extends SerialSearchEvent {
-  final String code;
+  final String serial;
   final int? warehouseId;
 
-  const SerialSearchCodeSubmitted({required this.code, this.warehouseId});
+  const SerialSearchCodeSubmitted({required this.serial, this.warehouseId});
 
   @override
-  List<Object?> get props => [code, warehouseId];
+  List<Object?> get props => [serial, warehouseId];
 }
 
 class SerialSearchWarehousesRequested extends SerialSearchEvent {
@@ -159,12 +159,12 @@ class SerialSearchBloc extends Bloc<SerialSearchEvent, SerialSearchState> {
     emit(SerialSearchLoading(
       warehouses: warehouses,
       selectedWarehouseId: selectedWarehouseId,
-      queryCode: event.code,
+      queryCode: event.serial,
     ));
 
     final result = await _dataSource.searchSerial(
       SerialSearchParams(
-        code: event.code,
+        serial: event.serial,
         warehouseId: event.warehouseId ?? selectedWarehouseId,
       ),
     );
@@ -174,7 +174,7 @@ class SerialSearchBloc extends Bloc<SerialSearchEvent, SerialSearchState> {
         message: result.failure!.message,
         warehouses: warehouses,
         selectedWarehouseId: selectedWarehouseId,
-        queryCode: event.code,
+        queryCode: event.serial,
       ));
       return;
     }

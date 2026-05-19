@@ -6,23 +6,23 @@ import '../models/serial_search_model.dart';
 import '../models/stocktaking_model.dart';
 
 class SerialSearchParams extends Equatable {
-  final String code;
+  final String serial;
   final int? warehouseId;
 
   const SerialSearchParams({
-    required this.code,
+    required this.serial,
     this.warehouseId,
   });
 
   Map<String, dynamic> toQueryParams() {
     return {
-      'code': code,
-      if (warehouseId != null) 'warehouseID': warehouseId,
+      'serial': serial,
+      if (warehouseId != null) 'state': warehouseId,
     };
   }
 
   @override
-  List<Object?> get props => [code, warehouseId];
+  List<Object?> get props => [serial, warehouseId];
 }
 
 abstract class SerialSearchRemoteDataSource {
@@ -38,8 +38,8 @@ class SerialSearchRemoteDataSourceImpl implements SerialSearchRemoteDataSource {
   @override
   Future<Result<SerialSearchResultModel>> searchSerial(SerialSearchParams params) async {
     final response = await apiClient.post<Map<String, dynamic>>(
-      ApiEndpoints.serialSearchFullMatch,
-      data: params.toQueryParams(),
+      ApiEndpoints.serialSearch,
+      data: {'serial': params.serial, if (params.warehouseId != null) 'state': params.warehouseId},
       parser: (data) => data,
     );
 
@@ -48,10 +48,10 @@ class SerialSearchRemoteDataSourceImpl implements SerialSearchRemoteDataSource {
     });
   }
 
-  Future<Result<SerialSearchResultModel>> searchSerialFuzzy(SerialSearchParams params) async {
+  Future<Result<SerialSearchResultModel>> searchSerialFullMatch(SerialSearchParams params) async {
     final response = await apiClient.post<Map<String, dynamic>>(
-      ApiEndpoints.serialSearch,
-      data: params.toQueryParams(),
+      ApiEndpoints.serialSearchFullMatch,
+      data: {'serials': [params.serial]},
       parser: (data) => data,
     );
 

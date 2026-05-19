@@ -105,7 +105,7 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
                       : null,
                   onSubmitted: (value) {
                     if (value.isNotEmpty) {
-                      _bloc.add(SerialSearchCodeSubmitted(code: value));
+                      _bloc.add(SerialSearchCodeSubmitted(serial: value));
                     }
                   },
                 ),
@@ -117,7 +117,7 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
                 borderRadius: BorderRadius.circular(8),
                 onPressed: () {
                   if (_searchController.text.isNotEmpty) {
-                    _bloc.add(SerialSearchCodeSubmitted(code: _searchController.text));
+                    _bloc.add(SerialSearchCodeSubmitted(serial: _searchController.text));
                   }
                 },
                 child: const Text(
@@ -209,7 +209,7 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
             const SizedBox(height: 16),
             CupertinoButton(
               child: const Text('重试'),
-              onPressed: () => _bloc.add(SerialSearchCodeSubmitted(code: state.queryCode)),
+              onPressed: () => _bloc.add(SerialSearchCodeSubmitted(serial: state.queryCode)),
             ),
           ],
         ),
