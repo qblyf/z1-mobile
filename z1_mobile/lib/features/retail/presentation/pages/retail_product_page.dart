@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/retail_order_model.dart';
+import '../../data/models/product_model.dart';
 import '../bloc/product_bloc.dart';
 
-/// 商品选购页
 class RetailProductPage extends StatefulWidget {
   final RetailOrder? initialOrder;
 
@@ -19,11 +19,11 @@ class RetailProductPage extends StatefulWidget {
 class _RetailProductPageState extends State<RetailProductPage> {
   late RetailOrder _order;
   final TextEditingController _searchController = TextEditingController();
-  final List<ProductItem> _cart = [];
+  final List<ProductItem> _cartGoods = [];
+  final List<ProductItem> _cartServices = [];
+  int _selectedTabIndex = 0;
   int _selectedCategoryIndex = 0;
   Timer? _debounceTimer;
-
-  final List<String> _categories = ['全部', '黄金', '钻石', '翡翠', '银饰', '定制'];
 
   @override
   void initState() {
@@ -46,26 +46,47 @@ class _RetailProductPageState extends State<RetailProductPage> {
     });
   }
 
-  void _onCategoryChanged(int index) {
-    setState(() => _selectedCategoryIndex = index);
-    context.read<ProductBloc>().add(ProductCategoryChanged(_categories[index]));
+  void _onTabChanged(int index) {
+    setState(() => _selectedTabIndex = index);
+    _selectedCategoryIndex = 0;
+    final genre = index == 0 ? 'goods' : 'service';
+    context.read<ProductBloc>().add(ProductGenreChanged(genre));
   }
+
+  void _onCategoryChanged(int index, List<CategoryModel> categories) {
+    setState(() => _selectedCategoryIndex = index);
+    final category = index == 0 ? null : categories[index - 1].name;
+    context.read<ProductBloc>().add(ProductCategoryChanged(category ?? '全部'));
+  }
+
+  List<ProductItem> get _currentCart => _selectedTabIndex == 0 ? _cartGoods : _cartServices;
 
   double get _cartTotalYuan {
-    return _cart.fold<int>(0, (sum, p) => sum + p.totalDiscountPrice) / 100;
+    final goodsTotal = _cartGoods.fold<int>(0, (sum, p) => sum + p.totalDiscountPrice);
+    final servicesTotal = _cartServices.fold<int>(0, (sum, p) => sum + p.totalDiscountPrice);
+    return (goodsTotal + servicesTotal) / 100;
   }
 
-  void _addToCart(ProductItem product) {
+  int get _cartTotalQuantity {
+    return _cartGoods.fold<int>(0, (sum, p) => sum + p.quantity) +
+        _cartServices.fold<int>(0, (sum, p) => sum + p.quantity);
+  }
+
+  void _addToCart(ProductModel product) {
+    final cart = _selectedTabIndex == 0 ? _cartGoods : _cartServices;
     setState(() {
-      final existing = _cart.indexWhere((p) => p.productID == product.productID);
+      final existing = cart.indexWhere((p) => p.productID == product.productID);
       if (existing >= 0) {
-        final p = _cart[existing];
-        _cart[existing] = p.copyWith(
+        final p = cart[existing];
+        cart[existing] = p.copyWith(
           quantity: p.quantity + 1,
           totalDiscountPrice: p.discountPrice * (p.quantity + 1),
         );
       } else {
-        _cart.add(product.copyWith(
+        cart.add(ProductItem(
+          productID: product.productID,
+          productName: product.productName,
+          price: product.price,
           quantity: 1,
           discountPrice: product.price,
           totalDiscountPrice: product.price,
@@ -75,15 +96,16 @@ class _RetailProductPageState extends State<RetailProductPage> {
   }
 
   void _updateQuantity(ProductItem product, int delta) {
+    final cart = _selectedTabIndex == 0 ? _cartGoods : _cartServices;
     setState(() {
-      final index = _cart.indexWhere((p) => p.productID == product.productID);
+      final index = cart.indexWhere((p) => p.productID == product.productID);
       if (index >= 0) {
-        final p = _cart[index];
+        final p = cart[index];
         final newQty = p.quantity + delta;
         if (newQty <= 0) {
-          _cart.removeAt(index);
+          cart.removeAt(index);
         } else {
-          _cart[index] = p.copyWith(
+          cart[index] = p.copyWith(
             quantity: newQty,
             totalDiscountPrice: p.discountPrice * newQty,
           );
@@ -93,13 +115,14 @@ class _RetailProductPageState extends State<RetailProductPage> {
   }
 
   void _goToConfirm() {
-    if (_cart.isEmpty) {
+    final allProducts = [..._cartGoods, ..._cartServices];
+    if (allProducts.isEmpty) {
       _showError('请先添加商品');
       return;
     }
 
-    final order = _order.copyWith(products: List.from(_cart));
-    context.push('/order/retail/confirm', extra: order);
+    final order = _order.copyWith(products: allProducts);
+    context.push('/home/retail/confirm', extra: order);
   }
 
   void _showError(String message) {
@@ -144,42 +167,120 @@ class _RetailProductPageState extends State<RetailProductPage> {
               color: CupertinoColors.systemGroupedBackground,
               child: CupertinoSearchTextField(
                 controller: _searchController,
-                placeholder: '搜索商品名称/编码',
+                placeholder: '搜索商品名称/条码',
                 onChanged: _onSearchChanged,
               ),
             ),
-
             Container(
               height: 44,
               color: CupertinoColors.white,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  final isSelected = index == _selectedCategoryIndex;
-                  return GestureDetector(
-                    onTap: () => _onCategoryChanged(index),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isSelected ? CupertinoColors.activeBlue : null,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        _categories[index],
-                        style: TextStyle(
-                          color: isSelected ? CupertinoColors.white : CupertinoColors.label,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _onTabChanged(0),
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: _selectedTabIndex == 0
+                                  ? CupertinoColors.activeBlue
+                                  : CupertinoColors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          '商品',
+                          style: TextStyle(
+                            color: _selectedTabIndex == 0
+                                ? CupertinoColors.activeBlue
+                                : CupertinoColors.label,
+                            fontWeight: _selectedTabIndex == 0
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
                         ),
                       ),
                     ),
-                  );
-                },
+                  ),
+                  Container(width: 1, height: 20, color: CupertinoColors.separator),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _onTabChanged(1),
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: _selectedTabIndex == 1
+                                  ? CupertinoColors.activeBlue
+                                  : CupertinoColors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          '服务',
+                          style: TextStyle(
+                            color: _selectedTabIndex == 1
+                                ? CupertinoColors.activeBlue
+                                : CupertinoColors.label,
+                            fontWeight: _selectedTabIndex == 1
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+            BlocBuilder<ProductBloc, ProductState>(
+              builder: (context, state) {
+                List<CategoryModel> categories = [];
+                if (state is ProductLoaded) {
+                  categories = state.categories;
+                } else if (state is ProductSearching) {
+                  categories = state.categories;
+                }
 
+                final categoryNames = ['全部', ...categories.map((c) => c.name)];
+
+                return Container(
+                  height: 44,
+                  color: CupertinoColors.white,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: categoryNames.length,
+                    itemBuilder: (context, index) {
+                      final isSelected = index == _selectedCategoryIndex;
+                      return GestureDetector(
+                        onTap: () => _onCategoryChanged(index, categories),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isSelected ? CupertinoColors.activeBlue : null,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            categoryNames[index],
+                            style: TextStyle(
+                              color: isSelected ? CupertinoColors.white : CupertinoColors.label,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
             Expanded(
               child: BlocBuilder<ProductBloc, ProductState>(
                 builder: (context, state) {
@@ -205,7 +306,12 @@ class _RetailProductPageState extends State<RetailProductPage> {
                     final products = state is ProductLoaded
                         ? state.filteredProducts
                         : (state as ProductSearching).allProducts;
-                    if (products.isEmpty) {
+
+                    final filteredByGenre = _selectedTabIndex == 0
+                        ? products.where((p) => p.isGoods || p.genre == null).toList()
+                        : products.where((p) => p.isService).toList();
+
+                    if (filteredByGenre.isEmpty) {
                       return const Center(child: Text('暂无商品'));
                     }
                     return GridView.builder(
@@ -216,23 +322,13 @@ class _RetailProductPageState extends State<RetailProductPage> {
                         crossAxisSpacing: 12,
                         childAspectRatio: 0.85,
                       ),
-                      itemCount: products.length,
+                      itemCount: filteredByGenre.length,
                       itemBuilder: (context, index) {
-                        final product = products[index];
+                        final product = filteredByGenre[index];
                         return _ProductCard(
                           name: product.productName,
                           price: product.price,
-                          onAdd: () {
-                            final item = ProductItem(
-                              productID: product.productID,
-                              productName: product.productName,
-                              price: product.price,
-                              quantity: 1,
-                              discountPrice: product.price,
-                              totalDiscountPrice: product.price,
-                            );
-                            _addToCart(item);
-                          },
+                          onAdd: () => _addToCart(product),
                         );
                       },
                     );
@@ -241,8 +337,7 @@ class _RetailProductPageState extends State<RetailProductPage> {
                 },
               ),
             ),
-
-            if (_cart.isNotEmpty)
+            if (_cartTotalQuantity > 0)
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -274,7 +369,7 @@ class _RetailProductPageState extends State<RetailProductPage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${_cart.fold<int>(0, (sum, p) => sum + p.quantity)}',
+                              '$_cartTotalQuantity',
                               style: const TextStyle(
                                 color: CupertinoColors.white,
                                 fontWeight: FontWeight.bold,
@@ -348,70 +443,65 @@ class _RetailProductPageState extends State<RetailProductPage> {
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: const Text('清空'),
-                    onPressed: () => setState(() => _cart.clear()),
+                    onPressed: () => setState(() {
+                      _cartGoods.clear();
+                      _cartServices.clear();
+                    }),
                   ),
                 ],
               ),
             ),
             Expanded(
-              child: _cart.isEmpty
+              child: _cartGoods.isEmpty && _cartServices.isEmpty
                   ? const Center(child: Text('购物车为空'))
-                  : ListView.builder(
-                      itemCount: _cart.length,
-                      itemBuilder: (context, index) {
-                        final item = _cart[index];
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: const BoxDecoration(
-                            border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+                  : ListView(
+                      children: [
+                        if (_cartGoods.isNotEmpty) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Text(
+                              '商品',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: CupertinoColors.secondaryLabel,
+                              ),
+                            ),
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(item.productName, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      formatter.format(item.priceYuan),
-                                      style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 12),
-                                    ),
-                                  ],
-                                ),
+                          ...List.generate(_cartGoods.length, (index) {
+                            final item = _cartGoods[index];
+                            return _CartItem(
+                              item: item,
+                              formatter: formatter,
+                              onQuantityChanged: (delta) => _updateQuantity(item, delta),
+                              onDelete: () => setState(() => _cartGoods.removeAt(index)),
+                            );
+                          }),
+                        ],
+                        if (_cartServices.isNotEmpty) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Text(
+                              '服务',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: CupertinoColors.secondaryLabel,
                               ),
-                              Row(
-                                children: [
-                                  CupertinoButton(
-                                    padding: EdgeInsets.zero,
-                                    minSize: 28,
-                                    child: const Icon(CupertinoIcons.minus_circle, size: 22),
-                                    onPressed: () => _updateQuantity(item, -1),
-                                  ),
-                                  Text(
-                                    '${item.quantity}',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                  ),
-                                  CupertinoButton(
-                                    padding: EdgeInsets.zero,
-                                    minSize: 28,
-                                    child: const Icon(CupertinoIcons.plus_circle, size: 22),
-                                    onPressed: () => _updateQuantity(item, 1),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                formatter.format(item.totalPriceYuan),
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                              ),
-                            ],
+                            ),
                           ),
-                        );
-                      },
+                          ...List.generate(_cartServices.length, (index) {
+                            final item = _cartServices[index];
+                            return _CartItem(
+                              item: item,
+                              formatter: formatter,
+                              onQuantityChanged: (delta) => _updateQuantity(item, delta),
+                              onDelete: () => setState(() => _cartServices.removeAt(index)),
+                            );
+                          }),
+                        ],
+                      ],
                     ),
             ),
-            if (_cart.isNotEmpty)
+            if (_cartGoods.isNotEmpty || _cartServices.isNotEmpty)
               Container(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -432,6 +522,83 @@ class _RetailProductPageState extends State<RetailProductPage> {
                   ],
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CartItem extends StatelessWidget {
+  final ProductItem item;
+  final NumberFormat formatter;
+  final Function(int) onQuantityChanged;
+  final VoidCallback onDelete;
+
+  const _CartItem({
+    required this.item,
+    required this.formatter,
+    required this.onQuantityChanged,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: ValueKey('cart_${item.productID}'),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => onDelete(),
+      background: Container(
+        color: CupertinoColors.destructiveRed,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16),
+        child: const Icon(CupertinoIcons.delete, color: CupertinoColors.white),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.productName, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatter.format(item.priceYuan),
+                    style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minSize: 28,
+                  child: const Icon(CupertinoIcons.minus_circle, size: 22),
+                  onPressed: () => onQuantityChanged(-1),
+                ),
+                Text(
+                  '${item.quantity}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minSize: 28,
+                  child: const Icon(CupertinoIcons.plus_circle, size: 22),
+                  onPressed: () => onQuantityChanged(1),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            Text(
+              formatter.format(item.totalPriceYuan),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
           ],
         ),
       ),
@@ -470,9 +637,9 @@ class _ProductCard extends StatelessWidget {
         children: [
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: CupertinoColors.systemGrey6,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
               ),
               alignment: Alignment.center,
               child: const Icon(CupertinoIcons.cube_box, size: 48, color: CupertinoColors.systemGrey),
