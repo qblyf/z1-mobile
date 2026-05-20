@@ -3,8 +3,10 @@
 > **模块**：序列号查询
 > **版本**：v1.0
 > **日期**：2026-05-18
-> **状态**：待开发
-> **依据**：z1-mid 源码接口
+> **状态**：✅ 已实现
+> **接口来源**：
+> - z1-deno: `src/components/goods.ts:771` - `searchSerial`
+> - z1-mid: `model/z1/goods.ts:112` - `getGoodsBySerial`
 
 ---
 
@@ -135,13 +137,16 @@ Tab：无（独立页面，不在 TabBar 内）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| serial | string | 序列号（URL query 参数） |
+| serial | string | 序列号（URL query 参数，必填） |
+| state | string | 商品状态筛选（可选） |
 
 #### 序列号精确匹配请求
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| serial | string | 序列号（body 参数） |
+| serials | string[] | 序列号列表（body 参数，必填） |
+| goodsState | string | 商品状态筛选（可选） |
+| itemState | string | 物品状态筛选（可选） |
 
 #### 序列号查询响应（SerialSearchResult）
 
@@ -215,8 +220,8 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 状态 | 说明 |
 |------|------|------|------|------|
-| 序列号查询 | `/serial/search` | GET | ❌ 待后端实现 | 返回 500 错误 |
-| 序列号查询 | `/serial/search/full-match` | POST | ❌ 待后端实现 | 参数错误，需后端修复 |
+| 序列号查询 | `/serial/search` | GET | ✅ 已实现 | 模糊搜索，返回 Goods[] |
+| 序列号查询 | `/serial/search/full-match` | POST | ✅ 已实现 | 精确匹配，返回 goods+items |
 
 ---
 

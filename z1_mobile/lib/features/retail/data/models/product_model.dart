@@ -164,3 +164,110 @@ class ProductPriceModel extends Equatable {
   @override
   List<Object?> get props => [productId, price, unit];
 }
+
+class SkuModel extends Equatable {
+  final int skuId;
+  final String skuName;
+  final int price;
+  final int? retailPrice;
+  final int? memberPrice;
+  final int? stock;
+  final String? unit;
+  final String? image;
+  final Map<String, dynamic>? specs;
+
+  const SkuModel({
+    required this.skuId,
+    required this.skuName,
+    required this.price,
+    this.retailPrice,
+    this.memberPrice,
+    this.stock,
+    this.unit,
+    this.image,
+    this.specs,
+  });
+
+  factory SkuModel.fromJson(Map<String, dynamic> json) {
+    return SkuModel(
+      skuId: json['skuId'] ?? json['id'] ?? 0,
+      skuName: json['skuName'] ?? json['name'] ?? '',
+      price: json['price'] is int ? json['price'] : ((json['price'] as num?)?.toInt() ?? 0),
+      retailPrice: json['retailPrice'] is int ? json['retailPrice'] : ((json['retailPrice'] as num?)?.toInt()),
+      memberPrice: json['memberPrice'] is int ? json['memberPrice'] : ((json['memberPrice'] as num?)?.toInt()),
+      stock: json['stock'],
+      unit: json['unit'],
+      image: json['image'],
+      specs: json['specs'] as Map<String, dynamic>?,
+    );
+  }
+
+  @override
+  List<Object?> get props => [skuId, skuName, price];
+}
+
+class SpuModel extends Equatable {
+  final int spuId;
+  final String spuName;
+  final int? retailPrice;
+  final int? memberPrice;
+  final int? stock;
+  final String? image;
+  final String? categoryName;
+  final List<SkuModel> skus;
+
+  const SpuModel({
+    required this.spuId,
+    required this.spuName,
+    this.retailPrice,
+    this.memberPrice,
+    this.stock,
+    this.image,
+    this.categoryName,
+    this.skus = const [],
+  });
+
+  factory SpuModel.fromJson(Map<String, dynamic> json) {
+    final skuList = json['skuList'] as List<dynamic>? ?? [];
+    return SpuModel(
+      spuId: json['spuId'] ?? json['id'] ?? 0,
+      spuName: json['spuName'] ?? json['name'] ?? '',
+      retailPrice: json['retailPrice'] is int ? json['retailPrice'] : ((json['retailPrice'] as num?)?.toInt()),
+      memberPrice: json['memberPrice'] is int ? json['memberPrice'] : ((json['memberPrice'] as num?)?.toInt()),
+      stock: json['stock'],
+      image: json['image'],
+      categoryName: json['categoryName'],
+      skus: skuList.map((s) => SkuModel.fromJson(s as Map<String, dynamic>)).toList(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [spuId, spuName, skus];
+}
+
+class CategoryWithSpu extends Equatable {
+  final int id;
+  final String name;
+  final int? parentId;
+  final List<SpuModel> spus;
+
+  const CategoryWithSpu({
+    required this.id,
+    required this.name,
+    this.parentId,
+    this.spus = const [],
+  });
+
+  factory CategoryWithSpu.fromJson(Map<String, dynamic> json) {
+    final spuList = json['spuList'] as List<dynamic>? ?? [];
+    return CategoryWithSpu(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      parentId: json['parentId'],
+      spus: spuList.map((s) => SpuModel.fromJson(s as Map<String, dynamic>)).toList(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, name, spus];
+}

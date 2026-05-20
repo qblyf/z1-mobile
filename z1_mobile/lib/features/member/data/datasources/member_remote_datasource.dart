@@ -17,21 +17,33 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
 
   @override
   Future<Result<List<MemberModel>>> searchByPhone(String keyword) async {
-    return _apiClient.get<List<MemberModel>>(
-      ApiEndpoints.memberList(keyword: keyword),
-      parser: (data) {
-        final list = data['list'] as List<dynamic>? ?? [];
-        return list.map((e) => MemberModel.fromJson(e as Map<String, dynamic>)).toList();
-      },
+    final result = await _apiClient.get<Map<String, dynamic>>(
+      '/members/list-phones',
+      queryParameters: {'phones': keyword},
+      parser: (data) => data,
     );
+
+    // Debug
+    print('[MemberDS] keyword=$keyword, result.isFailure=${result.isFailure}, value=${result.value}');
+
+    return result.map((data) {
+      final list = data['res'] as List<dynamic>? ?? [];
+      print('[MemberDS] parsed ${list.length} members');
+      return list.map((e) => MemberModel.fromJson(e as Map<String, dynamic>)).toList();
+    });
   }
 
   @override
   Future<Result<MemberModel>> getMemberDetail(int memberId) async {
     return _apiClient.get<MemberModel>(
-      ApiEndpoints.memberSpecified(memberId),
+      '/members/specified',
+      queryParameters: {'userIdents': memberId.toString()},
       parser: (data) {
-        return MemberModel.fromJson(data['member'] as Map<String, dynamic>);
+        final list = data['list'] as List<dynamic>? ?? [];
+        if (list.isEmpty) {
+          throw Exception('会员不存在');
+        }
+        return MemberModel.fromJson(list.first as Map<String, dynamic>);
       },
     );
   }

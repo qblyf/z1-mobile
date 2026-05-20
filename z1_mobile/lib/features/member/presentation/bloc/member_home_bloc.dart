@@ -101,19 +101,23 @@ class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
   ) async {
     emit(const MemberHomeLoading());
 
-    final result = await _dataSource.searchByPhone('');
+    try {
+      final result = await _dataSource.searchByPhone('');
 
-    if (result.isFailure) {
-      // API 失败时显示空状态而非错误
-      emit(const MemberHomeEmpty());
-      return;
-    }
+      if (result.isFailure) {
+        emit(const MemberHomeEmpty());
+        return;
+      }
 
-    final members = result.value!;
-    if (members.isEmpty) {
-      emit(const MemberHomeEmpty());
-    } else {
-      emit(MemberHomeLoaded(members: members));
+      final members = result.value!;
+      if (members.isEmpty) {
+        emit(const MemberHomeEmpty());
+      } else {
+        emit(MemberHomeLoaded(members: members));
+      }
+    } catch(e, st) {
+      print('[BLoC] load error: $e\n$st');
+      emit(MemberHomeError(e.toString()));
     }
   }
 
@@ -126,30 +130,32 @@ class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
       return;
     }
 
-    // 使用 loading 状态显示搜索中
     emit(MemberHomeLoaded(
       members: const [],
       isSearchResult: true,
       searchKeyword: event.keyword,
     ));
 
-    final result = await _dataSource.searchByPhone(event.keyword);
+    try {
+      final result = await _dataSource.searchByPhone(event.keyword);
 
-    if (result.isFailure) {
-      // API 失败时显示空状态而非错误
-      emit(MemberHomeEmpty(searchKeyword: event.keyword));
-      return;
-    }
+      print('[BLoC] search result: isFailure=${result.isFailure}, value=${result.value?.length}');
 
-    final members = result.value!;
-    if (members.isEmpty) {
-      emit(MemberHomeEmpty(searchKeyword: event.keyword));
-    } else {
+      if (result.isFailure) {
+        emit(MemberHomeEmpty(searchKeyword: event.keyword));
+        return;
+      }
+
+      final members = result.value!;
+      print('[BLoC] emitting MemberHomeLoaded with ${members.length} members');
       emit(MemberHomeLoaded(
         members: members,
         isSearchResult: true,
         searchKeyword: event.keyword,
       ));
+    } catch(e, st) {
+      print('[BLoC] search error: $e\n$st');
+      emit(MemberHomeError(e.toString()));
     }
   }
 

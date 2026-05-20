@@ -53,7 +53,7 @@ class WorkbenchPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _QuickActionItem(icon: CupertinoIcons.cart, label: '零售开单', color: const Color(0xFFFF6B35), onTap: () => context.go('/order/retail/entry')),
+            _QuickActionItem(icon: CupertinoIcons.cart, label: '零售开单', color: const Color(0xFFFF6B35), onTap: () => context.go('/home/retail/entry')),
             _QuickActionItem(icon: CupertinoIcons.barcode_viewfinder, label: '扫码', color: CupertinoColors.activeGreen),
             _QuickActionItem(icon: CupertinoIcons.search, label: '查序列号', color: CupertinoColors.activeBlue),
             _QuickActionItem(icon: CupertinoIcons.person_2, label: '查会员', color: const Color(0xFFAF52DE)),

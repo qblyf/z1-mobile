@@ -11,33 +11,33 @@
 ## 一、页面路径总览
 
 ```
-✅ /order/retail/entry    → 开单入口（已完成）
+✅ /home/retail/entry    → 开单入口（已完成）
          ↓
-✅ /order/retail/product  → 商品选购（已完成）
+✅ /home/retail/product  → 商品选购（已完成）
          ↓
-✅ /order/retail/confirm  → 订单确认（已完成）
+✅ /home/retail/confirm  → 订单确认（已完成）
          ↓  (选择优惠券 →)
-✅ /order/retail/coupon-select → 优惠券选择（已完成）
+✅ /home/retail/coupon-select → 优惠券选择（已完成）
          ↓
-✅ /order/retail/payment  → 收款（已完成）
+✅ /home/retail/payment  → 收款（已完成）
          ↓
 ✅ /order/:orderNumber    → 订单详情/完成页（已完成）
 ```
 
 **完整链路**：
 ```
-/order/retail/entry → /order/retail/product → /order/retail/confirm → (选择优惠券 →) /order/retail/payment → /order/{orderNumber}
+/home/retail/entry → /home/retail/product → /home/retail/confirm → (选择优惠券 →) /home/retail/payment → /order/{orderNumber}
 ```
 
 ### 页面状态汇总
 
 | 页面 | 路由 | 状态 |
 |------|------|------|
-| 开单入口 | `/order/retail/entry` | ✅ 已完成 |
-| 商品选购 | `/order/retail/product` | ✅ 已完成 |
-| 订单确认 | `/order/retail/confirm` | ✅ 已完成 |
-| 优惠券选择 | `/order/retail/coupon-select` | ✅ 已完成 |
-| 收款 | `/order/retail/payment` | ✅ 已完成 |
+| 开单入口 | `/home/retail/entry` | ✅ 已完成 |
+| 商品选购 | `/home/retail/product` | ✅ 已完成 |
+| 订单确认 | `/home/retail/confirm` | ✅ 已完成 |
+| 优惠券选择 | `/home/retail/coupon-select` | ✅ 已完成 |
+| 收款 | `/home/retail/payment` | ✅ 已完成 |
 | 订单详情 | `/order/:orderNumber` | ✅ 已完成 |
 
 ---
@@ -47,7 +47,7 @@
 ### 2.1 路由
 
 ```
-路径：/order/retail/entry
+路径：/home/retail/entry
 名称：零售开单
 Tab：无（独立页面，不在 TabBar 内）
 ```
@@ -104,9 +104,13 @@ Tab：无（独立页面，不在 TabBar 内）
 
 1. 输入手机号（11位数字键盘）
 2. 点击"查找"按钮
-3. 调用 `/members/search-by-phones` 接口
-4. 有结果 → 显示会员卡片（姓名、等级、积分）
+3. 调用 `/members/list-phones` 接口
+4. 有结果 → 显示会员卡片
 5. 无结果 → 显示红色提示"该手机号未注册为会员"
+
+**最近会员**：
+- 输入框下方显示最近搜索过的会员标签（最多显示 3 个）
+- 点击标签快速选中该会员
 
 #### 绑定/解绑
 
@@ -118,7 +122,7 @@ Tab：无（独立页面，不在 TabBar 内）
 
 - 点击底部"开始开单"按钮
 - 携带参数：`saleType` + `customerId?`（可选）
-- 跳转到 `/order/retail/product`
+- 跳转到 `/home/retail/product`
 
 ### 2.4 字段说明
 
@@ -138,13 +142,23 @@ Tab：无（独立页面，不在 TabBar 内）
 | 扫码失败/无法识别 | Toast 提示"无法识别，请重试" |
 | 网络错误 | 显示"网络异常，请检查网络" |
 
+### 2.5 会员卡字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| name | string | 会员姓名（无则取 wxName） |
+| mobilePhone | string | 手机号 |
+| levelName | string | 等级标签（如"金卡"、"银卡"）|
+| experience | number | 可用积分（单位：分） |
+| totalConsume | number | 历史消费金额（单位：分） |
+
 ### 2.6 跳转关系
 
 | 来源 | 触发 | 目标 |
 |------|------|------|
-| 首页菜单 | 点击"零售开单" | /order/retail/entry |
-| /order/retail/entry | 点击"开始开单" | /order/retail/product |
-| /order/retail/entry | 点击顶部返回 | /home |
+| 首页菜单 | 点击"零售开单" | /home/retail/entry |
+| /home/retail/entry | 点击"开始开单" | /home/retail/product |
+| /home/retail/entry | 点击顶部返回 | /home |
 
 ---
 
@@ -153,26 +167,20 @@ Tab：无（独立页面，不在 TabBar 内）
 ### 3.1 路由
 
 ```
-路径：/order/retail/product
+路径：/home/retail/product
 名称：商品选购
 参数：saleType, customerId?
 ```
-
-### 3.6 跳转关系
-
-| 来源 | 触发 | 目标 |
-|------|------|------|
-| /order/retail/entry | 点击"开始开单" | /order/retail/product |
-| /order/retail/product | 点击"去结算" | /order/retail/confirm |
-| /order/retail/product | 点击顶部返回 | /order/retail/entry |
 
 ### 3.2 基本布局
 
 ```
 ┌──────────────────────────────────┐
-│ ← 商品选购        [扫码] [购物车] │  ← 顶部导航栏
+│ ← 商品选购            [购物车]  │  ← 顶部导航栏
 ├──────────────────────────────────┤
 │ [零售] [张三 金卡 ▼]             │  ← 销售类型标签 + 会员切换
+├──────────────────────────────────┤
+│ [商品] [服务]                    │  ← 商品/服务 Tab 切换 ⚠️ 新增
 ├──────────────────────────────────┤
 │ [搜索商品名称/条码]    [扫码]    │  ← 搜索栏
 ├──────────────────────────────────┤
@@ -193,11 +201,19 @@ Tab：无（独立页面，不在 TabBar 内）
 
 ### 3.3 核心交互逻辑
 
+#### 商品/服务 Tab 切换 ⚠️
+
+- 顶部 Tab 分为"商品"和"服务"两栏
+- 点击切换显示对应类型商品
+- Tab 切换时重置分类选中状态为"全部"
+- 购物车中商品和服务分开展示，可同时选购
+
 #### 商品分类
 
 - 左侧分类列表，支持滚动
 - 点击分类 → 筛选商品列表
 - 默认显示"全部"
+- 分类数据来自 `/product/select-base` 接口
 
 #### 商品网格
 
@@ -206,7 +222,7 @@ Tab：无（独立页面，不在 TabBar 内）
   - 商品图片/图标
   - 商品名称（超长截断）
   - 零售价（原价）
-  - 会员价（更低价）
+  - 会员价（更低价，绑定会员时显示）
   - 库存状态（有货/无货/库存不足）
 - 点击商品卡片 → 查看商品详情弹窗
 
@@ -225,8 +241,8 @@ Tab：无（独立页面，不在 TabBar 内）
 
 #### 搜索
 
-- 输入商品名称或条码
-- 点击搜索/回车 → 调用 `/product/search`
+- 输入商品名称
+- 点击搜索/回车 → 调用 `/product/select?ids=` 接口
 - 显示搜索结果列表
 
 #### 购物车浮动栏
@@ -237,7 +253,7 @@ Tab：无（独立页面，不在 TabBar 内）
 
 #### 购物车抽屉
 
-- 展开显示所有已选商品
+- 展开显示所有已选商品（商品和服务分类展示）
 - 每项可修改数量（-/+ 按钮）
 - 可删除商品（向左滑动或点击删除图标）
 - 点击"清空"可清空购物车
@@ -248,9 +264,10 @@ Tab：无（独立页面，不在 TabBar 内）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| id | string | 商品 ID |
+| id | number | 商品 ID |
 | name | string | 商品名称 |
-| categoryId | string | 分类 ID |
+| skuId | number | SKU ID |
+| categoryId | number | 分类 ID |
 | categoryName | string | 分类名称 |
 | barcode | string | 条码 |
 | retailPrice | int | 零售价（分） |
@@ -263,14 +280,21 @@ Tab：无（独立页面，不在 TabBar 内）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| productId | string | 商品 ID |
-| skuId | string | SKU ID（可选）|
+| productId | number | 商品 ID |
+| skuId | number | SKU ID |
 | name | string | 商品名称 |
 | price | int | 单价（分，根据 saleType 取对应价格）|
 | quantity | int | 数量 |
-| subtotal | decimal | 小计金额 = price × quantity |
+| subtotal | int | 小计金额 = price × quantity（分）|
 
-### 3.5 异常/边界情况
+### 3.5 接口清单
+
+| 页面区块 | 接口 | 方法 | 说明 |
+|----------|------|------|------|
+| 商品/服务列表 | `/product/select-base` | GET | 获取基础商品选择数据 ✅ |
+| 批量查询商品 | `/product/select?ids=1,2,3` | GET | 批量查询商品详情 ✅ |
+
+### 3.6 异常/边界情况
 
 | 场景 | 处理 |
 |------|------|
@@ -281,13 +305,13 @@ Tab：无（独立页面，不在 TabBar 内）
 | 网络错误 | 显示错误页，点击重试 |
 | 会员价生效 | 页面显示会员价格，原价划线 |
 
-### 3.6 跳转关系
+### 3.7 跳转关系
 
 | 来源 | 触发 | 目标 |
 |------|------|------|
-| /order/retail/entry | 点击"开始开单" | /order/retail/product |
-| /order/retail/product | 点击"去结算" | /order/retail/confirm |
-| /order/retail/product | 点击顶部返回 | /order/retail/entry |
+| /home/retail/entry | 点击"开始开单" | /home/retail/product |
+| /home/retail/product | 点击"去结算" | /home/retail/confirm |
+| /home/retail/product | 点击顶部返回 | /home/retail/entry |
 
 ---
 
@@ -296,7 +320,7 @@ Tab：无（独立页面，不在 TabBar 内）
 ### 4.1 路由
 
 ```
-路径：/order/retail/confirm
+路径：/home/retail/confirm
 名称：确认订单
 参数：从购物车带入商品列表、会员信息
 ```
@@ -351,7 +375,7 @@ Tab：无（独立页面，不在 TabBar 内）
 
 #### 优惠券选择
 
-- 点击优惠券行 → 跳转到 `/order/retail/coupon-select`
+- 点击优惠券行 → 跳转到 `/home/retail/coupon-select`
 - 选择后返回，显示已抵扣金额
 - 支持"暂不使用"选项
 - 会员专属优惠券优先推荐
@@ -402,10 +426,10 @@ Tab：无（独立页面，不在 TabBar 内）
 
 | 来源 | 触发 | 目标 |
 |------|------|------|
-| /order/retail/product | 点击"去结算" | /order/retail/confirm |
-| /order/retail/confirm | 点击"优惠券" | /order/retail/coupon-select |
-| /order/retail/confirm | 点击"去收款" | /order/retail/payment |
-| /order/retail/confirm | 点击顶部返回 | /order/retail/product |
+| /home/retail/product | 点击"去结算" | /home/retail/confirm |
+| /home/retail/confirm | 点击"优惠券" | /home/retail/coupon-select |
+| /home/retail/confirm | 点击"去收款" | /home/retail/payment |
+| /home/retail/confirm | 点击顶部返回 | /home/retail/product |
 
 ---
 
@@ -414,7 +438,7 @@ Tab：无（独立页面，不在 TabBar 内）
 ### 5.1 路由
 
 ```
-路径：/order/retail/payment
+路径：/home/retail/payment
 名称：收银
 参数：finalAmount（应收金额）、orderData（订单数据）
 ```
@@ -537,9 +561,9 @@ Tab：无（独立页面，不在 TabBar 内）
 
 | 来源 | 触发 | 目标 |
 |------|------|------|
-| /order/retail/confirm | 点击"去收款" | /order/retail/payment |
-| /order/retail/payment | 收款成功 | /order/:orderNumber |
-| /order/retail/payment | 点击顶部返回 | /order/retail/confirm |
+| /home/retail/confirm | 点击"去收款" | /home/retail/payment |
+| /home/retail/payment | 收款成功 | /order/:orderNumber |
+| /home/retail/payment | 点击顶部返回 | /home/retail/confirm |
 
 ---
 
@@ -548,11 +572,11 @@ Tab：无（独立页面，不在 TabBar 内）
 ### 6.1 路由
 
 ```
-路径：/order/retail/coupon-select
+路径：/home/retail/coupon-select
 名称：选择优惠券
 类型：底部弹窗/全屏页面
-从页面：/order/retail/confirm 点击"优惠券"进入
-返回：/order/retail/confirm
+从页面：/home/retail/confirm 点击"优惠券"进入
+返回：/home/retail/confirm
 ```
 
 ### 6.2 基本布局
@@ -663,9 +687,9 @@ Tab：无（独立页面，不在 TabBar 内）
 
 | 来源 | 触发 | 目标 |
 |------|------|------|
-| /order/retail/confirm | 点击"优惠券"行 | /order/retail/coupon-select |
-| /order/retail/coupon-select | 点击"确认使用" | /order/retail/confirm |
-| /order/retail/coupon-select | 点击"✕"关闭 | /order/retail/confirm |
+| /home/retail/confirm | 点击"优惠券"行 | /home/retail/coupon-select |
+| /home/retail/coupon-select | 点击"确认使用" | /home/retail/confirm |
+| /home/retail/coupon-select | 点击"✕"关闭 | /home/retail/confirm |
 
 ---
 
@@ -765,7 +789,7 @@ Tab：无（独立页面，不在 TabBar 内）
 **再来一单**
 
 - 复制当前订单的商品到购物车
-- 跳转 `/order/retail/product`
+- 跳转 `/home/retail/product`
 - 自动带入上次的销售类型
 
 ### 6.4 字段说明
@@ -814,9 +838,9 @@ Tab：无（独立页面，不在 TabBar 内）
 
 | 来源 | 触发 | 目标 |
 |------|------|------|
-| /order/retail/payment | 收款成功（自动）| /order/:orderNumber |
+| /home/retail/payment | 收款成功（自动）| /order/:orderNumber |
 | /order/list | 点击订单列表项 | /order/:orderNumber |
-| /order/:orderNumber | 点击"再来一单" | /order/retail/product |
+| /order/:orderNumber | 点击"再来一单" | /home/retail/product |
 | /order/:orderNumber | 点击"打印小票" | 调起打印机 |
 | /order/:orderNumber | 点击顶部返回 | /order/list |
 

@@ -182,6 +182,9 @@ class MemberInfo extends Equatable {
   final String mobilePhone;
   final int experience; // 积分
   final int coin; // 金币
+  final String levelName; // 会员等级
+  final double totalConsumption; // 历史消费（元）
+  final int availableExperience; // 可用积分
 
   const MemberInfo({
     required this.ident,
@@ -189,8 +192,11 @@ class MemberInfo extends Equatable {
     required this.mobilePhone,
     this.experience = 0,
     this.coin = 0,
+    this.levelName = '会员',
+    this.totalConsumption = 0.0,
+    this.availableExperience = 0,
   });
 
   @override
-  List<Object?> get props => [ident, realName, mobilePhone];
+  List<Object?> get props => [ident, realName, mobilePhone, levelName, availableExperience];
 }

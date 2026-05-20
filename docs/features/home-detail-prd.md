@@ -114,7 +114,7 @@ Tab：TabBar 第 1 项（首页）
 
 | 菜单 | 路由 | 优先级 | 说明 |
 |------|------|--------|------|
-| 零售开单 | `/order/retail/entry` | P0 | 直接进入开单 |
+| 零售开单 | `/home/retail/entry` | P0 | 直接进入开单 |
 | 订单列表 | `/order/list` | P0 | 查看订单 |
 | 库存管理 | `/inventory/home` | P0 | 盘库/调拨/采购入口 |
 | 会员中心 | `/member/home` | P1 | Tab 切换到会员 |
@@ -204,7 +204,7 @@ Tab：TabBar 第 1 项（首页）
 | /home | 点击"快速扫码" | 调起相机扫码 |
 | /home | 点击"查序列号" | `/inventory/serial-search` |
 | /home | 点击"查会员" | `/member/home`（搜索框展开）|
-| /home | 点击"零售开单" | `/order/retail/entry` |
+| /home | 点击"零售开单" | `/home/retail/entry` |
 | /home | 点击"订单列表" | `/order/list` |
 | /home | 点击"库存管理" | `/inventory/home` |
 | /home | 点击"会员中心" | Tab 切换到会员 |

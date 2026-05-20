@@ -67,7 +67,7 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
       decreaseCoins: decreaseCoins,
       remarks: _remarksController.text.trim(),
     );
-    context.push('/order/retail/payment', extra: order);
+    context.push('/home/retail/payment', extra: order);
   }
 
   @override
@@ -473,7 +473,7 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
   }
 
   void _showCouponPicker() {
-    context.push('/order/retail/coupon-select', extra: {
+    context.push('/home/retail/coupon-select', extra: {
       'order': _order,
     }).then((result) {
       if (result != null && result is Map<String, dynamic>) {

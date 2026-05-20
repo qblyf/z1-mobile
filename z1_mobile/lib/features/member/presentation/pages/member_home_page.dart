@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -36,37 +36,45 @@ class _MemberHomePageContentState extends State<_MemberHomePageContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('会员中心'),
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('会员中心'),
       ),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          Expanded(
-            child: BlocBuilder<MemberHomeBloc, MemberHomeState>(
-              builder: (context, state) {
-                if (state is MemberHomeLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      child: SafeArea(
+        child: Column(
+          children: [
+            _buildSearchBar(),
+            Expanded(
+              child: BlocBuilder<MemberHomeBloc, MemberHomeState>(
+                builder: (context, state) {
+                  print('[UI] state = ${state.runtimeType}, members=${state is MemberHomeLoaded ? state.members.length : "N/A"}');
+                  try {
+                  if (state is MemberHomeLoading) {
+                    return const Center(child: CupertinoActivityIndicator());
+                  }
 
-                if (state is MemberHomeError) {
-                  return _buildErrorView(state.message);
-                }
+                  if (state is MemberHomeError) {
+                    return _buildErrorView(context, state.message);
+                  }
 
-                if (state is MemberHomeEmpty) {
-                  return _buildEmptyView(state.searchKeyword);
-                }
+                  if (state is MemberHomeEmpty) {
+                    return _buildEmptyView(context, state.searchKeyword);
+                  }
 
-                if (state is MemberHomeLoaded) {
-                  return _buildMemberList(state);
-                }
+                  if (state is MemberHomeLoaded) {
+                    return _buildMemberList(context, state);
+                  }
 
-                return const SizedBox.shrink();
-              },
+                  return const SizedBox.shrink();
+                  } catch(e, st) {
+                    print('[UI] render error: $e\n$st');
+                    return Text('Error: $e');
+                  }
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -74,71 +82,78 @@ class _MemberHomePageContentState extends State<_MemberHomePageContent> {
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: '搜索手机号/姓名',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                          context.read<MemberHomeBloc>().add(const MemberHomeClearSearch());
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+      child: CupertinoTextField(
+        controller: _searchController,
+        placeholder: '搜索手机号/姓名',
+        prefix: const Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: Icon(CupertinoIcons.search, color: CupertinoColors.systemGrey),
+        ),
+        suffix: _searchController.text.isNotEmpty
+            ? GestureDetector(
+                onTap: () {
+                  _searchController.clear();
+                  setState(() {});
+                  context.read<MemberHomeBloc>().add(const MemberHomeClearSearch());
+                },
+                child: const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(CupertinoIcons.clear_circled_solid, color: CupertinoColors.systemGrey, size: 18),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              onChanged: (value) {
-                setState(() {});
-                context.read<MemberHomeBloc>().add(MemberHomeSearchRequested(value));
-              },
-            ),
-          ),
-        ],
+              )
+            : null,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: CupertinoColors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: CupertinoColors.systemGrey4),
+        ),
+        onChanged: (value) {
+          setState(() {});
+          context.read<MemberHomeBloc>().add(MemberHomeSearchRequested(value));
+        },
       ),
     );
   }
 
-  Widget _buildMemberList(MemberHomeLoaded state) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<MemberHomeBloc>().add(const MemberHomeLoadRequested());
-      },
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          if (!state.isSearchResult && state.recentMembers.isNotEmpty) ...[
-            _buildSectionTitle('最近服务'),
-            _buildRecentMembers(state.recentMembers),
-            const SizedBox(height: 16),
-          ],
-          _buildSectionTitle(state.isSearchResult ? '搜索结果' : '全部会员'),
-          if (state.members.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(32),
-              child: Center(
-                child: Text('暂无会员数据'),
-              ),
-            )
-          else
-            ...state.members.map((member) => _buildMemberCard(member)),
+  Widget _buildMemberList(BuildContext context, MemberHomeLoaded state) {
+    return CustomScrollView(
+      slivers: [
+        if (!state.isSearchResult && state.recentMembers.isNotEmpty) ...[
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle('最近服务'),
+                _buildRecentMembers(context, state.recentMembers),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
         ],
-      ),
+        SliverToBoxAdapter(
+          child: _buildSectionTitle(state.isSearchResult ? '搜索结果' : '全部会员'),
+        ),
+        if (state.members.isEmpty)
+          const SliverFillRemaining(
+            child: Center(
+              child: Text('暂无会员数据', style: TextStyle(color: CupertinoColors.systemGrey)),
+            ),
+          )
+        else
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _buildMemberCard(context, state.members[index]),
+              childCount: state.members.length,
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 8),
+      padding: const EdgeInsets.only(bottom: 12, top: 8, left: 16, right: 16),
       child: Text(
         title,
         style: const TextStyle(
@@ -149,11 +164,12 @@ class _MemberHomePageContentState extends State<_MemberHomePageContent> {
     );
   }
 
-  Widget _buildRecentMembers(List<MemberModel> recentMembers) {
+  Widget _buildRecentMembers(BuildContext context, List<MemberModel> recentMembers) {
     return SizedBox(
       height: 80,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: recentMembers.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
@@ -161,23 +177,27 @@ class _MemberHomePageContentState extends State<_MemberHomePageContent> {
           return GestureDetector(
             onTap: () => context.push('/member/${member.id}'),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2196F3).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  alignment: Alignment.center,
                   child: Text(
                     member.name.isNotEmpty ? member.name[0] : '?',
-                    style: TextStyle(
-                      color: AppTheme.primaryColor,
+                    style: const TextStyle(
+                      color: Color(0xFF2196F3),
                       fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  member.name,
-                  style: const TextStyle(fontSize: 12),
-                ),
+                Text(member.name, style: const TextStyle(fontSize: 12)),
               ],
             ),
           );
@@ -186,149 +206,116 @@ class _MemberHomePageContentState extends State<_MemberHomePageContent> {
     );
   }
 
-  Widget _buildMemberCard(MemberModel member) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: () => context.push('/member/${member.id}'),
+  Widget _buildMemberCard(BuildContext context, MemberModel member) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: CupertinoColors.white,
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                child: Text(
-                  member.name.isNotEmpty ? member.name[0] : '?',
-                  style: TextStyle(
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
+        boxShadow: [
+          BoxShadow(
+            color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2196F3).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              member.name.isNotEmpty ? member.name[0] : '?',
+              style: const TextStyle(
+                color: Color(0xFF2196F3),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          member.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            member.levelName,
-                            style: TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
                     Text(
-                      member.maskedPhone,
-                      style: TextStyle(
-                        color: AppTheme.grey600,
-                        fontSize: 14,
+                      member.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2196F3).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        member.levelName,
+                        style: const TextStyle(color: Color(0xFF2196F3), fontSize: 12),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  member.maskedPhone,
+                  style: const TextStyle(color: CupertinoColors.systemGrey, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${member.availableExperience}',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${member.availableExperienceYuan.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  Text(
-                    '积分',
-                    style: TextStyle(
-                      color: AppTheme.grey500,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
+              const Text('积分', style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 12)),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyView(String? searchKeyword) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.person_off_outlined,
-            size: 64,
-            color: AppTheme.grey400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            searchKeyword != null && searchKeyword.isNotEmpty
-                ? '未找到该会员'
-                : '暂无会员数据',
-            style: TextStyle(
-              color: AppTheme.grey600,
-              fontSize: 16,
-            ),
-          ),
-          if (searchKeyword == null || searchKeyword.isEmpty) ...[
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('新增会员'),
-            ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildErrorView(String message) {
+  Widget _buildEmptyView(BuildContext context, String? searchKeyword) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: AppTheme.errorColor,
-          ),
+          const Icon(CupertinoIcons.person_crop_circle_badge_xmark, size: 64, color: CupertinoColors.systemGrey),
           const SizedBox(height: 16),
           Text(
-            message,
-            style: TextStyle(color: AppTheme.grey600),
+            searchKeyword != null && searchKeyword.isNotEmpty ? '未找到该会员' : '暂无会员数据',
+            style: const TextStyle(color: CupertinoColors.systemGrey, fontSize: 16),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorView(BuildContext context, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(CupertinoIcons.exclamationmark_circle, size: 64, color: CupertinoColors.systemGrey),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              context.read<MemberHomeBloc>().add(const MemberHomeLoadRequested());
-            },
+          Text(message, style: const TextStyle(color: CupertinoColors.systemGrey)),
+          const SizedBox(height: 16),
+          CupertinoButton(
             child: const Text('重试'),
+            onPressed: () => context.read<MemberHomeBloc>().add(const MemberHomeLoadRequested()),
           ),
         ],
       ),

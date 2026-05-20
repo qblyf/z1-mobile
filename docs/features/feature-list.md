@@ -33,7 +33,7 @@
 
 | 卡片 | 图标 | 路由 | 优先级 |
 |------|------|------|--------|
-| 零售开单 | 🛒 | `/order/retail/entry` | P0 |
+| 零售开单 | 🛒 | `/home/retail/entry` | P0 |
 | 订单列表 | 📋 | `/order/list` | P0 |
 | 库存管理 | 📦 | `/inventory/home` | P0 |
 | 会员中心 | 👥 | `/member/home` | P1 |
@@ -80,8 +80,8 @@
 ```
 订单（/order/home）
 ├── 零售开单 🟢 P0
-│   ├── 开单入口 (/order/retail/entry)
-│   ├── 零售单编辑 (/order/retail/product)
+│   ├── 开单入口 (/home/retail/entry)
+│   ├── 零售单编辑 (/home/retail/product)
 │   └── 订单详情 (/order/:orderNumber)
 ├── 销售订单 🟢 P0
 │   ├── 销售订单列表 (/order/list)
@@ -144,11 +144,11 @@
 
 | 页面 | 路由 | 优先级 | 状态 | 说明 |
 |------|------|--------|------|------|
-| 开单入口 | `/order/retail/entry` | P0 | ✅ 已完成 | 选择销售类型 |
-| 商品选购 | `/order/retail/product` | P0 | ✅ 已完成 | 扫码/搜索商品 |
-| 订单确认 | `/order/retail/confirm` | P0 | ✅ 已完成 | 确认商品、优惠 |
-| 优惠券选择 | `/order/retail/coupon-select` | P0 | ✅ 已完成 | 选择优惠券 |
-| 收款 | `/order/retail/payment` | P0 | ✅ 已完成 | 支付方式、收款 |
+| 开单入口 | `/home/retail/entry` | P0 | ✅ 已完成 | 选择销售类型 |
+| 商品选购 | `/home/retail/product` | P0 | ✅ 已完成 | 扫码/搜索商品 |
+| 订单确认 | `/home/retail/confirm` | P0 | ✅ 已完成 | 确认商品、优惠 |
+| 优惠券选择 | `/home/retail/coupon-select` | P0 | ✅ 已完成 | 选择优惠券 |
+| 收款 | `/home/retail/payment` | P0 | ✅ 已完成 | 支付方式、收款 |
 | 订单详情 | `/order/:orderNumber` | P0 | ✅ 已完成 | 商品明细、打印小票 |
 
 #### 销售订单（Phase 4）
@@ -388,9 +388,9 @@
 /home 首页
 │
 ├── 🛒 零售开单
-│     → /order/retail/entry
+│     → /home/retail/entry
 │     │     ↓ 选择销售类型（零售/批发/工程）
-│     │  /order/retail/product
+│     │  /home/retail/product
 │     │     ↓ 扫码/搜索商品 → 添加商品 → 设置数量
 │     │     → 收款页面
 │     │     → 提交成功 → /order/:orderNumber
@@ -472,7 +472,7 @@
 #### 零售开单完整链路
 
 ```
-/order/retail/entry
+/home/retail/entry
 │
 ├── 选择销售类型
 │   ├── 零售（默认）
@@ -481,7 +481,7 @@
 │
 ↓ 扫码添加商品 ↓ 搜索添加商品 ↓ 历史记录添加
 │
-/order/retail/product（零售单编辑）
+/home/retail/product（零售单编辑）
 │
 ├── 商品列表（可增删改数量）
 │   ├── 扫码 → 扫码枪/相机
@@ -1179,8 +1179,8 @@
 |------|------|----------|--------|----------|
 | 登录 | /login | 空表单 | 无 | 认证 |
 | 首页 | /home | 加载中→数据 | TabBar | 路由中枢 |
-| 零售开单入口 | /order/retail/entry | 销售类型选择 | /home | 订单 |
-| 商品选购 | /order/retail/product | 空购物车 | /order/retail/entry | 订单 |
+| 零售开单入口 | /home/retail/entry | 销售类型选择 | /home | 订单 |
+| 商品选购 | /home/retail/product | 空购物车 | /home/retail/entry | 订单 |
 | 销售订单列表 | /order/list | 今日订单 | /home | 订单 |
 | 订单详情 | /order/:orderNumber | 加载中 | /order/list | 订单 |
 | 打印小票 | /order/:orderNumber/print | 打印预览 | /order/:orderNumber | 订单 |

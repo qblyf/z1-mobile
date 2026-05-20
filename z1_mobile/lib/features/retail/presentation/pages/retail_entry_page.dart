@@ -5,6 +5,30 @@ import 'package:go_router/go_router.dart';
 import '../../data/models/retail_order_model.dart';
 import '../bloc/member_bloc.dart';
 
+class _InfoTag extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoTag({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '$label: ',
+          style: const TextStyle(fontSize: 11, color: CupertinoColors.secondaryLabel),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+        ),
+      ],
+    );
+  }
+}
+
 class RetailEntryPage extends StatefulWidget {
   const RetailEntryPage({super.key});
 
@@ -66,7 +90,7 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
       customerName: _boundMember?.realName,
     );
 
-    context.push('/order/retail/product', extra: order);
+    context.push('/home/retail/product', extra: order);
   }
 
   @override
@@ -211,19 +235,54 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          _boundMember!.realName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              _boundMember!.realName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: CupertinoColors.activeOrange.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _boundMember!.levelName,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: CupertinoColors.activeOrange,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           _boundMember!.mobilePhone,
                           style: const TextStyle(
                             color: CupertinoColors.secondaryLabel,
                             fontSize: 12,
                           ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            _InfoTag(
+                              label: '积分',
+                              value: '${_boundMember!.availableExperience}',
+                            ),
+                            const SizedBox(width: 12),
+                            _InfoTag(
+                              label: '消费',
+                              value: '¥${_boundMember!.totalConsumption.toStringAsFixed(2)}',
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -366,6 +425,9 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
                               realName: member.realName,
                               mobilePhone: member.mobilePhone,
                               experience: member.experience,
+                              levelName: member.levelName,
+                              totalConsumption: member.totalConsumption,
+                              availableExperience: member.availableExperience,
                             ));
                             context.read<MemberBloc>().add(const MemberSearchCleared());
                           },
@@ -374,6 +436,18 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
                               const Icon(CupertinoIcons.person, size: 18),
                               const SizedBox(width: 8),
                               Text(member.realName),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: CupertinoColors.activeOrange.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  member.levelName,
+                                  style: const TextStyle(fontSize: 10, color: CupertinoColors.activeOrange),
+                                ),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 member.mobilePhone,
@@ -409,6 +483,9 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
                                 realName: member.realName,
                                 mobilePhone: member.mobilePhone,
                                 experience: member.experience,
+                                levelName: member.levelName,
+                                totalConsumption: member.totalConsumption,
+                                availableExperience: member.availableExperience,
                               ));
                             },
                             child: Container(
@@ -417,9 +494,26 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
                                 color: CupertinoColors.systemGrey6,
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              child: Text(
-                                member.mobilePhone,
-                                style: const TextStyle(fontSize: 12),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    member.mobilePhone,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: CupertinoColors.activeOrange.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      member.levelName,
+                                      style: const TextStyle(fontSize: 9, color: CupertinoColors.activeOrange),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );

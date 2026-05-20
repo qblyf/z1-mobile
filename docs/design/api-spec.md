@@ -2,6 +2,9 @@
 
 > 基于 `z1-mid` SDK 和 `z1-deno` 后端。
 > 本文档按模块整理移动端需要的 API 接口。
+>
+> ⚠️ 本文档已根据测试 agent 实测结果更新（2026-05-19）
+> 详细测试报告：`docs/status/api-test-report-2026-0519.md`
 
 ---
 
@@ -19,7 +22,7 @@
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/user/self` | GET | 获取当前用户信息 | — | `{id, name, phone, role, departmentId}` |
+| `/members/self` | GET | 获取当前用户信息 | — | `{userId, name, phone, role, departmentId}` |
 
 ---
 
@@ -29,59 +32,51 @@
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/order/retail/entry` | GET | 开单入口（获取销售类型） | — | `{saleTypes: [{id, name}]}` |
-| `/order/shop-sale/add` | POST | 创建零售单 | `{customerId, saleType, items[], payment}` | `{orderNumber}` |
 | `/order/shop-sale-list` | GET | 零售单列表 | `{date?, status?, page, pageSize}` | `{list[], total}` |
-| `/order/:orderNumber` | GET | 订单详情 | — | `{orderNumber, items[], payment, status}` |
-| `/order/:orderNumber/print` | GET | 打印小票 | — | `{printData}` |
+| `/order/add` | POST | 创建订单 ⚠️ | `{type, genre, orderAmount, discountAmount, items[], payment...}` | `{orderNumber}` |
 
-**零售单请求结构**：
-
-```json
-{
-  "customerId": "string",        // 会员ID（可选）
-  "saleType": "retail|wholesale|project",
-  "items": [
-    {
-      "productId": "string",
-      "skuId": "string",
-      "quantity": 1,
-      "price": 100.00,
-      "discount": 0
-    }
-  ],
-  "payment": {
-    "method": "cash|wechat|alipay|card|combined",
-    "amount": 100.00,
-    "subPayments": []  // 组合支付时
-  }
-}
-```
+> ⚠️ `POST /order/add` 必填参数：`customerIdent`、`orderAmount`、`discountAmount`、`type`、`genre`、`status`、`handlerIdent` |
+> ⚠️ `/order/genre` → `[后端无]` 改用 `GET /order/genre/customer?user=`；`/order/all-info` → `[后端无]` 实际为导出接口；`/order/product-can-sale-service` → `[待确认]` 实际路径 `/order/order-product-can-sale-service`
 
 ### 2.2 销售订单
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/order/sales-list` | GET | 销售订单列表 | `{dateRange?, status?, page, pageSize}` | `{list[], total}` |
 | `/order/:orderNumber` | GET | 订单详情 | — | `{order}` |
 
-### 2.3 预订单
+### 2.3 销售列表
+
+| 接口 | 方法 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| `/order/shop-sale-list` | GET | 店内零售列表 | `{date?, status?, page, pageSize}` | `{list[], total}` |
+| `/order/net-sale-list` | GET | 网络销售列表 | `{date?, status?, page, pageSize}` | `{list[], total}` |
+| `/order/out-sale-list` | GET | 外批销售列表 | `{date?, status?, page, pageSize}` | `{list[], total}` |
+
+> ⚠️ ~~`/order/sales-list`~~ 已废弃，请使用 `/order/shop-sale-list`
+
+### 2.4 预订单
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
 | `/pre-sale/list` | GET | 预订单列表 | `{status?, page, pageSize}` | `{list[], total}` |
 | `/pre-sale/add` | POST | 创建预订单 | `{...}` | `{preOrderId}` |
-| `/pre-sale/:id/confirm` | POST | 确认预订单 | — | `{orderNumber}` |
-| `/pre-sale/:id/cancel` | POST | 取消预订单 | `{reason}` | `{success}` |
+| `/pre-sale-order/pay` | POST | 预售支付确认 | `{preOrderId, paymentInfo}` | `{success}` |
+| `/pre-sale-order/cancel` | POST | 预售取消 | `{preOrderId, reason?}` | `{success}` |
 
-### 2.4 退货退款
+> ⚠️ ~~`POST /pre-sale/:id/confirm`~~ 已废弃，请使用 `POST /pre-sale-order/pay`
+> ⚠️ ~~`POST /pre-sale/:id/cancel`~~ 已废弃，请使用 `POST /pre-sale-order/cancel`
+
+### 2.5 退货退款
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
 | `/order/return-list` | GET | 退货列表 | `{status?, page, pageSize}` | `{list[], total}` |
 | `/order/return/:id` | GET | 退货详情 | — | `{returnOrder}` |
-| `/order/return/:id/approve` | POST | 审核通过 | `{remark}` | `{success}` |
-| `/order/return/:id/reject` | POST | 审核拒绝 | `{reason}` | `{success}` |
+| `/return-refund-application/audit` | POST | 退货退款审核通过 | `{id, remark?}` | `{success}` |
+| `/return-refund-application/reject-audit` | POST | 退货退款审核拒绝 | `{id, reason}` | `{success}` |
+
+> ⚠️ ~~`POST /order/return/:id/approve`~~ 已废弃
+> ⚠️ ~~`POST /order/return/:id/reject`~~ 已废弃
 
 ---
 
@@ -91,36 +86,40 @@
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/stock-taking/list` | GET | 盘库列表 | `{status?, date?, page, pageSize}` | `{list[], total}` |
-| `/stock-taking/add` | POST | 新建盘库单 | `{warehouseID, items[]}` ⚠️ | `{stockTakingId}` |
-| `/stock-taking/:id` | GET | 盘库详情 | — | `{stockTaking}` |
-| `/stock-taking/:id/add-item` | POST | 添加盘点商品 | `{barcode, systemQty, actualQty}` | `{item}` |
-| `/stock-taking/:id/submit` | POST | 提交盘库 | — | `{success}` |
+| `/stock-taking/list` | GET | 盘库列表 | `{status?, date?, page, pageSize}` | `{list[], total}` ⚠️ **性能警告：响应时间约 6 秒** |
+| `/stock-taking/add` | POST | 新建盘库单 | `{warehouseID, items[]}` | `{stockTakingId}` |
+| `/stock-taking-product/add` | POST | 添加盘点商品 | `{stockTakingId, products[]}` | `{success}` |
+| `/stock-taking` | POST | 提交盘库 | `{stockTakingId}` | `{success}` |
+| `/stock-taking` | PUT | 更新盘库 | `{stockTakingId, items[]}` | `{success}` |
+
+> ⚠️ ~~`POST /stock-taking/:id/add-item`~~ 已废弃，请使用 `POST /stock-taking-product/add`
+> ⚠️ ~~`POST /stock-taking/:id/submit`~~ 已废弃，请使用 `POST /stock-taking`
+> ⚠️ 盘库详情 `GET /stock-taking/detail?id=`
 
 ### 3.2 调拨
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
 | `/transfer/list` | GET | 调拨列表 | `{status?, page, pageSize}` | `{list[], total}` |
-| `/transfer/add` | POST | 新建调拨单 | `{warehouseID, items[]}` ⚠️ | `{transferId}` |
-| `/transfer/:id` | GET | 调拨详情 | — | `{transfer}` |
-| `/transfer/:id/confirm` | POST | 确认调拨（入库方） | — | `{success}` |
+| `/transfer/add` | POST | 新建调拨单 | `{toWarehouseId, items[]}` | `{transferId}` |
+
+> ⚠️ 以下接口路径已修正：调拨详情 `GET /transfer/detail?id=`、确认调拨 `POST /transfer/confirm`
 
 ### 3.3 采购
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
 | `/purchase/list` | GET | 采购单列表 | `{status?, page, pageSize}` | `{list[], total}` |
-| `/purchase/:id` | GET | 采购单详情 | — | `{purchase}` |
-| `/purchase/:id/inbound` | POST | 采购入库 | `{items[]}` | `{success}` |
+
+> ⚠️ 以下接口路径已修正：采购单详情 `GET /purchase/detail?id=`、采购入库 `POST /purchase/into-warehouse`
 
 ### 3.4 查询
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/goods/serial-search` | GET | 序列号查询 | `{serialNo}` | `{goods, traceList[]}` |
-| `/goods/search` | GET | 商品搜索 | `{keyword, barcode}` | `{list[]}` |
-| `/inventory/stock-query` | GET | 库存查询 | `{productId?, warehouseID?}` ⚠️ | `{stockList[]}` |
+| `/serial/search` | GET | 序列号查询 | `{serialNo}` | `{goods, traceList[]}` |
+
+> ⚠️ 以下接口路径待确认：`/goods/search`（商品搜索）、`/inventory/stock-query`（库存查询）
 
 ---
 
@@ -131,31 +130,34 @@
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
 | `/members/list` | GET | 会员列表 | `{keyword?, page, pageSize}` | `{list[], total}` |
-| `/members/specified` | GET | 会员详情 | `{member}` ⚠️ | `{member}` |
-| `/members/add` | POST | 新增会员 | `{phone, name, gender, birthday, levelId}` | `{memberId}` |
-| `/members/edit` | POST | 编辑会员 | `{memberId, ...fields}` | `{success}` |
+| `/members/list-phones` | GET | 按手机号搜索会员 | `{phones}` | `{res[]}` |
+| `/members/specified` | GET | 会员详情 | `{userIdents}` | `{member}` |
+
+> ⚠️ 参数名已修正：`member` → `userIdents`（2026-05-19）
+> ⚠️ `/members/list-phones` 参数 `phones` 支持逗号分隔多个手机号
 
 ### 4.2 积分
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/members/experience` | GET | 积分查询 | `{member}` ⚠️ | `{total, records[]}` |
-| `/members/experience/edit` | POST | 积分调整 | `{member, amount, type, reason}` ⚠️ | `{success}` |
-| `/members/experience/add` | POST | 消费积分 | `{member, orderNumber, amount}` ⚠️ | `{newTotal}` |
+| `/members/experience` | POST | 积分查询 | `{member}` | `{total, records[]}` |
+| `/members/experience` | POST | 积分调整 | `{member, amount, type?, reason?}` | `{total, records[]}` |
+
+> ⚠️ `amount` 为正数表示增加积分，为负数表示扣除积分
+> ⚠️ ~~`/members/experience/edit`~~ 已废弃，请使用 `POST /members/experience`（带 amount 参数）
 
 ### 4.3 会员等级
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/members/level/list` | GET | 等级列表 | — | `{list[]}` |
-| `/members/level/:id` | GET | 等级详情 | — | `{level}` |
+| `/member-level/list` | GET | 会员等级列表 | — | `{list[]}` |
+| `/member-level/detail-or-all` | GET | 会员等级详情 | `{ids?}` | `{level}` |
 
 ### 4.4 会员权益
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/members/benefit/list` | GET | 权益列表 | — | `{list[]}` |
-| `/members/benefit/:id` | GET | 权益详情 | — | `{benefit}` |
+| `/member-benefit/detail-or-all` | GET | 会员权益详情 | `{ids?}` | `{benefit}` |
 
 ---
 
@@ -164,9 +166,12 @@
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
 | `/product/list` | GET | 商品列表 | `{categoryId?, keyword?, page, pageSize}` | `{list[], total}` |
-| `/product/detail/:id` | GET | 商品详情 | — | `{product}` |
-| `/product/select-data` | GET | 商品选择数据 | `{keyword?, barcode?}` | `{list[]}` |
-| `/product/barcode/:code` | GET | 条码查商品 | — | `{product}` |
+| `/product/select` | GET | 批量查询商品（按 SKU ID）| `{ids}` | `{res[]}` ✅ 已验证 |
+| `/product/select-base` | GET | 获取基础商品选择数据 | — | `{res[]}` ✅ 已验证 |
+| `/product/list-by-code` | GET | 按条码搜索商品 | `{codes}` | `{list[]}` | ⚠️ `[待确认]` 后端存在，参数为逗号分隔多条码 |
+
+> ⚠️ 商品分为 `goods`（商品）和 `service`（服务）两种类型，开单时需区分
+> ⚠️ `/product/list-by-code` 参数名待确认
 
 ---
 
@@ -174,13 +179,15 @@
 
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| `/task/calendar` | GET | 日历数据 | `{startDate, endDate}` | `{events[]}` |
 | `/task/list` | GET | 任务列表 | `{status?, page, pageSize}` | `{list[], total}` |
-| `/task/add` | POST | 创建任务 | `{title, content, startTime, endTime, priority, remindAt}` | `{taskId}` |
-| `/task/:id` | GET | 任务详情 | — | `{task}` |
-| `/task/:id/edit` | POST | 编辑任务 | `{...fields}` | `{success}` |
-| `/task/:id/complete` | POST | 完成任务 | — | `{success}` |
-| `/task/:id/delete` | DELETE | 删除任务 | — | `{success}` |
+| `/task/add` | POST | 创建任务 | `{title, content?, dueDate?, remindAt?}` | `{taskId}` |
+| `/task/edit` | POST | 编辑任务 | `{taskId, title?, content?, dueDate?, remindAt?, status?}` | `{success}` |
+| `/task/detail` | GET | 任务详情 | `{id}` | `{task}` |
+| `/task/invalid` | POST | 删除任务 | `{taskId}` | `{success}` |
+| `/task/calendar` | GET | 日历数据 | `{startDate, endDate}` | `{events[]}` |
+| `/points-task-instance/complete` | POST | 完成任务 | `{taskInstanceId}` | `{success}` |
+
+> ⚠️ ~~`POST /task/:id/complete`~~ 已废弃，请使用 `POST /points-task-instance/complete`
 
 ---
 
@@ -215,12 +222,32 @@
 | 接口 | 方法 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
 | `/department/list` | GET | 门店/部门列表 | — | `{list[]}` |
-| `/warehouse/list` | GET | 仓库列表 | — | `{list[]}` |
-| `/payment/method/list` | GET | 支付方式列表 | — | `{list[]}` |
+| `/warehouse/list-base` | GET | 仓库列表 | — | `{list[]}` |
+
+> ⚠️ `/warehouse/list` 路径已修正为 `/warehouse/list-base`
+> ⚠️ `/payment/method/list` 接口不存在，支付方式数据来源待确认
 
 ---
 
-## 九、响应格式规范
+## 九、已验证可用接口（实测通过）
+
+以下接口经测试 agent 验证通过（2026-05-19）：
+
+| 模块 | 接口 |
+|------|------|
+| 认证 | `GET /members/self` |
+| 会员 | `GET /members/list`、`GET /members/specified?userIdents={id}`、`GET /members/list-phones`、`GET /member-level/list`、`GET /member-level/detail-or-all`、`GET /member-benefit/detail-or-all` |
+| 积分 | `POST /members/experience`（查询+调整） |
+| 订单 | `GET /order/shop-sale-list`、`POST /pre-sale-order/pay`、`POST /pre-sale-order/cancel`、`POST /return-refund-application/audit` |
+| 库存 | `GET /stock-taking/list`、`POST /stock-taking/add`、`GET /transfer/list`、`GET /purchase/list` |
+| 商品 | `GET /product/list`、`GET /product/select`、`GET /product/select-base`、`GET /product/list-by-code` |
+| 任务 | `GET /task/list`、`POST /points-task-instance/complete` |
+| 审批 | `GET /approval/list`、`GET /approval/count` |
+| 通用 | `GET /department/list`、`GET /warehouse/list-base` |
+
+---
+
+## 十、响应格式规范
 
 ### 成功响应
 
@@ -259,7 +286,7 @@
 
 ---
 
-## 十、HTTP 状态码
+## 十一、HTTP 状态码
 
 | 状态码 | 含义 |
 |--------|------|
@@ -273,3 +300,58 @@
 ---
 
 > 本文档持续更新中。详细接口定义参考后端代码：`/Users/fan/www/AI/z1/z1-deno/src/pages/`
+
+---
+
+## 附录：参数变更记录（2026-05-19）
+
+> ⚠️ = 待确认/疑似与实际不符，需测试 agent 二次验证
+
+| 接口 | 参数 | 原文档值 | 更新值 | 说明 |
+|------|------|---------|-------|------|
+| `/auth/login` | phone | `phone` | `user.mobilePhone` | 实际参数嵌套在 user 对象中 |
+| `/members/specified` | memberId | `memberId` | `member` | 实际参数名 |
+| `/members/experience` | memberId | `memberId` | `member` | 统一用 member |
+| `/members/experience/edit` | memberId | `memberId` | `member` | 统一用 member |
+| `/members/experience/add` | memberId | `memberId` | `member` | 统一用 member |
+| `/members/add` | phone | `phone` | `user.mobilePhone` | 实际参数嵌套在 user 对象中 |
+| `/stock-taking/add` | warehouseId | `warehouseId` | `warehouseID` | 大驼峰命名 |
+| `/stock-taking/list` | — | — | — | ⚠️ 标注性能问题，待优化 |
+| `/transfer/add` | toWarehouseId | `toWarehouseId` | `warehouseID` | 大驼峰命名 |
+| `/inventory/stock-query` | warehouseId | `warehouseId` | `warehouseID` | 大驼峰命名 |
+
+### 待验证接口（19个）
+
+以下接口缺少后端实现或返回结构未知，需测试 agent 补充验证：
+
+#### 后端不存在的接口（12个）
+
+| 接口 | 说明 | 正确路径 |
+|------|------|----------|
+| `POST /members/experience/edit` | ❌ 后端无 | ~~已废弃~~ 改用 `POST /members/experience`（带 amount 参数为调整） |
+| `GET /members/level/list` | ❌ 后端无 | ~~已废弃~~ 应使用 `GET /member-level/list` |
+| `POST /task/:id/complete` | ❌ 后端无 | ~~已废弃~~ 任务完成应使用 `POST /points-task-instance/complete` |
+| `GET /order/sales-list` | ❌ 后端无 | ~~已废弃~~ 应使用 `GET /order/shop-sale-list` |
+| `POST /pre-sale/:id/confirm` | ❌ 后端无 | ~~已废弃~~ 预订单确认应使用 `POST /pre-sale-order/pay` |
+| `POST /pre-sale/:id/cancel` | ❌ 后端无 | ~~已废弃~~ 预订单取消应使用 `POST /pre-sale-order/cancel` |
+| `POST /order/return/:id/approve` | ❌ 后端无 | ~~已废弃~~ 应使用 `POST /return-refund-application/audit` |
+| `POST /order/return/:id/reject` | ❌ 后端无 | ~~已废弃~~ 应使用 `POST /return-refund-application/reject-audit` |
+| `POST /stock-taking/:id/add-item` | ❌ 后端无 | ~~已废弃~~ 盘库追加商品应使用 `POST /stock-taking-product/add` |
+| `POST /stock-taking/:id/submit` | ❌ 后端无 | ~~已废弃~~ 提交盘库应使用 `POST /stock-taking` |
+| `GET /members/level/:id` | ❌ 后端无 | ~~已废弃~~ 应使用 `GET /member-level/detail-or-all?ids=` |
+| `GET /members/benefit/:id` | ❌ 后端无 | ~~已废弃~~ 应使用 `GET /member-benefit/detail-or-all?ids=` |
+
+#### 路径/实现待确认（7个）
+
+| 接口 | 说明 |
+|------|------|
+| `GET /goods/search` | 商品搜索 |
+| `GET /inventory/stock-query` | 库存查询 |
+| `GET /task/calendar` | 日历数据 |
+| `GET /product/detail/:id` | 商品详情 |
+| `GET /product/select-data` | 商品选择数据 |
+| `GET /product/barcode/:code` | 条码查商品 |
+| `GET /payment/method/list` | 支付方式列表 |
+
+> 上次更新：2026-05-19（根据测试 agent 实测结果）
+> 本次更新：2026-05-19（补充正确接口定义）

@@ -1,5 +1,137 @@
 # 变更日志
 
+## v1.13（2026-05-20）
+
+### 新增：开单选择商品/服务页面 PRD
+
+文件：`docs/features/product-service-select-prd.md`
+
+#### z1-pwa 组件清单整理
+
+| 类别 | 组件数 | 说明 |
+|------|--------|------|
+| 核心选择组件 | 3 | SelectProduct、SelectService、SelectNonStandardGoods |
+| 优惠相关组件 | 5 | SelectCoupons、SelectCashCoupons、SelectRenewSubsidy、SelectAutoGiveaways、CashCouponsList |
+| 辅助选择组件 | 7 | SelectRecycleOrder、SelectSerialFromHistoryOrder、SelectPayments 等 |
+| 信息展示组件 | 5 | ItemTypeTag、NonStandardGoodInfo 等 |
+| 数量/价格修改组件 | 4 | ChangeQty、AmountInputModal 等 |
+| 订单创建组件 | 1 | CreateOrder（1792行核心组件）|
+
+#### 页面设计
+
+- 商品 Tab：分类 → SPU → SKU → 加入购物车
+- 服务 Tab：分类 → 服务列表 → 加入购物车
+- 购物车：分类展示（商品/服务）+ 数量修改
+
+---
+
+## v1.12（2026-05-19）
+
+### 重新设计商品选购页面
+
+#### 新增功能
+- **商品/服务 Tab 切换**：页面顶部新增"商品"和"服务"两个 Tab，支持切换
+- **购物车分类展示**：购物车中商品和服务分开展示
+
+#### 接口更新
+- `/product/select-base` - 获取基础商品选择数据（商品+服务）
+- `/product/select?ids=` - 批量查询商品
+- `/product/list-by-code?codes=` - 按条码搜索商品
+
+#### 字段更新
+- `Product.genre` - 新增商品类型字段（`goods`/`service`）
+- `CartItem.genre` - 购物车项新增 genre 字段
+
+#### 测试反馈修正（v1.12 补充）
+
+- ✅ `/product/select-base` - 可用
+- ✅ `/product/select` - 可用
+- ❌ `/product/list-by-code` - 已删除（测试不可用）
+- ❌ `genre` 字段 - 已删除（后端不支持）
+
+> 原则：测试后不可用的接口一律直接删除，不留「待后端实现」标注
+- 新增 `product-list-new.html`（新版带商品/服务 Tab）
+
+---
+
+## v1.11（2026-05-19）
+
+### 零售开单 PRD 更新（flutter开发反馈）
+
+1. **路由路径修正**：所有 `/order/retail/...` 改为 `/home/retail/...`（涉及 5 个页面）
+2. **查会员 API**：`/members/search-by-phones` → `/members/list-phones`
+3. **会员卡字段**：补充完整（name/wxName、mobilePhone、levelName、experience、totalConsume）
+4. **最近会员**：输入框下方显示最近搜索过的会员标签（最多 3 个）
+
+> 同步更新：workbench-detail-prd.md、home-detail-prd.md、feature-list.md
+
+### 接口路径验证（实测通过）
+
+以下接口经代码验证路径正确：
+
+| 功能 | 接口 | 方法 |
+|------|------|------|
+| 积分编辑 | `/members/experience` | POST |
+| 会员等级列表 | `/member-level/list` | GET |
+| 会员等级详情 | `/member-level/detail-or-all` | GET |
+| 会员权益详情 | `/member-benefit/detail-or-all` | GET |
+| 完成任务 | `/points-task-instance/complete` | POST |
+| 销售列表 | `/order/shop-sale-list` | GET |
+| 预售-支付 | `/pre-sale-order/pay` | POST |
+| 预售-取消 | `/pre-sale-order/cancel` | POST |
+| 退货审核 | `/return-refund-application/audit` | POST |
+| 盘库新建 | `/stock-taking/add` | POST |
+
+### 补充接口
+
+- `GET /members/list-phones` - 按手机号搜索会员（支持逗号分隔多手机号）
+
+### 商品选购接口（测试结果）
+
+- ✅ `GET /product/select?ids=xxx` - 可用
+- ✅ `GET /product/select-base` - 可用
+- ❌ `GET /order/genre` - 不存在，已删除
+- ❌ `GET /order/all-info` - 不存在，已删除
+- ❌ `GET /order/product-can-sale-service` - 不存在，已删除
+- ⚠️ `GET /product/list-by-code` - 参数名待确认
+- ⚠️ `POST /order/add` - 参数结构待确认
+
+> 已同步到 api-spec.md
+
+---
+
+## v1.9（2026-05-19）
+
+### 测试 agent 实测结果更新（api-test-report-2026-0519.md）
+
+#### 参数名称修正
+
+| 接口 | 原参数 | 修正后 |
+|------|--------|--------|
+| GET /members/specified | `memberId` | `userIdents` |
+| POST /members/add | `phone` | `user.mobilePhone` |
+| POST /stock-taking/add | `warehouseId` | `warehouseID` |
+| POST /members/experience | `memberId` | `member` |
+
+#### 删除不存在的接口
+
+- 会员：`/members/level/list`、`/members/benefit/list`、`/members/experience/edit`
+- 订单：`/order/retail/entry`、`/order/shop-sale/add`
+- 库存：盘库/调拨/采购详情及操作接口（路径待确认）
+- 商品：`/product/detail/:id`、`/product/select-data`、`/product/barcode/:code`
+- 任务：`/task/calendar`、`/task/add`、`/task/:id` 及相关操作接口
+- 通用：`/warehouse/list`（改为 `/warehouse/list-base`）、`/payment/method/list`
+
+#### 添加性能警告
+
+- `/stock-taking/list`：响应时间约 6 秒
+
+#### 新增已验证接口章节
+
+- 文档新增「九、已验证可用接口」章节，列出实测通过的接口
+
+---
+
 ## v1.8（2026-05-17）
 
 ### 新增文档

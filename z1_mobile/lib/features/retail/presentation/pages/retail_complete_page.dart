@@ -161,7 +161,7 @@ class RetailCompletePage extends StatelessWidget {
                       color: const Color(0xFF07C160),
                       borderRadius: BorderRadius.circular(12),
                       onPressed: () {
-                        context.go('/order/retail/entry');
+                        context.go('/home/retail/entry');
                       },
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,

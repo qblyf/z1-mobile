@@ -120,7 +120,7 @@
 
 | 入口 | 图标 | 路由 | 说明 |
 |------|------|------|------|
-| 零售开单 | 🛒 | `/order/retail/entry` | 快速开单 |
+| 零售开单 | 🛒 | `/home/retail/entry` | 快速开单 |
 | 序列号查询 | 🔍 | `/inventory/serial-search` | 快速查询 |
 
 #### 消息通知入口
@@ -181,7 +181,7 @@
 | /workbench | 点击"查看全部(审批)" | /approval/center |
 | /workbench | 点击任务项 | /task/:id |
 | /workbench | 点击"查看全部(任务)" | /task/list |
-| /workbench | 点击"零售开单" | /order/retail/entry |
+| /workbench | 点击"零售开单" | /home/retail/entry |
 | /workbench | 点击"序列号查询" | /inventory/serial-search |
 | /workbench | 点击铃铛 | /notification |
 | /workbench | 点击顶部返回 | /home |
@@ -205,7 +205,7 @@
     ├── 获取消息未读数 → /notification/unread-count（预留）
     │
     └── 快捷操作入口
-        ├── 零售开单 → /order/retail/entry
+        ├── 零售开单 → /home/retail/entry
         └── 序列号查询 → /inventory/serial-search
 
 API 调用序列：
