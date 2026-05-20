@@ -45,8 +45,14 @@ class ApiEndpoints {
   static const String productSelectBase = '/product/select-base';
   /// 批量查询商品
   static String productSelect(String ids) => '/product/select?ids=$ids';
-  /// 条码查商品
-  static String productStockByCode(String code) => '/product-stock-by-code?code=$code';
+
+  // ===== SKU（标品） =====
+  /// SKU选择基础数据（标品）
+  static const String skuSelectBase = '/sku/select-base';
+
+  // ===== 服务 =====
+  /// 服务列表
+  static const String serveList = '/serve/list';
 
   // ===== 优惠券 =====
   /// 会员优惠券列表
