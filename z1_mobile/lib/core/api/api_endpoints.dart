@@ -122,6 +122,12 @@ class ApiEndpoints {
   // ===== 商品价格 =====
   /// 商品价格列表（批量获取价格）
   static const String productPriceList = '/product-price/list';
+
+  // ===== 审批中心 =====
+  /// 审批列表
+  static const String approvalList = '/approval/list';
+  /// 审批数量
+  static const String approvalCount = '/approval/count';
 }
 
 /// 辅助方法：URL 参数编码

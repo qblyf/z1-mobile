@@ -125,15 +125,18 @@ class WorkbenchPage extends StatelessWidget {
             time: '5小时前',
             showBorder: false,
           ),
-          const Padding(
-            padding: EdgeInsets.all(12),
-            child: Center(
-              child: Text(
-                '查看全部审批 >',
-                style: TextStyle(
-                  color: CupertinoColors.activeBlue,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
+          GestureDetector(
+            onTap: () => context.push('/workbench/approval'),
+            child: const Padding(
+              padding: EdgeInsets.all(12),
+              child: Center(
+                child: Text(
+                  '查看全部审批 >',
+                  style: TextStyle(
+                    color: CupertinoColors.activeBlue,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),

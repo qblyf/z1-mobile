@@ -29,6 +29,7 @@ import '../../features/inventory/presentation/pages/purchase_list_page.dart';
 import '../../features/inventory/presentation/pages/purchase_detail_page.dart';
 import '../../features/inventory/presentation/pages/purchase_inbound_page.dart';
 import '../../features/inventory/presentation/pages/serial_search_page.dart';
+import '../../features/approval/presentation/pages/approval_center_page.dart';
 import '../../features/retail/presentation/bloc/product_bloc.dart';
 import '../../features/retail/presentation/bloc/member_bloc.dart';
 import '../../features/retail/presentation/bloc/coin_discount_bloc.dart';
@@ -157,6 +158,13 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/workbench',
           builder: (context, state) => const WorkbenchPage(),
+          routes: [
+            GoRoute(
+              path: 'approval',
+              name: 'approvalCenter',
+              builder: (context, state) => const ApprovalCenterPage(),
+            ),
+          ],
         ),
         // 任务
         GoRoute(

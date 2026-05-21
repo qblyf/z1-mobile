@@ -20,6 +20,7 @@ import 'features/retail/presentation/bloc/product_bloc.dart';
 import 'features/retail/presentation/bloc/member_bloc.dart';
 import 'features/retail/presentation/bloc/coin_discount_bloc.dart';
 import 'features/retail/presentation/bloc/service_bloc.dart';
+import 'features/approval/data/datasources/approval_remote_datasource.dart';
 
 final getIt = GetIt.instance;
 
@@ -118,5 +119,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerFactory<ServiceBloc>(
     () => ServiceBloc(dataSource: getIt<ServiceRemoteDataSource>()),
+  );
+
+  // Approval DataSource
+  getIt.registerLazySingleton<ApprovalRemoteDataSource>(
+    () => ApprovalRemoteDataSourceImpl(apiClient: getIt()),
   );
 }
