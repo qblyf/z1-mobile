@@ -6,7 +6,7 @@ import '../bloc/product_select_bloc.dart';
 import 'sku_select_modal.dart';
 
 class ProductTab extends StatefulWidget {
-  final void Function(List<CartSkuItem> cartItems) onCartChanged;
+  final void Function(CartSkuItem item) onCartChanged;
 
   const ProductTab({super.key, required this.onCartChanged});
 
@@ -223,7 +223,9 @@ class _ProductTabState extends State<ProductTab> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             borderRadius: BorderRadius.circular(20),
             onPressed: () {
-              widget.onCartChanged(state.cartItems);
+              for (final item in state.cartItems) {
+                widget.onCartChanged(item);
+              }
             },
             child: const Text('去结算'),
           ),

@@ -271,3 +271,42 @@ class CategoryWithSpu extends Equatable {
   @override
   List<Object?> get props => [id, name, spus];
 }
+
+enum CartItemType { goods, service }
+
+class CartItem extends Equatable {
+  final int id;
+  final CartItemType type;
+  final String name;
+  final int price;
+  final int quantity;
+
+  const CartItem({
+    required this.id,
+    required this.type,
+    required this.name,
+    required this.price,
+    this.quantity = 1,
+  });
+
+  int get subtotal => price * quantity;
+
+  CartItem copyWith({
+    int? id,
+    CartItemType? type,
+    String? name,
+    int? price,
+    int? quantity,
+  }) {
+    return CartItem(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, type, name, price, quantity];
+}

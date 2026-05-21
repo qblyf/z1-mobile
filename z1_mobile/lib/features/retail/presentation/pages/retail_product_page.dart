@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/retail_order_model.dart';
 import '../../data/models/product_model.dart';
+import '../../data/models/service_model.dart';
 import '../bloc/product_select_bloc.dart';
 import '../bloc/service_bloc.dart';
 import 'product_tab.dart';
+import 'service_tab.dart';
 
 class RetailProductPage extends StatefulWidget {
   final RetailOrder? initialOrder;
@@ -21,100 +23,65 @@ class RetailProductPage extends StatefulWidget {
 class _RetailProductPageState extends State<RetailProductPage> {
   late RetailOrder _order;
   int _selectedTabIndex = 0;
-  final List<CartSkuItem> _cartItems = [];
+  final List<CartItem> _cartItems = [];
 
   @override
   void initState() {
     super.initState();
     _order = widget.initialOrder ?? const RetailOrder();
+    context.read<ProductSelectBloc>().add(const ProductSelectLoadRequested());
     context.read<ServiceBloc>().add(const ServiceLoadRequested());
   }
 
-void _onTabChanged(int index) {
+  void _onTabChanged(int index) {
     setState(() => _selectedTabIndex = index);
-    _selectedCategoryIndex = 0;
-    if (index == 0) {
-      context.read<ProductBloc>().add(const ProductLoadRequested());
+  }
+
+  void _onGoodsAddedToCart(CartSkuItem item) {
+    setState(() {
+      final existingIndex = _cartItems.indexWhere((c) => c.id == item.sku.skuId && c.type == CartItemType.goods);
+      if (existingIndex >= 0) {
+        _cartItems[existingIndex] = _cartItems[existingIndex].copyWith(quantity: _cartItems[existingIndex].quantity + item.quantity);
+      } else {
+        _cartItems.add(CartItem(
+          id: item.sku.skuId,
+          type: CartItemType.goods,
+          name: item.sku.skuName,
+          price: item.sku.price,
+          quantity: item.quantity,
+        ));
+      }
+    });
+  }
+
+  void _onServiceAddedToCart(ServiceModel service) {
+    setState(() {
+      final existingIndex = _cartItems.indexWhere((c) => c.id == service.id && c.type == CartItemType.service);
+      if (existingIndex >= 0) {
+        _cartItems[existingIndex] = _cartItems[existingIndex].copyWith(quantity: _cartItems[existingIndex].quantity + 1);
+      } else {
+        _cartItems.add(CartItem(
+          id: service.id,
+          type: CartItemType.service,
+          name: service.name,
+          price: service.price,
+          quantity: 1,
+        ));
+      }
+    });
+  }
+
+  void _updateCartItemQuantity(int index, int delta) {
+    final newQty = _cartItems[index].quantity + delta;
+    if (newQty <= 0) {
+      setState(() => _cartItems.removeAt(index));
     } else {
-      context.read<ServiceBloc>().add(const ServiceLoadRequested());
+      setState(() => _cartItems[index] = _cartItems[index].copyWith(quantity: newQty));
     }
   }
 
-  void _onCategoryChanged(int index, List<CategoryModel> categories) {
-    setState(() => _selectedCategoryIndex = index);
-    final category = index == 0 ? null : categories[index - 1].name;
-    context.read<ProductBloc>().add(ProductCategoryChanged(category ?? '全部'));
-  }
-
-  void _onServiceCategoryChanged(int index, List<ServiceCategoryModel> categories) {
-    setState(() => _selectedCategoryIndex = index);
-    final category = index == 0 ? null : categories[index - 1].name;
-    context.read<ServiceBloc>().add(ServiceCategoryChanged(category));
-  }
-
-  List<ProductItem> get _currentCart => _selectedTabIndex == 0 ? _cartGoods : _cartServices;
-
-  double get _cartTotalYuan {
-    final goodsTotal = _cartGoods.fold<int>(0, (sum, p) => sum + p.totalDiscountPrice);
-    final servicesTotal = _cartServices.fold<int>(0, (sum, p) => sum + p.totalDiscountPrice);
-    return (goodsTotal + servicesTotal) / 100;
-  }
-
-  int get _cartTotalQuantity {
-    return _cartGoods.fold<int>(0, (sum, p) => sum + p.quantity) +
-        _cartServices.fold<int>(0, (sum, p) => sum + p.quantity);
-  }
-
-  void _addToCart(ProductModel product) {
-    final cart = _selectedTabIndex == 0 ? _cartGoods : _cartServices;
-    setState(() {
-      final existing = cart.indexWhere((p) => p.productID == product.productID);
-      if (existing >= 0) {
-        final p = cart[existing];
-        cart[existing] = p.copyWith(
-          quantity: p.quantity + 1,
-          totalDiscountPrice: p.discountPrice * (p.quantity + 1),
-        );
-      } else {
-        cart.add(ProductItem(
-          productID: product.productID,
-          productName: product.productName,
-          price: product.price,
-          quantity: 1,
-          discountPrice: product.price,
-          totalDiscountPrice: product.price,
-        ));
-      }
-    });
-  }
-
-  void _addServiceToCart(ServiceModel service) {
-    setState(() {
-      final existing = _cartServices.indexWhere((p) => p.productID == service.id);
-      if (existing >= 0) {
-        final p = _cartServices[existing];
-        _cartServices[existing] = p.copyWith(
-          quantity: p.quantity + 1,
-          totalDiscountPrice: p.discountPrice * (p.quantity + 1),
-        );
-      } else {
-        _cartServices.add(ProductItem(
-          productID: service.id,
-          productName: service.name,
-          price: service.price,
-          quantity: 1,
-          discountPrice: service.price,
-          totalDiscountPrice: service.price,
-        ));
-      }
-    });
-  }
-
-  void _onCartChanged(List<CartSkuItem> items) {
-    setState(() {
-      _cartItems.clear();
-      _cartItems.addAll(items);
-    });
+  void _clearCart() {
+    setState(() => _cartItems.clear());
   }
 
   double get _cartTotalYuan {
@@ -234,8 +201,8 @@ void _onTabChanged(int index) {
             ),
             Expanded(
               child: _selectedTabIndex == 0
-                  ? ProductTab(onCartChanged: _onCartChanged)
-                  : const Center(child: Text('服务 Tab 待实现')),
+                  ? ProductTab(onCartChanged: _onGoodsAddedToCart)
+                  : ServiceTab(onServiceAdded: _onServiceAddedToCart),
             ),
             if (_cartTotalQuantity > 0)
               Container(
