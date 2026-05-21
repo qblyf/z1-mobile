@@ -1,13 +1,11 @@
-import 'dart:async';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/retail_order_model.dart';
-import '../../data/models/product_model.dart';
+import '../../data/models/cart_item_model.dart';
 import '../bloc/product_select_bloc.dart';
-import '../bloc/service_bloc.dart';
 import 'product_tab.dart';
+import 'service_tab.dart';
 
 class RetailProductPage extends StatefulWidget {
   final RetailOrder? initialOrder;
@@ -21,113 +19,42 @@ class RetailProductPage extends StatefulWidget {
 class _RetailProductPageState extends State<RetailProductPage> {
   late RetailOrder _order;
   int _selectedTabIndex = 0;
-  final List<CartSkuItem> _cartItems = [];
+  final List<CartItem> _cartItems = [];
 
   @override
   void initState() {
     super.initState();
     _order = widget.initialOrder ?? const RetailOrder();
-    context.read<ServiceBloc>().add(const ServiceLoadRequested());
   }
 
-void _onTabChanged(int index) {
+  void _onTabChanged(int index) {
     setState(() => _selectedTabIndex = index);
-    _selectedCategoryIndex = 0;
-    if (index == 0) {
-      context.read<ProductBloc>().add(const ProductLoadRequested());
-    } else {
-      context.read<ServiceBloc>().add(const ServiceLoadRequested());
-    }
   }
 
-  void _onCategoryChanged(int index, List<CategoryModel> categories) {
-    setState(() => _selectedCategoryIndex = index);
-    final category = index == 0 ? null : categories[index - 1].name;
-    context.read<ProductBloc>().add(ProductCategoryChanged(category ?? '全部'));
-  }
+  int get _cartTotalQuantity => _cartItems.fold(0, (sum, item) => sum + item.quantity);
 
-  void _onServiceCategoryChanged(int index, List<ServiceCategoryModel> categories) {
-    setState(() => _selectedCategoryIndex = index);
-    final category = index == 0 ? null : categories[index - 1].name;
-    context.read<ServiceBloc>().add(ServiceCategoryChanged(category));
-  }
+  double get _cartTotalYuan => _cartItems.fold(0, (sum, item) => sum + item.subtotal) / 100;
 
-  List<ProductItem> get _currentCart => _selectedTabIndex == 0 ? _cartGoods : _cartServices;
-
-  double get _cartTotalYuan {
-    final goodsTotal = _cartGoods.fold<int>(0, (sum, p) => sum + p.totalDiscountPrice);
-    final servicesTotal = _cartServices.fold<int>(0, (sum, p) => sum + p.totalDiscountPrice);
-    return (goodsTotal + servicesTotal) / 100;
-  }
-
-  int get _cartTotalQuantity {
-    return _cartGoods.fold<int>(0, (sum, p) => sum + p.quantity) +
-        _cartServices.fold<int>(0, (sum, p) => sum + p.quantity);
-  }
-
-  void _addToCart(ProductModel product) {
-    final cart = _selectedTabIndex == 0 ? _cartGoods : _cartServices;
+  void _onGoodsCartChanged(List<CartSkuItem> items) {
+    final goodsItems = items.map((item) => CartItem.fromGoodsSku(item.sku, quantity: item.quantity)).toList();
     setState(() {
-      final existing = cart.indexWhere((p) => p.productID == product.productID);
-      if (existing >= 0) {
-        final p = cart[existing];
-        cart[existing] = p.copyWith(
-          quantity: p.quantity + 1,
-          totalDiscountPrice: p.discountPrice * (p.quantity + 1),
-        );
-      } else {
-        cart.add(ProductItem(
-          productID: product.productID,
-          productName: product.productName,
-          price: product.price,
-          quantity: 1,
-          discountPrice: product.price,
-          totalDiscountPrice: product.price,
-        ));
-      }
-    });
-  }
-
-  void _addServiceToCart(ServiceModel service) {
-    setState(() {
-      final existing = _cartServices.indexWhere((p) => p.productID == service.id);
-      if (existing >= 0) {
-        final p = _cartServices[existing];
-        _cartServices[existing] = p.copyWith(
-          quantity: p.quantity + 1,
-          totalDiscountPrice: p.discountPrice * (p.quantity + 1),
-        );
-      } else {
-        _cartServices.add(ProductItem(
-          productID: service.id,
-          productName: service.name,
-          price: service.price,
-          quantity: 1,
-          discountPrice: service.price,
-          totalDiscountPrice: service.price,
-        ));
-      }
-    });
-  }
-
-  void _onCartChanged(List<CartSkuItem> items) {
-    setState(() {
+      final serviceItems = _cartItems.where((i) => i.type == CartItemType.service).toList();
       _cartItems.clear();
-      _cartItems.addAll(items);
+      _cartItems.addAll([...serviceItems, ...goodsItems]);
     });
   }
 
-  double get _cartTotalYuan {
-    return _cartItems.fold<int>(0, (sum, item) => sum + item.subtotal) / 100;
-  }
-
-  int get _cartTotalQuantity {
-    return _cartItems.fold(0, (sum, item) => sum + item.quantity);
+  void _onServiceCartChanged(List<CartItem> items) {
+    setState(() {
+      final goodsItems = _cartItems.where((i) => i.type == CartItemType.goods).toList();
+      _cartItems.clear();
+      _cartItems.addAll([...goodsItems, ...items]);
+    });
   }
 
   void _goToConfirm() {
     if (_cartItems.isEmpty) {
-      _showError('请先添加商品');
+      _showError('请先添加商品或服务');
       return;
     }
     context.push('/home/retail/confirm', extra: _order);
@@ -234,8 +161,8 @@ void _onTabChanged(int index) {
             ),
             Expanded(
               child: _selectedTabIndex == 0
-                  ? ProductTab(onCartChanged: _onCartChanged)
-                  : const Center(child: Text('服务 Tab 待实现')),
+                  ? ProductTab(onCartChanged: _onGoodsCartChanged)
+                  : ServiceTab(onCartChanged: _onServiceCartChanged),
             ),
             if (_cartTotalQuantity > 0)
               Container(
@@ -252,18 +179,21 @@ void _onTabChanged(int index) {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: CupertinoColors.activeBlue,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(CupertinoIcons.cart_fill, color: CupertinoColors.white, size: 18),
-                          const SizedBox(width: 4),
-                          Text('$_cartTotalQuantity', style: const TextStyle(color: CupertinoColors.white, fontWeight: FontWeight.bold)),
-                        ],
+                    GestureDetector(
+                      onTap: () => _showCartSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: CupertinoColors.activeBlue,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(CupertinoIcons.cart_fill, color: CupertinoColors.white, size: 18),
+                            const SizedBox(width: 4),
+                            Text('$_cartTotalQuantity', style: const TextStyle(color: CupertinoColors.white, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -288,6 +218,136 @@ void _onTabChanged(int index) {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCartSheet(BuildContext context) {
+    final currencyFormat = NumberFormat.currency(symbol: '¥', decimalDigits: 2);
+    final goodsItems = _cartItems.where((i) => i.type == CartItemType.goods).toList();
+    final serviceItems = _cartItems.where((i) => i.type == CartItemType.service).toList();
+
+    showCupertinoModalPopup(
+      context: context,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        decoration: const BoxDecoration(
+          color: CupertinoColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: CupertinoColors.separator))),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('购物车 ($_cartTotalQuantity件)', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    child: const Text('清空'),
+                    onPressed: () {
+                      setState(() => _cartItems.clear());
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _cartItems.isEmpty
+                  ? const Center(child: Text('购物车为空'))
+                  : ListView(
+                      children: [
+                        if (goodsItems.isNotEmpty) ...[
+                          _buildCartSection('商品', goodsItems, currencyFormat),
+                        ],
+                        if (serviceItems.isNotEmpty) ...[
+                          _buildCartSection('服务', serviceItems, currencyFormat),
+                        ],
+                      ],
+                    ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('合计: ${currencyFormat.format(_cartTotalYuan)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  CupertinoButton.filled(
+                    borderRadius: BorderRadius.circular(20),
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('继续添加'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCartSection(String title, List<CartItem> items, NumberFormat formatter) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text(
+            '$title（${items.length}件）',
+            style: const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel, fontWeight: FontWeight.w500),
+          ),
+        ),
+        ...items.map((item) => _CartItemTile(item: item, formatter: formatter, onDelete: () {
+          setState(() => _cartItems.remove(item));
+        })),
+      ],
+    );
+  }
+}
+
+class _CartItemTile extends StatelessWidget {
+  final CartItem item;
+  final NumberFormat formatter;
+  final VoidCallback onDelete;
+
+  const _CartItemTile({
+    required this.item,
+    required this.formatter,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: CupertinoColors.separator))),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                if (item.specName != null)
+                  Text(item.specName!, style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 12)),
+                const SizedBox(height: 4),
+                Text(
+                  '${formatter.format(item.price / 100)} x ${item.quantity}',
+                  style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Text(formatter.format(item.subtotal / 100), style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onDelete,
+            child: const Icon(CupertinoIcons.trash, size: 18, color: CupertinoColors.destructiveRed),
+          ),
+        ],
       ),
     );
   }
