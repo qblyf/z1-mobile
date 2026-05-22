@@ -20,13 +20,78 @@ class SkuSelectBaseResult {
 
   const SkuSelectBaseResult({required this.categories});
 
+  /// 从JSON数据构造 [SkuSelectBaseResult]
+  ///
+  /// 健壮可扩展设计：
+  /// - 支持多种API返回格式：categoryList、res.spuList、扁平SKU数组
+  /// - 空数据安全处理：返回空数组而非抛出异常
+  /// - 类型安全：动态类型严格检查，异常时返回空结果
   factory SkuSelectBaseResult.fromJson(Map<String, dynamic> data) {
-    final categoryList = data['categoryList'] as List<dynamic>? ?? [];
-    return SkuSelectBaseResult(
-      categories: categoryList
-          .map((json) => CategoryWithSpu.fromJson(json as Map<String, dynamic>))
-          .toList(),
-    );
+    // 策略1：检查标准 categoryList 格式
+    final categoryList = data['categoryList'] as List<dynamic>?;
+    if (categoryList != null && categoryList.isNotEmpty) {
+      try {
+        return SkuSelectBaseResult(
+          categories: categoryList
+              .map((json) => CategoryWithSpu.fromJson(json as Map<String, dynamic>))
+              .toList(),
+        );
+      } catch (e) {
+        // categoryList 解析失败，尝试其他策略
+      }
+    }
+
+    // 策略2：检查 res 数组格式
+    // 处理多种可能的 res 结构：可能是 List<CategoryWithSpu> 或 List<SkuModel>
+    final resList = data['res'] as List<dynamic>?;
+    if (resList == null || resList.isEmpty) {
+      return const SkuSelectBaseResult(categories: []);
+    }
+
+    try {
+      // 尝试将 resList 第一项作为分类结构解析
+      final firstItem = resList.first as Map<String, dynamic>?;
+      if (firstItem != null && firstItem.containsKey('spuList')) {
+        // 策略2a: res 是分类列表结构 (List<CategoryWithSpu>)
+        return SkuSelectBaseResult(
+          categories: resList
+              .map((json) => CategoryWithSpu.fromJson(json as Map<String, dynamic>))
+              .toList(),
+        );
+      }
+    } catch (e) {
+      // 第一项结构不匹配，继续尝试扁平SKU解析
+    }
+
+    // 策略3：扁平SKU结构 (API /sku/select-base 返回的扁平数组)
+    // 将所有 res 元素作为 SkuModel 解析，包装成"全部商品"分类
+    try {
+      final flatSkus = <SkuModel>[];
+      for (final item in resList) {
+        if (item is Map<String, dynamic>) {
+          flatSkus.add(SkuModel.fromJson(item));
+        }
+      }
+
+      if (flatSkus.isNotEmpty) {
+        return SkuSelectBaseResult(
+          categories: [
+            CategoryWithSpu(id: 0, name: '全部商品', spus: [
+              SpuModel(
+                spuId: 0,
+                spuName: '全部商品',
+                skus: flatSkus,
+              ),
+            ]),
+          ],
+        );
+      }
+    } catch (e) {
+      // 扁平SKU解析失败
+    }
+
+    // 所有策略均失败，返回空结果（不抛异常，保持运行）
+    return const SkuSelectBaseResult(categories: []);
   }
 }
 

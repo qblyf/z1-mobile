@@ -219,7 +219,17 @@ class _ServiceTabState extends State<ServiceTab> {
                     padding: EdgeInsets.zero,
                     child: const Text('清空'),
                     onPressed: () {
-                      context.read<ServiceBloc>().add(const ServiceCartCleared());
+                      // 健壮可扩展设计：
+                      // - 状态检查：确保 BLoC 处于可处理事件的状态
+                      // - 防止意外状态转换：仅在 ServiceLoaded 状态下允许清空购物车
+                      // - 时序保证：避免在状态过渡期间发送事件
+                      final bloc = context.read<ServiceBloc>();
+                      if (bloc.state is ServiceLoaded) {
+                        bloc.add(const ServiceCartCleared());
+                      } else {
+                        // 非期望状态：静默忽略，不抛出异常影响用户
+                        debugPrint('ServiceCartCleared 事件跳过：当前状态 ${bloc.state.runtimeType} 非 ServiceLoaded');
+                      }
                     },
                   ),
                 ],
