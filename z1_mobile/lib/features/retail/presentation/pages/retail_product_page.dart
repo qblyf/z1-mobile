@@ -244,13 +244,43 @@ class _RetailProductPageState extends State<RetailProductPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('购物车 ($_cartTotalQuantity件)', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: const Text('清空'),
-                    onPressed: () {
-                      setState(() => _cartItems.clear());
-                      Navigator.pop(ctx);
-                    },
+                  Row(
+                    children: [
+                      if (goodsItems.isNotEmpty)
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(24, 24),
+                          child: const Text('清空商品', style: TextStyle(fontSize: 13)),
+                          onPressed: () {
+                            setState(() {
+                              _cartItems.removeWhere((i) => i.type == CartItemType.goods);
+                            });
+                          },
+                        ),
+                      if (goodsItems.isNotEmpty && serviceItems.isNotEmpty)
+                        const Text(' | ', style: TextStyle(color: CupertinoColors.separator)),
+                      if (serviceItems.isNotEmpty)
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(24, 24),
+                          child: const Text('清空服务', style: TextStyle(fontSize: 13)),
+                          onPressed: () {
+                            setState(() {
+                              _cartItems.removeWhere((i) => i.type == CartItemType.service);
+                            });
+                          },
+                        ),
+                      if (_cartItems.isNotEmpty)
+                        CupertinoButton(
+                          padding: const EdgeInsets.only(left: 12),
+                          minimumSize: const Size(24, 24),
+                          child: const Text('清空', style: TextStyle(color: CupertinoColors.destructiveRed, fontSize: 13)),
+                          onPressed: () {
+                            setState(() => _cartItems.clear());
+                            Navigator.pop(ctx);
+                          },
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -290,14 +320,24 @@ class _RetailProductPageState extends State<RetailProductPage> {
   }
 
   Widget _buildCartSection(String title, List<CartItem> items, NumberFormat formatter) {
+    final price = items.fold(0, (sum, item) => sum + item.subtotal);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text(
-            '$title（${items.length}件）',
-            style: const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel, fontWeight: FontWeight.w500),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$title（${items.length}件）',
+                style: const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                formatter.format(price / 100),
+                style: const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel),
+              ),
+            ],
           ),
         ),
         ...items.map((item) => _CartItemTile(item: item, formatter: formatter, onDelete: () {
