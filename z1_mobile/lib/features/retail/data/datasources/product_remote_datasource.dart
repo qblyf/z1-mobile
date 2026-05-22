@@ -225,69 +225,71 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<SkuSelectBaseResult>> getSkuSelectBase() async {
-    // 直接调用 /product/select-base 接口（不再使用 z1func 中间层）
+    // 调用 /product/select-base 接口，返回格式: { code: 10000, res: [ {...}, ... ] }
     final response = await apiClient.get<Map<String, dynamic>>(
       ApiEndpoints.productSelectBase,
       parser: (data) => data,
     );
 
     return response.map((data) {
-      // 将 product/select-base 返回数据映射为 SkuSelectBaseResult 格式
-      final productList = data['productList'] as List<dynamic>? ?? [];
-      final categoryList = data['categoryList'] as List<dynamic>? ?? [];
+      // API 返回格式: { code: 10000, res: [ {...}, ... ] }
+      // 直接解析 res 字段作为商品列表
+      final resList = data['res'] as List<dynamic>? ?? [];
 
-      // 构建 CategoryWithSpu 结构
-      final categories = <CategoryWithSpu>[];
-
-      // 按分类分组商品
-      final productsByCategory = <int, List<ProductModel>>{};
-      for (final item in productList) {
-        if (item is Map<String, dynamic>) {
-          final product = ProductModel.fromJson(item);
-          final categoryId = product.categoryId ?? 0;
-          productsByCategory.putIfAbsent(categoryId, () => []).add(product);
-        }
+      if (resList.isEmpty) {
+        return const SkuSelectBaseResult(categories: []);
       }
 
-      // 添加"全部商品"分类（包含所有商品）
-      if (productList.isNotEmpty) {
-        final allProducts = productList
-            .map((item) => item is Map<String, dynamic> ? ProductModel.fromJson(item) : null)
-            .whereType<ProductModel>()
-            .toList();
+      // 解析商品列表
+      final products = resList
+          .whereType<Map<String, dynamic>>()
+          .map((item) => ProductModel.fromJson(item))
+          .toList();
 
+      if (products.isEmpty) {
+        return const SkuSelectBaseResult(categories: []);
+      }
+
+      // 构建 CategoryWithSpu 结构
+      // 按分类ID分组商品
+      final productsByCategory = <int, List<ProductModel>>{};
+      for (final product in products) {
+        final categoryId = product.categoryId ?? 0;
+        productsByCategory.putIfAbsent(categoryId, () => []).add(product);
+      }
+
+      final categories = <CategoryWithSpu>[];
+
+      // 添加"全部商品"分类
+      categories.add(CategoryWithSpu(
+        id: 0,
+        name: '全部商品',
+        spus: [
+          SpuModel(
+            spuId: 0,
+            spuName: '全部商品',
+            skus: products.map((p) => SkuModel.fromProduct(p)).toList(),
+          ),
+        ],
+      ));
+
+      // 添加按分类分组的分类
+      for (final entry in productsByCategory.entries) {
+        if (entry.key == 0) continue; // 跳过"未分类"
+        final categoryProducts = entry.value;
+        // 使用第一个商品的分类名或使用默认分类名
+        final categoryName = categoryProducts.first.categoryName ?? '分类${entry.key}';
         categories.add(CategoryWithSpu(
-          id: 0,
-          name: '全部商品',
+          id: entry.key,
+          name: categoryName,
           spus: [
             SpuModel(
-              spuId: 0,
-              spuName: '全部商品',
-              skus: allProducts.map((p) => SkuModel.fromProduct(p)).toList(),
+              spuId: entry.key,
+              spuName: categoryName,
+              skus: categoryProducts.map((p) => SkuModel.fromProduct(p)).toList(),
             ),
           ],
         ));
-      }
-
-      // 添加按分类分组的分类
-      for (final categoryJson in categoryList) {
-        if (categoryJson is Map<String, dynamic>) {
-          final category = CategoryModel.fromJson(categoryJson);
-          final categoryProducts = productsByCategory[category.id] ?? [];
-          if (categoryProducts.isNotEmpty) {
-            categories.add(CategoryWithSpu(
-              id: category.id,
-              name: category.name,
-              spus: [
-                SpuModel(
-                  spuId: category.id,
-                  spuName: category.name,
-                  skus: categoryProducts.map((p) => SkuModel.fromProduct(p)).toList(),
-                ),
-              ],
-            ));
-          }
-        }
       }
 
       return SkuSelectBaseResult(categories: categories);
