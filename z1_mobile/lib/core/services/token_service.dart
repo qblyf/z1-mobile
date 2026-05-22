@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class TokenService {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
+  static const _permissionTokenKey = 'permission_token';
 
   final SharedPreferences _prefs;
 
@@ -20,14 +21,23 @@ class TokenService {
     return _prefs.getString(_refreshTokenKey);
   }
 
+  /// 获取 Permission Token（用于权限验证）
+  String? getPermissionToken() {
+    return _prefs.getString(_permissionTokenKey);
+  }
+
   /// 保存 Token
   Future<void> saveTokens({
     required String accessToken,
     String? refreshToken,
+    String? permissionToken,
   }) async {
     await _prefs.setString(_accessTokenKey, accessToken);
     if (refreshToken != null) {
       await _prefs.setString(_refreshTokenKey, refreshToken);
+    }
+    if (permissionToken != null) {
+      await _prefs.setString(_permissionTokenKey, permissionToken);
     }
   }
 
