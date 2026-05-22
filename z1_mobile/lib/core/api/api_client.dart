@@ -100,6 +100,9 @@ class ApiClient {
   final TokenService _tokenService;
   final String _baseUrl;
 
+  /// z1func 中间层路径
+  static const String z1funcPath = '/z1func';
+
   ApiClient({
     required Dio dio,
     required TokenService tokenService,
@@ -109,7 +112,86 @@ class ApiClient {
     _dio.interceptors.add(ApiInterceptor(tokenService: tokenService, baseUrl: _baseUrl));
   }
 
-  /// GET 请求
+  /// 通过 z1func 中间层发起请求
+  ///
+  /// PWA/Web SDK 调用方式：
+  /// ```javascript
+  /// fetchData({
+  ///   p: 'z1func',
+  ///   urlKey: '/sku/select-base',
+  ///   method: 'GET',
+  ///   headers: { Authorization: token, 'Use-Permissions': permission }
+  /// })
+  /// ```
+  ///
+  /// 相当于：
+  /// POST /z1func { p: 'z1func', urlKey: '/sku/select-base', method: 'GET', headers: {...} }
+  Future<Result<T>> z1func<T>(
+    String urlKey, {
+    String method = 'GET',
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? queryParameters,
+    T Function(dynamic)? parser,
+  }) async {
+    try {
+      final token = _tokenService.getAccessToken();
+      final permission = _tokenService.getPermissionToken();
+
+      final requestBody = {
+        'p': 'z1func',
+        'urlKey': urlKey,
+        'method': method,
+        'headers': <String, String>{
+          if (token != null) 'Authorization': 'Bearer $token',
+          if (permission != null) 'Use-Permissions': permission,
+          'Content-Type': 'application/json',
+        },
+        if (body != null) 'body': body,
+      };
+
+      final response = await _dio.post(
+        z1funcPath,
+        data: requestBody,
+        queryParameters: queryParameters,
+      );
+
+      final data = response.data;
+
+      if (data == null) {
+        return Failure(ApiFailure.serverError('空响应'));
+      }
+
+      if (data is Map<String, dynamic>) {
+        if (data['code'] != null && data['code'] != 10000) {
+          final message = data['message'] ?? data['msg'] ?? '请求失败';
+          return Failure(ApiFailure.serverError(message));
+        }
+
+        final res = data['res'];
+        if (parser != null) {
+          try {
+            return Success(parser(res));
+          } catch (e) {
+            return Failure(ApiFailure.serverError('解析失败: $e'));
+          }
+        }
+        return Success(res as T);
+      }
+
+      if (parser != null) {
+        try {
+          return Success(parser(data));
+        } catch (e) {
+          return Failure(ApiFailure.serverError('解析失败: $e'));
+        }
+      }
+      return Success(data as T);
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// GET 请求（直接调用，不经过 z1func）
   Future<Result<T>> get<T>(
     String url, {
     Map<String, dynamic>? queryParameters,
@@ -126,7 +208,7 @@ class ApiClient {
     }
   }
 
-  /// POST 请求
+  /// POST 请求（直接调用，不经过 z1func）
   Future<Result<T>> post<T>(
     String url, {
     dynamic data,

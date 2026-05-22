@@ -225,9 +225,11 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<SkuSelectBaseResult>> getSkuSelectBase() async {
-    final response = await apiClient.get<Map<String, dynamic>>(
+    // 通过 z1func 中间层调用（根据 z1-mid SDK 源码，该接口必须走 z1func）
+    final response = await apiClient.z1func<Map<String, dynamic>>(
       ApiEndpoints.skuSelectBase,
-      parser: (data) => data,
+      method: 'GET',
+      parser: (data) => data as Map<String, dynamic>,
     );
 
     return response.map((data) => SkuSelectBaseResult.fromJson(data));
