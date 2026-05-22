@@ -11,6 +11,7 @@ import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/member/data/datasources/member_remote_datasource.dart';
 import 'features/member/presentation/bloc/member_home_bloc.dart';
 import 'features/member/presentation/bloc/member_detail_bloc.dart';
+import 'features/retail/data/datasources/local_data_source.dart';
 import 'features/retail/data/datasources/product_remote_datasource.dart';
 import 'features/retail/data/datasources/member_remote_datasource.dart';
 import 'features/retail/data/datasources/coin_discount_remote_datasource.dart';
@@ -86,6 +87,10 @@ Future<void> configureDependencies() async {
     () => ProductRemoteDataSourceImpl(apiClient: getIt()),
   );
 
+  getIt.registerLazySingleton<LocalProductDataSource>(
+    () => LocalProductDataSource(prefs: getIt()),
+  );
+
   getIt.registerLazySingleton<RetailMemberRemoteDataSource>(
     () => RetailMemberRemoteDataSourceImpl(apiClient: getIt()),
   );
@@ -96,7 +101,10 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerFactory<ProductSelectBloc>(
-    () => ProductSelectBloc(dataSource: getIt<ProductRemoteDataSource>()),
+    () => ProductSelectBloc(
+      dataSource: getIt<ProductRemoteDataSource>(),
+      localDataSource: getIt<LocalProductDataSource>(),
+    ),
   );
 
   getIt.registerFactory<MemberBloc>(
@@ -116,7 +124,14 @@ Future<void> configureDependencies() async {
     () => ServiceRemoteDataSourceImpl(apiClient: getIt()),
   );
 
+  getIt.registerLazySingleton<LocalServiceDataSource>(
+    () => LocalServiceDataSource(prefs: getIt()),
+  );
+
   getIt.registerFactory<ServiceBloc>(
-    () => ServiceBloc(dataSource: getIt<ServiceRemoteDataSource>()),
+    () => ServiceBloc(
+      dataSource: getIt<ServiceRemoteDataSource>(),
+      localDataSource: getIt<LocalServiceDataSource>(),
+    ),
   );
 }

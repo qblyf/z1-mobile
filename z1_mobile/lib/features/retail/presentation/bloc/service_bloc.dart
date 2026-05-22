@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../data/datasources/local_data_source.dart';
 import '../../data/datasources/service_remote_datasource.dart';
 import '../../data/models/service_model.dart';
 import '../../data/models/cart_item_model.dart';
@@ -112,10 +113,14 @@ class ServiceError extends ServiceState {
 }
 
 class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
-  final ServiceRemoteDataSource _dataSource;
+  final ServiceRemoteDataSource _remoteDataSource;
+  final LocalServiceDataSource _localDataSource;
 
-  ServiceBloc({required ServiceRemoteDataSource dataSource})
-      : _dataSource = dataSource,
+  ServiceBloc({
+    required ServiceRemoteDataSource dataSource,
+    required LocalServiceDataSource localDataSource,
+  })  : _remoteDataSource = dataSource,
+        _localDataSource = localDataSource,
         super(const ServiceInitial()) {
     on<ServiceLoadRequested>(_onLoadRequested);
     on<ServiceCategoryChanged>(_onCategoryChanged);
@@ -129,16 +134,40 @@ class ServiceBloc extends Bloc<ServiceEvent, ServiceState> {
     ServiceLoadRequested event,
     Emitter<ServiceState> emit,
   ) async {
+    // 优先使用缓存
+    final cachedData = _localDataSource.getServiceSelectBaseCache();
+    if (cachedData != null && _localDataSource.isCacheValid()) {
+      emit(ServiceLoaded(
+        services: cachedData.services,
+        filteredServices: cachedData.services,
+        categories: cachedData.categories,
+      ));
+      return;
+    }
+
+    // 缓存无效或不存在，从远程加载
     emit(const ServiceLoading());
 
-    final result = await _dataSource.getServiceSelectBase();
+    final result = await _remoteDataSource.getServiceSelectBase();
 
     if (result.isFailure) {
+      // 远程加载失败，尝试使用过期缓存
+      final staleCache = _localDataSource.getServiceSelectBaseCache();
+      if (staleCache != null) {
+        emit(ServiceLoaded(
+          services: staleCache.services,
+          filteredServices: staleCache.services,
+          categories: staleCache.categories,
+        ));
+        return;
+      }
       emit(ServiceError(result.failure!.message));
       return;
     }
 
     final data = result.value!;
+    // 缓存成功的数据
+    await _localDataSource.cacheServiceSelectBase(data);
     emit(ServiceLoaded(
       services: data.services,
       filteredServices: data.services,

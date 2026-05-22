@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../data/datasources/local_data_source.dart';
 import '../../data/datasources/product_remote_datasource.dart';
 import '../../data/models/product_model.dart';
 
@@ -125,10 +126,14 @@ class ProductSelectError extends ProductSelectState {
 }
 
 class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
-  final ProductRemoteDataSource _dataSource;
+  final ProductRemoteDataSource _remoteDataSource;
+  final LocalProductDataSource _localDataSource;
 
-  ProductSelectBloc({required ProductRemoteDataSource dataSource})
-      : _dataSource = dataSource,
+  ProductSelectBloc({
+    required ProductRemoteDataSource dataSource,
+    required LocalProductDataSource localDataSource,
+  })  : _remoteDataSource = dataSource,
+        _localDataSource = localDataSource,
         super(const ProductSelectInitial()) {
     on<ProductSelectLoadRequested>(_onLoadRequested);
     on<ProductSelectCategoryChanged>(_onCategoryChanged);
@@ -141,16 +146,38 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
     ProductSelectLoadRequested event,
     Emitter<ProductSelectState> emit,
   ) async {
+    // 优先使用缓存
+    final cachedData = _localDataSource.getSkuSelectBaseCache();
+    if (cachedData != null && _localDataSource.isSkuCacheValid()) {
+      emit(ProductSelectLoaded(
+        categories: cachedData.categories,
+        filteredCategories: cachedData.categories,
+      ));
+      return;
+    }
+
+    // 缓存无效或不存在，从远程加载
     emit(const ProductSelectLoading());
 
-    final result = await _dataSource.getSkuSelectBase();
+    final result = await _remoteDataSource.getSkuSelectBase();
 
     if (result.isFailure) {
+      // 远程加载失败，尝试使用过期缓存
+      final staleCache = _localDataSource.getSkuSelectBaseCache();
+      if (staleCache != null) {
+        emit(ProductSelectLoaded(
+          categories: staleCache.categories,
+          filteredCategories: staleCache.categories,
+        ));
+        return;
+      }
       emit(ProductSelectError(result.failure!.message));
       return;
     }
 
     final data = result.value!;
+    // 缓存成功的数据
+    await _localDataSource.cacheSkuSelectBase(data);
     emit(ProductSelectLoaded(
       categories: data.categories,
       filteredCategories: data.categories,
