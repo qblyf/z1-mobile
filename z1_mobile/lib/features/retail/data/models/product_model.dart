@@ -5,6 +5,7 @@ class ProductModel extends Equatable {
   final String productName;
   final int price;
   final String category;
+  final int? categoryId;
   final String? code;
   final String? genre;
   final String? categoryName;
@@ -20,6 +21,7 @@ class ProductModel extends Equatable {
     required this.productName,
     required this.price,
     required this.category,
+    this.categoryId,
     this.code,
     this.genre,
     this.categoryName,
@@ -42,6 +44,7 @@ class ProductModel extends Equatable {
       productName: json['productName'] ?? json['name'] ?? '',
       price: retailPrice is int ? retailPrice : (retailPrice as num?)?.toInt() ?? 0,
       category: json['category'] ?? json['categoryName'] ?? '',
+      categoryId: json['categoryId'] ?? json['categoryId'] ?? json['category_id'],
       code: json['code'],
       genre: json['genre'],
       categoryName: json['categoryName'],
@@ -59,6 +62,7 @@ class ProductModel extends Equatable {
     String? productName,
     int? price,
     String? category,
+    int? categoryId,
     String? code,
     String? genre,
     String? categoryName,
@@ -74,6 +78,7 @@ class ProductModel extends Equatable {
       productName: productName ?? this.productName,
       price: price ?? this.price,
       category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       code: code ?? this.code,
       genre: genre ?? this.genre,
       categoryName: categoryName ?? this.categoryName,
@@ -199,6 +204,20 @@ class SkuModel extends Equatable {
       unit: json['unit'],
       image: json['image'],
       specs: json['specs'] as Map<String, dynamic>?,
+    );
+  }
+
+  /// 从 ProductModel 转换
+  factory SkuModel.fromProduct(ProductModel product) {
+    return SkuModel(
+      skuId: product.productID,
+      skuName: product.productName,
+      price: product.price,
+      retailPrice: product.retailPrice,
+      memberPrice: product.memberPrice,
+      stock: product.stock,
+      unit: product.unit,
+      image: product.image,
     );
   }
 

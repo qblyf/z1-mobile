@@ -225,14 +225,73 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<SkuSelectBaseResult>> getSkuSelectBase() async {
-    // 通过 z1func 中间层调用（根据 z1-mid SDK 源码，该接口必须走 z1func）
-    final response = await apiClient.z1func<Map<String, dynamic>>(
-      ApiEndpoints.skuSelectBase,
-      method: 'GET',
-      parser: (data) => data as Map<String, dynamic>,
+    // 直接调用 /product/select-base 接口（不再使用 z1func 中间层）
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.productSelectBase,
+      parser: (data) => data,
     );
 
-    return response.map((data) => SkuSelectBaseResult.fromJson(data));
+    return response.map((data) {
+      // 将 product/select-base 返回数据映射为 SkuSelectBaseResult 格式
+      final productList = data['productList'] as List<dynamic>? ?? [];
+      final categoryList = data['categoryList'] as List<dynamic>? ?? [];
+
+      // 构建 CategoryWithSpu 结构
+      final categories = <CategoryWithSpu>[];
+
+      // 按分类分组商品
+      final productsByCategory = <int, List<ProductModel>>{};
+      for (final item in productList) {
+        if (item is Map<String, dynamic>) {
+          final product = ProductModel.fromJson(item);
+          final categoryId = product.categoryId ?? 0;
+          productsByCategory.putIfAbsent(categoryId, () => []).add(product);
+        }
+      }
+
+      // 添加"全部商品"分类（包含所有商品）
+      if (productList.isNotEmpty) {
+        final allProducts = productList
+            .map((item) => item is Map<String, dynamic> ? ProductModel.fromJson(item) : null)
+            .whereType<ProductModel>()
+            .toList();
+
+        categories.add(CategoryWithSpu(
+          id: 0,
+          name: '全部商品',
+          spus: [
+            SpuModel(
+              spuId: 0,
+              spuName: '全部商品',
+              skus: allProducts.map((p) => SkuModel.fromProduct(p)).toList(),
+            ),
+          ],
+        ));
+      }
+
+      // 添加按分类分组的分类
+      for (final categoryJson in categoryList) {
+        if (categoryJson is Map<String, dynamic>) {
+          final category = CategoryModel.fromJson(categoryJson);
+          final categoryProducts = productsByCategory[category.id] ?? [];
+          if (categoryProducts.isNotEmpty) {
+            categories.add(CategoryWithSpu(
+              id: category.id,
+              name: category.name,
+              spus: [
+                SpuModel(
+                  spuId: category.id,
+                  spuName: category.name,
+                  skus: categoryProducts.map((p) => SkuModel.fromProduct(p)).toList(),
+                ),
+              ],
+            ));
+          }
+        }
+      }
+
+      return SkuSelectBaseResult(categories: categories);
+    });
   }
 
   @override
