@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 import '../../../../core/api/api_client.dart';
 import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/api/result.dart';
