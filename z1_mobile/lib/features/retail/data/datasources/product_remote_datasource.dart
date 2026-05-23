@@ -225,7 +225,8 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<SkuSelectBaseResult>> getSkuSelectBase() async {
-    // 调用 /product/select-base 接口，返回格式: { code: 10000, res: [ {...}, ... ] }
+    // 调用 /sku/select-base 接口（SDK 确认的正确路径）
+    // 返回格式: { code: 10000, res: [ {skuID, skuName, spuName, spuID, spuCateID, ...}, ... ] }
     final response = await apiClient.get<Map<String, dynamic>>(
       ApiEndpoints.productSelectBase,
       parser: (data) => data,
@@ -233,62 +234,105 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
     return response.map((data) {
       // API 返回格式: { code: 10000, res: [ {...}, ... ] }
-      // 直接解析 res 字段作为商品列表
+      // res 数组中每个元素是 SKU 数据，包含 skuID, skuName, spuName, spuID 等字段
       final resList = data['res'] as List<dynamic>? ?? [];
 
       if (resList.isEmpty) {
         return const SkuSelectBaseResult(categories: []);
       }
 
-      // 解析商品列表
-      final products = resList
-          .whereType<Map<String, dynamic>>()
-          .map((item) => ProductModel.fromJson(item))
-          .toList();
+      // 按 SPU 分组 SKU
+      // Map<spuID, List<SKU数据>>
+      final skuGroupsBySpu = <int, List<Map<String, dynamic>>>{};
+      // 按分类ID分组 SPU
+      // Map<spuCateID, List<SPU数据>>
+      final spuGroupsByCate = <int, List<Map<String, dynamic>>>{};
 
-      if (products.isEmpty) {
-        return const SkuSelectBaseResult(categories: []);
+      for (final item in resList) {
+        if (item is! Map<String, dynamic>) continue;
+
+        final skuId = item['skuID'] as int? ?? 0;
+        final spuId = item['spuID'] as int? ?? 0;
+        final spuName = item['spuName'] as String? ?? '未知商品';
+        final spuCateId = item['spuCateID'] as int? ?? 0;
+
+        // 解析 SKU 信息
+        final sku = SkuModel(
+          skuId: skuId,
+          skuName: item['skuName'] as String? ?? '',
+          price: 0, // SKU 价格需要从其他接口获取
+          retailPrice: 0,
+          memberPrice: 0,
+          stock: 0,
+          unit: item['unit'] as String?,
+          image: null,
+          specs: null,
+        );
+
+        final skuData = {
+          'sku': sku,
+          'spuId': spuId,
+          'spuName': spuName,
+        };
+
+        // 按 SPU 分组
+        if (spuId != 0) {
+          skuGroupsBySpu.putIfAbsent(spuId, () => []).add(skuData);
+        }
+
+        // 按分类分组（使用 spuCateID）
+        if (spuCateId != 0) {
+          final hasSpu = spuGroupsByCate[spuCateId]?.any((s) => s['spuId'] == spuId) ?? false;
+          if (!hasSpu) {
+            spuGroupsByCate.putIfAbsent(spuCateId, () => []).add(skuData);
+          }
+        }
       }
 
-      // 构建 CategoryWithSpu 结构
-      // 按分类ID分组商品
-      final productsByCategory = <int, List<ProductModel>>{};
-      for (final product in products) {
-        final categoryId = product.categoryId ?? 0;
-        productsByCategory.putIfAbsent(categoryId, () => []).add(product);
-      }
-
+      // 构建分类列表
       final categories = <CategoryWithSpu>[];
 
-      // 添加"全部商品"分类
-      categories.add(CategoryWithSpu(
-        id: 0,
-        name: '全部商品',
-        spus: [
-          SpuModel(
-            spuId: 0,
-            spuName: '全部商品',
-            skus: products.map((p) => SkuModel.fromProduct(p)).toList(),
-          ),
-        ],
-      ));
-
-      // 添加按分类分组的分类
-      for (final entry in productsByCategory.entries) {
-        if (entry.key == 0) continue; // 跳过"未分类"
-        final categoryProducts = entry.value;
-        // 使用第一个商品的分类名或使用默认分类名
-        final categoryName = categoryProducts.first.categoryName ?? '分类${entry.key}';
+      // 添加"全部商品"分类（包含所有 SKU）
+      final allSkus = skuGroupsBySpu.values.expand((list) => list).map((m) => m['sku'] as SkuModel).toList();
+      if (allSkus.isNotEmpty) {
         categories.add(CategoryWithSpu(
-          id: entry.key,
-          name: categoryName,
+          id: 0,
+          name: '全部商品',
           spus: [
             SpuModel(
-              spuId: entry.key,
-              spuName: categoryName,
-              skus: categoryProducts.map((p) => SkuModel.fromProduct(p)).toList(),
+              spuId: 0,
+              spuName: '全部商品',
+              skus: allSkus,
             ),
           ],
+        ));
+      }
+
+      // 添加按分类分组的分类
+      for (final entry in spuGroupsByCate.entries) {
+        final cateId = entry.key;
+        final spuList = entry.value;
+
+        // 构建该分类下的 SPU 列表
+        final spus = <SpuModel>[];
+        for (final spuData in spuList) {
+          final spuId = spuData['spuId'] as int;
+          final spuName = spuData['spuName'] as String;
+
+          // 收集该 SPU 下的所有 SKU
+          final skusForSpu = skuGroupsBySpu[spuId]?.map((m) => m['sku'] as SkuModel).toList() ?? [];
+
+          spus.add(SpuModel(
+            spuId: spuId,
+            spuName: spuName,
+            skus: skusForSpu,
+          ));
+        }
+
+        categories.add(CategoryWithSpu(
+          id: cateId,
+          name: '分类$cateId',
+          spus: spus,
         ));
       }
 

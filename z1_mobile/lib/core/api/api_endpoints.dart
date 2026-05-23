@@ -41,8 +41,8 @@ class ApiEndpoints {
   // ===== 商品 =====
   /// 商品列表
   static const String productList = '/product/list';
-  /// 商品选择基础数据（分类+商品）
-  static const String productSelectBase = '/product/select-base';
+  /// 商品选择基础数据（分类+商品）- 使用 /sku/select-base 接口
+  static const String productSelectBase = '/sku/select-base';
   /// 批量查询商品
   static String productSelect(String ids) => '/product/select?ids=$ids';
 
