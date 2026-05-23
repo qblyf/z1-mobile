@@ -251,6 +251,10 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       for (final item in resList) {
         if (item is! Map<String, dynamic>) continue;
 
+        // 过滤非活跃商品 (state: 1 = 活跃)
+        final state = item['state'] as int? ?? 0;
+        if (state != 1) continue;
+
         final skuId = item['skuID'] as int? ?? 0;
         final spuId = item['spuID'] as int? ?? 0;
         final spuName = item['spuName'] as String? ?? '未知商品';
