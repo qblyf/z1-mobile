@@ -136,6 +136,16 @@ class ApiEndpoints {
   // ===== 商品价格 =====
   /// 商品价格列表（批量获取价格）
   static const String productPriceList = '/product-price/list';
+
+  // ===== 回收单（以旧换新） =====
+  /// 可绑定回收单列表
+  static const String allowBindAhsOrderList = '/ahs/allow-bind-list';
+  /// 校验回收单是否可关联
+  static String checkAhsOrder(int ahsOrderId) => '/ahs/check/$ahsOrderId';
+
+  // ===== 积分兑换 =====
+  /// 积分兑换转订单
+  static const String pointsRedeemOrderToMallOrder = '/points/redeem-to-order';
 }
 
 /// 辅助方法：URL 参数编码

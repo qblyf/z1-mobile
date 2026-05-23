@@ -15,11 +15,13 @@ import 'features/retail/data/datasources/product_remote_datasource.dart';
 import 'features/retail/data/datasources/member_remote_datasource.dart';
 import 'features/retail/data/datasources/coin_discount_remote_datasource.dart';
 import 'features/retail/data/datasources/service_remote_datasource.dart';
+import 'features/retail/data/datasources/recycle_order_remote_datasource.dart';
 import 'features/retail/presentation/bloc/product_select_bloc.dart';
 import 'features/retail/presentation/bloc/product_bloc.dart';
 import 'features/retail/presentation/bloc/member_bloc.dart';
 import 'features/retail/presentation/bloc/coin_discount_bloc.dart';
 import 'features/retail/presentation/bloc/service_bloc.dart';
+import 'features/retail/presentation/bloc/recycle_order_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -118,5 +120,14 @@ Future<void> configureDependencies() async {
 
   getIt.registerFactory<ServiceBloc>(
     () => ServiceBloc(dataSource: getIt<ServiceRemoteDataSource>()),
+  );
+
+  // RecycleOrder DataSource & Bloc
+  getIt.registerLazySingleton<RecycleOrderRemoteDataSource>(
+    () => RecycleOrderRemoteDataSourceImpl(apiClient: getIt()),
+  );
+
+  getIt.registerFactory<RecycleOrderBloc>(
+    () => RecycleOrderBloc(dataSource: getIt<RecycleOrderRemoteDataSource>()),
   );
 }

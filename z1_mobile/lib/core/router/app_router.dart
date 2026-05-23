@@ -35,6 +35,7 @@ import '../../features/retail/presentation/bloc/coin_discount_bloc.dart';
 import '../../features/retail/presentation/bloc/service_bloc.dart';
 import '../../features/retail/presentation/pages/select_cash_coupons_page.dart';
 import '../../features/retail/presentation/pages/select_renew_subsidy_page.dart';
+import '../../features/retail/presentation/pages/select_recycle_order_page.dart';
 import '../../injection.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
@@ -117,6 +118,13 @@ final appRouter = GoRouter(
               path: 'retail/renew-subsidy',
               builder: (context, state) {
                 return const SelectRenewSubsidyPage();
+              },
+            ),
+            // 回收单选择（以旧换新）
+            GoRoute(
+              path: 'retail/recycle-order',
+              builder: (context, state) {
+                return const SelectRecycleOrderPage();
               },
             ),
             // 订单列表
