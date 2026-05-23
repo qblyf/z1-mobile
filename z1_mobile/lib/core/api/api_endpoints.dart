@@ -36,7 +36,7 @@ class ApiEndpoints {
   static const String memberAdd = '/members/add';
   /// 积分查询：直接用 GET /members/self 返回的 experience 字段
   /// POST /members/experience 是积分调整接口
-  static const String memberExperienceEdit = '/members/experience/edit';
+  static const String memberExperienceEdit = '/members/experience';
 
   // ===== 商品 =====
   /// 商品列表
@@ -139,13 +139,13 @@ class ApiEndpoints {
 
   // ===== 回收单（以旧换新） =====
   /// 可绑定回收单列表
-  static const String allowBindAhsOrderList = '/ahs/allow-bind-list';
+  static const String allowBindAhsOrderList = '/ahs/allow-bind';
   /// 校验回收单是否可关联
   static String checkAhsOrder(int ahsOrderId) => '/ahs/check/$ahsOrderId';
 
   // ===== 积分兑换 =====
-  /// 积分兑换转订单
-  static const String pointsRedeemOrderToMallOrder = '/points/redeem-to-order';
+  /// 积分兑换转订单（POST）
+  static const String pointsRedeemOrderToMallOrder = '/points-redeem/order/to-mall-order';
 }
 
 /// 辅助方法：URL 参数编码
