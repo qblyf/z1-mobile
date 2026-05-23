@@ -30,6 +30,7 @@ import '../../features/inventory/presentation/pages/purchase_detail_page.dart';
 import '../../features/inventory/presentation/pages/purchase_inbound_page.dart';
 import '../../features/inventory/presentation/pages/serial_search_page.dart';
 import '../../features/retail/presentation/bloc/product_bloc.dart';
+import '../../features/retail/presentation/bloc/product_select_bloc.dart';
 import '../../features/retail/presentation/bloc/member_bloc.dart';
 import '../../features/retail/presentation/bloc/coin_discount_bloc.dart';
 import '../../features/retail/presentation/bloc/service_bloc.dart';
@@ -72,7 +73,7 @@ final appRouter = GoRouter(
                 final order = state.extra as RetailOrder?;
                 return MultiBlocProvider(
                   providers: [
-                    BlocProvider(create: (_) => getIt<ProductBloc>()),
+                    BlocProvider(create: (_) => getIt<ProductSelectBloc>()),
                     BlocProvider(create: (_) => getIt<ServiceBloc>()),
                   ],
                   child: RetailProductPage(initialOrder: order),
