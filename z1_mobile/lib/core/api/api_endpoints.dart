@@ -53,6 +53,8 @@ class ApiEndpoints {
   // ===== 分类 =====
   /// 分类列表（type: 1=商品分类）
   static String categoryList({int type = 1}) => '/category/list?type=$type';
+  /// 商城分类列表（3级结构：品类 -> 品牌 -> 系列）
+  static const String mallCategoryList = '/mall-category/list';
 
   // ===== 服务 =====
   /// 服务列表

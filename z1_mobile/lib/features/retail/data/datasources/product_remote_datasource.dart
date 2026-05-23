@@ -233,9 +233,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<SkuSelectBaseResult>> getSkuSelectBase() async {
-    // 1. 先获取分类列表
+    // 1. 获取商城分类列表（3级结构：品类 -> 品牌 -> 系列）
     final categoryResponse = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.categoryList(type: 1),
+      ApiEndpoints.mallCategoryList,
       parser: (data) => data,
     );
 
@@ -256,17 +256,17 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     final categoryData = categoryResponse.value!;
     final skuData = skuResponse.value!;
 
-    // 解析分类列表
-    final categoryList = categoryData['list'] as List<dynamic>? ?? [];
-    final categories = categoryList
+    // 解析商城分类列表
+    final categoryList = categoryData['data'] as List<dynamic>? ?? categoryData['list'] as List<dynamic>? ?? [];
+    final mallCategories = categoryList
         .whereType<Map<String, dynamic>>()
-        .map((json) => CategoryModel.fromJson(json))
+        .map((json) => MallCategoryModel.fromJson(json))
         .toList();
 
-    // 构建分类树和节点映射
-    final categoryTreeResult = _buildCategoryTree(categories);
-    final categoryTree = categoryTreeResult.$1;
-    final nodeMap = categoryTreeResult.$2;
+    // 构建商城分类树
+    final mallCategoryTreeResult = _buildMallCategoryTree(mallCategories);
+    final mallCategoryTree = mallCategoryTreeResult.$1;
+    final nodeMap = mallCategoryTreeResult.$2;
 
     // 解析 SKU 数据，按 (spuCateId, spuId) 分组
     final resList = skuData['res'] as List<dynamic>? ?? [];
@@ -312,7 +312,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       spuMap[spuId]!.skus.add(sku);
     }
 
-    // 将 SPU 关联到叶子分类节点
+    // 将 SPU 关联到叶子分类节点（3级分类的 spuCateID 对应系列）
     for (final entry in spuByCategory.entries) {
       final cateId = entry.key;
       final spuMap = entry.value;
@@ -327,16 +327,16 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         )).toList();
 
         // 更新节点
-        final index = categoryTree.indexWhere((n) => n.id == cateId);
+        final index = mallCategoryTree.indexWhere((n) => n.id == cateId);
         if (index >= 0) {
-          categoryTree[index] = node.copyWith(spus: spus);
+          mallCategoryTree[index] = node.copyWith(spus: spus);
         }
         nodeMap[cateId] = node.copyWith(spus: spus);
       }
     }
 
     // 扁平化为 CategoryWithSpu 列表（只显示有商品的叶子分类）
-    final flatCategories = _flattenCategoryTree(categoryTree);
+    final flatCategories = _flattenMallCategoryTree(mallCategoryTree);
 
     // 添加"全部商品"分类
     if (allSkus.isNotEmpty) {
@@ -359,35 +359,62 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     return Success(SkuSelectBaseResult(categories: flatCategories));
   }
 
-  /// 构建分类树，返回 (树列表, 节点映射)
-  (List<CategoryTreeNode>, Map<int, CategoryTreeNode>) _buildCategoryTree(
-    List<CategoryModel> categories,
+  /// 构建商城分类树（3级结构：品类 -> 品牌 -> 系列）
+  /// 返回 (树列表, 节点映射)
+  (List<MallCategoryTreeNode>, Map<int, MallCategoryTreeNode>) _buildMallCategoryTree(
+    List<MallCategoryModel> categories,
   ) {
-    final nodeMap = <int, CategoryTreeNode>{};
-    final topLevelNodes = <CategoryTreeNode>[];
+    final nodeMap = <int, MallCategoryTreeNode>{};
+    final topLevelNodes = <MallCategoryTreeNode>[];
 
     // 创建所有节点
     for (final cat in categories) {
-      nodeMap[cat.id] = CategoryTreeNode(
+      nodeMap[cat.id] = MallCategoryTreeNode(
         id: cat.id,
-        name: cat.name,
-        pid: cat.pid ?? 0,
+        title: cat.title,
+        level: cat.level,
+        pids: cat.pids,
       );
     }
 
     // 构建树
+    // Level 1 品类：pids=[]，顶级
+    // Level 2 品牌：pids=[品类ID]
+    // Level 3 系列：pids=[品类ID, 品牌ID]
     for (final cat in categories) {
       final node = nodeMap[cat.id]!;
-      if (cat.pid == 0 || cat.pid == null) {
+
+      if (cat.level == 1) {
+        // 品类是顶级
         topLevelNodes.add(node);
-      } else {
-        final parent = nodeMap[cat.pid];
+      } else if (cat.level == 2 && cat.pids.isNotEmpty) {
+        // 品牌挂在品类下
+        final parentId = cat.pids[0];
+        final parent = nodeMap[parentId];
         if (parent != null) {
-          final children = List<CategoryTreeNode>.from(parent.children);
+          final children = List<MallCategoryTreeNode>.from(parent.children);
           children.add(node);
-          nodeMap[parent.id] = parent.copyWith(children: children);
+          nodeMap[parentId] = parent.copyWith(children: children);
         } else {
           topLevelNodes.add(node);
+        }
+      } else if (cat.level == 3 && cat.pids.length >= 2) {
+        // 系列挂在品牌下
+        final brandId = cat.pids[1];
+        final parent = nodeMap[brandId];
+        if (parent != null) {
+          final children = List<MallCategoryTreeNode>.from(parent.children);
+          children.add(node);
+          nodeMap[brandId] = parent.copyWith(children: children);
+        } else {
+          // 品牌不存在则挂在品类下
+          final categoryId = cat.pids[0];
+          final category = nodeMap[categoryId];
+          if (category != null) {
+            final children = List<MallCategoryTreeNode>.from(category.children);
+            children.add(node);
+            nodeMap[categoryId] = category.copyWith(children: children);
+          }
         }
       }
     }
@@ -395,23 +422,23 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     return (topLevelNodes, nodeMap);
   }
 
-  /// 扁平化分类树为列表（只显示有商品的分类）
-  List<CategoryWithSpu> _flattenCategoryTree(List<CategoryTreeNode> nodes) {
+  /// 扁平化商城分类树为列表（只显示有商品的叶子分类）
+  List<CategoryWithSpu> _flattenMallCategoryTree(List<MallCategoryTreeNode> nodes) {
     final result = <CategoryWithSpu>[];
 
     for (final node in nodes) {
-      if (node.children.isEmpty) {
-        // 叶子节点，如果有 SPU 则添加
+      if (node.level == 3) {
+        // 3级分类（系列）是叶子节点
         if (node.spus.isNotEmpty) {
           result.add(CategoryWithSpu(
             id: node.id,
-            name: node.name,
+            name: node.title,
             spus: node.spus,
           ));
         }
-      } else {
-        // 非叶子节点，递归处理子节点（只添加有商品的叶子）
-        final childCategories = _flattenCategoryTree(node.children);
+      } else if (node.children.isNotEmpty) {
+        // 非叶子节点，递归处理子节点
+        final childCategories = _flattenMallCategoryTree(node.children);
         result.addAll(childCategories);
       }
     }

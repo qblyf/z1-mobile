@@ -344,3 +344,100 @@ class CategoryTreeNode extends Equatable {
   @override
   List<Object?> get props => [id, name, pid, children, spus];
 }
+
+/// 商城分类模型（3级结构：品类 -> 品牌 -> 系列）
+/// API: /mall-category/list
+class MallCategoryModel extends Equatable {
+  final int id;
+  final String title; // 名称
+  final int level; // 层级：1=品类，2=品牌，3=系列
+  final List<int> pids; // 父级分类ID列表
+  final int weight; // 权重
+  final String? spell; // 拼音码（仅3级有）
+  final String? imgUrl; // 分类图片（仅3级有）
+
+  const MallCategoryModel({
+    required this.id,
+    required this.title,
+    required this.level,
+    this.pids = const [],
+    this.weight = 0,
+    this.spell,
+    this.imgUrl,
+  });
+
+  /// 是否为品类（1级）
+  bool get isCategory => level == 1;
+
+  /// 是否为品牌（2级）
+  bool get isBrand => level == 2;
+
+  /// 是否为系列（3级/叶子节点）
+  bool get isSeries => level == 3;
+
+  /// 是否为叶子节点（系列）
+  bool get isLeaf => level == 3;
+
+  /// 父品类ID（level=2时有）
+  int? get categoryId => pids.isNotEmpty ? pids[0] : null;
+
+  /// 父品牌ID（level=3时有）
+  int? get brandId => pids.length > 1 ? pids[1] : null;
+
+  factory MallCategoryModel.fromJson(Map<String, dynamic> json) {
+    return MallCategoryModel(
+      id: json['id'] ?? 0,
+      title: json['title'] ?? '',
+      level: json['level'] ?? 1,
+      pids: (json['pids'] as List<dynamic>?)?.map((e) => e as int).toList() ?? [],
+      weight: json['weight'] ?? 0,
+      spell: json['spell'] as String?,
+      imgUrl: json['imgUrl'] as String?,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, title, level, pids, weight, spell, imgUrl];
+}
+
+/// 商城分类树节点
+class MallCategoryTreeNode extends Equatable {
+  final int id;
+  final String title;
+  final int level;
+  final List<int> pids;
+  final List<MallCategoryTreeNode> children;
+  final List<SpuModel> spus;
+
+  const MallCategoryTreeNode({
+    required this.id,
+    required this.title,
+    required this.level,
+    this.pids = const [],
+    this.children = const [],
+    this.spus = const [],
+  });
+
+  bool get isLeaf => level == 3 && spus.isNotEmpty;
+
+  MallCategoryTreeNode copyWith({
+    int? id,
+    String? title,
+    int? level,
+    List<int>? pids,
+    List<MallCategoryTreeNode>? children,
+    List<SpuModel>? spus,
+  }) {
+    return MallCategoryTreeNode(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      level: level ?? this.level,
+      pids: pids ?? this.pids,
+      children: children ?? this.children,
+      spus: spus ?? this.spus,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, title, level, pids, children, spus];
+}
