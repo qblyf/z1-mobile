@@ -58,6 +58,20 @@ class ApiEndpoints {
   /// 会员优惠券列表
   static const String couponSelf = '/coupons/self';
 
+  // ===== 代金券（现金券） =====
+  /// 可用代金券列表（零售开单用）
+  static const String availableCashCoupons = '/cash-coupon/available';
+  /// 代金券列表（会员持有）
+  static const String cashCouponList = '/cash-coupon/list';
+
+  // ===== 换新补贴 =====
+  /// 可用换新补贴券列表
+  static const String availableRenewSubsidy = '/renew-subsidy/available';
+  /// 换新补贴券分类列表（换新补贴专用）
+  static const String couponClassList = '/coupon-class/list';
+  /// 可用换新补贴券（按分类）
+  static String availableCouponClass(String classId) => '/renew-subsidy/available?couponClassId=$classId';
+
   // ===== 仓库 =====
   /// 仓库列表（添加 state=1 过滤禁用仓库）
   static String warehouseList({int? state}) {

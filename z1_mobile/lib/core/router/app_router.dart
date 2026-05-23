@@ -33,6 +33,8 @@ import '../../features/retail/presentation/bloc/product_bloc.dart';
 import '../../features/retail/presentation/bloc/member_bloc.dart';
 import '../../features/retail/presentation/bloc/coin_discount_bloc.dart';
 import '../../features/retail/presentation/bloc/service_bloc.dart';
+import '../../features/retail/presentation/pages/select_cash_coupons_page.dart';
+import '../../features/retail/presentation/pages/select_renew_subsidy_page.dart';
 import '../../injection.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
@@ -101,6 +103,20 @@ final appRouter = GoRouter(
               builder: (context, state) {
                 final order = state.extra as RetailOrder;
                 return RetailCompletePage(order: order);
+              },
+            ),
+            // 代金券选择
+            GoRoute(
+              path: 'retail/cash-coupons',
+              builder: (context, state) {
+                return const SelectCashCouponsPage();
+              },
+            ),
+            // 换新补贴选择
+            GoRoute(
+              path: 'retail/renew-subsidy',
+              builder: (context, state) {
+                return const SelectRenewSubsidyPage();
               },
             ),
             // 订单列表
