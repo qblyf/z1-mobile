@@ -50,6 +50,10 @@ class ApiEndpoints {
   /// SKU选择基础数据（标品）
   static const String skuSelectBase = '/sku/select-base';
 
+  // ===== 分类 =====
+  /// 分类列表（type: 1=商品分类）
+  static String categoryList({int type = 1}) => '/category/list?type=$type';
+
   // ===== 服务 =====
   /// 服务列表
   static const String serveList = '/serve/list';

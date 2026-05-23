@@ -100,25 +100,37 @@ class CategoryModel extends Equatable {
   final String name;
   final int? parentId;
   final int? sort;
+  final int? pid; // 上级分类 ID（0=顶级）
+  final List<int>? chain; // 分类链
+  final int? state; // 分类状态
 
   const CategoryModel({
     required this.id,
     required this.name,
     this.parentId,
     this.sort,
+    this.pid,
+    this.chain,
+    this.state,
   });
+
+  /// 是否为叶子节点（无子分类）
+  bool get isLeaf => true; // 需要在树构建时根据是否有子节点判断
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
-      parentId: json['parentId'] ?? json['parent_id'],
-      sort: json['sort'],
+      parentId: json['parentId'] ?? json['parent_id'] ?? json['pid'],
+      sort: json['sort'] ?? json['order'],
+      pid: json['pid'],
+      chain: (json['chain'] as List<dynamic>?)?.map((e) => e as int).toList(),
+      state: json['state'],
     );
   }
 
   @override
-  List<Object?> get props => [id, name, parentId, sort];
+  List<Object?> get props => [id, name, parentId, sort, pid, chain, state];
 }
 
 class ProductListParams extends Equatable {
@@ -289,4 +301,46 @@ class CategoryWithSpu extends Equatable {
 
   @override
   List<Object?> get props => [id, name, spus];
+}
+
+/// 分类树节点（支持层级结构）
+class CategoryTreeNode extends Equatable {
+  final int id;
+  final String name;
+  final int pid; // 父分类 ID，0 表示顶级
+  final List<CategoryTreeNode> children;
+  final List<SpuModel> spus; // 只在叶子节点关联 SPU
+
+  const CategoryTreeNode({
+    required this.id,
+    required this.name,
+    this.pid = 0,
+    this.children = const [],
+    this.spus = const [],
+  });
+
+  /// 是否为叶子节点
+  bool get isLeaf => children.isEmpty && spus.isNotEmpty;
+
+  /// 是否为顶级节点
+  bool get isTopLevel => pid == 0;
+
+  CategoryTreeNode copyWith({
+    int? id,
+    String? name,
+    int? pid,
+    List<CategoryTreeNode>? children,
+    List<SpuModel>? spus,
+  }) {
+    return CategoryTreeNode(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      pid: pid ?? this.pid,
+      children: children ?? this.children,
+      spus: spus ?? this.spus,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, name, pid, children, spus];
 }

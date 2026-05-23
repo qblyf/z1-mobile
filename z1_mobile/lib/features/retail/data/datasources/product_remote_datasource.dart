@@ -5,6 +5,14 @@ import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/api/result.dart';
 import '../models/product_model.dart';
 
+/// SPU 临时数据结构（用于分类下 SPU 分组）
+class _SpuData {
+  final String spuName;
+  final List<SkuModel> skus;
+
+  _SpuData({required this.spuName, required this.skus});
+}
+
 class ProductSelectBaseResult {
   final List<ProductModel> products;
   final List<CategoryModel> categories;
@@ -225,81 +233,116 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<SkuSelectBaseResult>> getSkuSelectBase() async {
-    // 调用 /sku/select-base 接口（SDK 确认的正确路径）
-    // 返回格式: { code: 10000, res: [ {skuID, skuName, spuName, spuID, spuCateID, ...}, ... ] }
-    final response = await apiClient.get<Map<String, dynamic>>(
+    // 1. 先获取分类列表
+    final categoryResponse = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.categoryList(type: 1),
+      parser: (data) => data,
+    );
+
+    // 2. 获取 SKU 列表
+    final skuResponse = await apiClient.get<Map<String, dynamic>>(
       ApiEndpoints.productSelectBase,
       parser: (data) => data,
     );
 
-    return response.map((data) {
-      // API 返回格式: { code: 10000, res: [ {...}, ... ] }
-      // res 数组中每个元素是 SKU 数据，包含 skuID, skuName, spuName, spuID 等字段
-      final resList = data['res'] as List<dynamic>? ?? [];
+    // 如果任一请求失败，返回错误
+    if (categoryResponse.isFailure) {
+      return Failure(categoryResponse.failure!);
+    }
+    if (skuResponse.isFailure) {
+      return Failure(skuResponse.failure!);
+    }
 
-      if (resList.isEmpty) {
-        return const SkuSelectBaseResult(categories: []);
-      }
+    final categoryData = categoryResponse.value!;
+    final skuData = skuResponse.value!;
 
-      // 按 SPU 分组 SKU
-      // Map<spuID, List<SKU数据>>
-      final skuGroupsBySpu = <int, List<Map<String, dynamic>>>{};
-      // 按分类ID分组 SPU
-      // Map<spuCateID, List<SPU数据>>
-      final spuGroupsByCate = <int, List<Map<String, dynamic>>>{};
+    // 解析分类列表
+    final categoryList = categoryData['list'] as List<dynamic>? ?? [];
+    final categories = categoryList
+        .whereType<Map<String, dynamic>>()
+        .map((json) => CategoryModel.fromJson(json))
+        .toList();
 
-      for (final item in resList) {
-        if (item is! Map<String, dynamic>) continue;
+    // 构建分类树和节点映射
+    final categoryTreeResult = _buildCategoryTree(categories);
+    final categoryTree = categoryTreeResult.$1;
+    final nodeMap = categoryTreeResult.$2;
 
-        // 过滤非活跃商品 (state: 1 = 活跃)
-        final state = item['state'] as int? ?? 0;
-        if (state != 1) continue;
+    // 解析 SKU 数据，按 (spuCateId, spuId) 分组
+    final resList = skuData['res'] as List<dynamic>? ?? [];
 
-        final skuId = item['skuID'] as int? ?? 0;
-        final spuId = item['spuID'] as int? ?? 0;
-        final spuName = item['spuName'] as String? ?? '未知商品';
-        final spuCateId = item['spuCateID'] as int? ?? 0;
+    // 数据结构: Map<spuCateId, Map<spuId, { spuName, skus }>>
+    final spuByCategory = <int, Map<int, _SpuData>>{};
+    // 同时收集所有 SKU 用于"全部商品"
+    final allSkus = <SkuModel>[];
 
-        // 解析 SKU 信息
-        final sku = SkuModel(
-          skuId: skuId,
-          skuName: item['skuName'] as String? ?? '',
-          price: 0, // SKU 价格需要从其他接口获取
-          retailPrice: 0,
-          memberPrice: 0,
-          stock: 0,
-          unit: item['unit'] as String?,
-          image: null,
-          specs: null,
-        );
+    for (final item in resList) {
+      if (item is! Map<String, dynamic>) continue;
 
-        final skuData = {
-          'sku': sku,
-          'spuId': spuId,
-          'spuName': spuName,
-        };
+      // 过滤非活跃商品 (state: 1 = 活跃)
+      final state = item['state'] as int? ?? 0;
+      if (state != 1) continue;
 
-        // 按 SPU 分组
-        if (spuId != 0) {
-          skuGroupsBySpu.putIfAbsent(spuId, () => []).add(skuData);
+      final skuId = item['skuID'] as int? ?? 0;
+      final spuId = item['spuID'] as int? ?? 0;
+      final spuName = item['spuName'] as String? ?? '未知商品';
+      final spuCateId = item['spuCateID'] as int? ?? 0;
+
+      if (spuId == 0 || spuCateId == 0) continue;
+
+      // 解析 SKU 信息
+      final sku = SkuModel(
+        skuId: skuId,
+        skuName: item['skuName'] as String? ?? '',
+        price: 0,
+        retailPrice: 0,
+        memberPrice: 0,
+        stock: 0,
+        unit: item['unit'] as String?,
+        image: null,
+        specs: null,
+      );
+
+      allSkus.add(sku);
+
+      // 按分类分组 SPU
+      spuByCategory.putIfAbsent(spuCateId, () => {});
+      final spuMap = spuByCategory[spuCateId]!;
+      spuMap.putIfAbsent(spuId, () => _SpuData(spuName: spuName, skus: []));
+      spuMap[spuId]!.skus.add(sku);
+    }
+
+    // 将 SPU 关联到叶子分类节点
+    for (final entry in spuByCategory.entries) {
+      final cateId = entry.key;
+      final spuMap = entry.value;
+
+      final node = nodeMap[cateId];
+      if (node != null) {
+        // 构建 SPU 列表
+        final spus = spuMap.entries.map((e) => SpuModel(
+          spuId: e.key,
+          spuName: e.value.spuName,
+          skus: e.value.skus,
+        )).toList();
+
+        // 更新节点
+        final index = categoryTree.indexWhere((n) => n.id == cateId);
+        if (index >= 0) {
+          categoryTree[index] = node.copyWith(spus: spus);
         }
-
-        // 按分类分组（使用 spuCateID）
-        if (spuCateId != 0) {
-          final hasSpu = spuGroupsByCate[spuCateId]?.any((s) => s['spuId'] == spuId) ?? false;
-          if (!hasSpu) {
-            spuGroupsByCate.putIfAbsent(spuCateId, () => []).add(skuData);
-          }
-        }
+        nodeMap[cateId] = node.copyWith(spus: spus);
       }
+    }
 
-      // 构建分类列表
-      final categories = <CategoryWithSpu>[];
+    // 扁平化为 CategoryWithSpu 列表（只显示有商品的叶子分类）
+    final flatCategories = _flattenCategoryTree(categoryTree);
 
-      // 添加"全部商品"分类（包含所有 SKU）
-      final allSkus = skuGroupsBySpu.values.expand((list) => list).map((m) => m['sku'] as SkuModel).toList();
-      if (allSkus.isNotEmpty) {
-        categories.add(CategoryWithSpu(
+    // 添加"全部商品"分类
+    if (allSkus.isNotEmpty) {
+      flatCategories.insert(
+        0,
+        CategoryWithSpu(
           id: 0,
           name: '全部商品',
           spus: [
@@ -309,39 +352,71 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
               skus: allSkus,
             ),
           ],
-        ));
+        ),
+      );
+    }
+
+    return Success(SkuSelectBaseResult(categories: flatCategories));
+  }
+
+  /// 构建分类树，返回 (树列表, 节点映射)
+  (List<CategoryTreeNode>, Map<int, CategoryTreeNode>) _buildCategoryTree(
+    List<CategoryModel> categories,
+  ) {
+    final nodeMap = <int, CategoryTreeNode>{};
+    final topLevelNodes = <CategoryTreeNode>[];
+
+    // 创建所有节点
+    for (final cat in categories) {
+      nodeMap[cat.id] = CategoryTreeNode(
+        id: cat.id,
+        name: cat.name,
+        pid: cat.pid ?? 0,
+      );
+    }
+
+    // 构建树
+    for (final cat in categories) {
+      final node = nodeMap[cat.id]!;
+      if (cat.pid == 0 || cat.pid == null) {
+        topLevelNodes.add(node);
+      } else {
+        final parent = nodeMap[cat.pid];
+        if (parent != null) {
+          final children = List<CategoryTreeNode>.from(parent.children);
+          children.add(node);
+          nodeMap[parent.id] = parent.copyWith(children: children);
+        } else {
+          topLevelNodes.add(node);
+        }
       }
+    }
 
-      // 添加按分类分组的分类
-      for (final entry in spuGroupsByCate.entries) {
-        final cateId = entry.key;
-        final spuList = entry.value;
+    return (topLevelNodes, nodeMap);
+  }
 
-        // 构建该分类下的 SPU 列表
-        final spus = <SpuModel>[];
-        for (final spuData in spuList) {
-          final spuId = spuData['spuId'] as int;
-          final spuName = spuData['spuName'] as String;
+  /// 扁平化分类树为列表（只显示有商品的分类）
+  List<CategoryWithSpu> _flattenCategoryTree(List<CategoryTreeNode> nodes) {
+    final result = <CategoryWithSpu>[];
 
-          // 收集该 SPU 下的所有 SKU
-          final skusForSpu = skuGroupsBySpu[spuId]?.map((m) => m['sku'] as SkuModel).toList() ?? [];
-
-          spus.add(SpuModel(
-            spuId: spuId,
-            spuName: spuName,
-            skus: skusForSpu,
+    for (final node in nodes) {
+      if (node.children.isEmpty) {
+        // 叶子节点，如果有 SPU 则添加
+        if (node.spus.isNotEmpty) {
+          result.add(CategoryWithSpu(
+            id: node.id,
+            name: node.name,
+            spus: node.spus,
           ));
         }
-
-        categories.add(CategoryWithSpu(
-          id: cateId,
-          name: '分类$cateId',
-          spus: spus,
-        ));
+      } else {
+        // 非叶子节点，递归处理子节点（只添加有商品的叶子）
+        final childCategories = _flattenCategoryTree(node.children);
+        result.addAll(childCategories);
       }
+    }
 
-      return SkuSelectBaseResult(categories: categories);
-    });
+    return result;
   }
 
   @override
