@@ -164,6 +164,8 @@ abstract class ProductRemoteDataSource {
   Future<Result<ProductSelectBaseResult>> getProductSelectBase();
   Future<Result<SkuSelectBaseResult>> getSkuSelectBase();
   Future<Result<ServeListResult>> getServeList();
+  Future<Result<List<MallCategoryModel>>> getMallCategoryList();
+  Future<Result<List<SpuModel>>> getSpuListByMallCate(int mallCateId);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -454,5 +456,43 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     );
 
     return response.map((data) => ServeListResult.fromJson(data));
+  }
+
+  @override
+  Future<Result<List<MallCategoryModel>>> getMallCategoryList() async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.mallCategoryList,
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      final list = data['data'] as List<dynamic>?
+          ?? data['list'] as List<dynamic>?
+          ?? data['res'] as List<dynamic>?
+          ?? [];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map((json) => MallCategoryModel.fromJson(json))
+          .toList();
+    });
+  }
+
+  @override
+  Future<Result<List<SpuModel>>> getSpuListByMallCate(int mallCateId) async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.spuListByMallCate(mallCateId),
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      final list = data['data'] as List<dynamic>?
+          ?? data['list'] as List<dynamic>?
+          ?? data['res'] as List<dynamic>?
+          ?? [];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SpuModel.fromJson(json))
+          .toList();
+    });
   }
 }

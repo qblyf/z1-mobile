@@ -3,15 +3,6 @@ import 'package:equatable/equatable.dart';
 import '../../data/datasources/product_remote_datasource.dart';
 import '../../data/models/product_model.dart';
 
-/// 分类面板状态枚举
-/// 用于描述左侧分类面板的当前层级
-enum CategoryPanelState {
-  loading, // 加载中
-  topLevel, // 显示顶级分类（第1级：品类）
-  secondLevel, // 显示第2级分类（品牌）
-  thirdLevel, // 显示第3级分类（系列/叶子节点）
-}
-
 abstract class ProductSelectEvent extends Equatable {
   const ProductSelectEvent();
   @override
@@ -100,9 +91,9 @@ class ProductSelectError extends ProductSelectState {
 }
 
 class ProductSelectLoaded extends ProductSelectState {
-  final List<CategoryModel> allCategories;
-  final Map<int, List<CategoryModel>> categoryChildrenMap;
-  final List<CategoryModel> currentSidebarCategories;
+  final List<MallCategoryModel> allCategories;
+  final Map<int, List<MallCategoryModel>> categoryChildrenMap;
+  final List<MallCategoryModel> currentSidebarCategories;
   final List<SpuModel> currentSpus;
   final List<CartSkuItem> cartItems;
   final List<int> navigationStack;
@@ -127,11 +118,11 @@ class ProductSelectLoaded extends ProductSelectState {
 
   bool get canGoBack => navigationStack.isNotEmpty;
 
-  List<CategoryModel> get currentPathCategories {
+  List<MallCategoryModel> get currentPathCategories {
     return navigationStack.map((id) {
       return allCategories.firstWhere(
         (c) => c.id == id,
-        orElse: () => CategoryModel(id: id, name: ''),
+        orElse: () => MallCategoryModel(id: id, title: '', level: 1),
       );
     }).toList();
   }
@@ -141,15 +132,15 @@ class ProductSelectLoaded extends ProductSelectState {
       return '全部商品';
     }
     final path = currentPathCategories;
-    return path.map((c) => c.name).join(' · ');
+    return path.map((c) => c.title).join(' · ');
   }
 
   int? get currentCategoryId => navigationStack.isNotEmpty ? navigationStack.last : null;
 
   ProductSelectLoaded copyWith({
-    List<CategoryModel>? allCategories,
-    Map<int, List<CategoryModel>>? categoryChildrenMap,
-    List<CategoryModel>? currentSidebarCategories,
+    List<MallCategoryModel>? allCategories,
+    Map<int, List<MallCategoryModel>>? categoryChildrenMap,
+    List<MallCategoryModel>? currentSidebarCategories,
     List<SpuModel>? currentSpus,
     List<CartSkuItem>? cartItems,
     List<int>? navigationStack,
@@ -205,7 +196,7 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
   ) async {
     emit(const ProductSelectLoading());
 
-    final result = await _dataSource.getCategoryList(type: 1);
+    final result = await _dataSource.getMallCategoryList();
 
     if (result.isFailure) {
       emit(ProductSelectError(result.failure!.message));
@@ -214,20 +205,20 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
 
     final categories = result.value!;
 
-    final topLevelCategories = categories.where((c) => c.pid == 0 || c.pid == null).toList()
-      ..sort((a, b) => (a.sort ?? 0).compareTo(b.sort ?? 0));
+    final topLevelCategories = categories.where((c) => c.level == 1).toList()
+      ..sort((a, b) => b.weight.compareTo(a.weight));
 
-    final childrenMap = <int, List<CategoryModel>>{};
+    final childrenMap = <int, List<MallCategoryModel>>{};
     for (final cat in categories) {
-      final pid = cat.pid ?? 0;
-      if (pid != 0) {
-        childrenMap.putIfAbsent(pid, () => []);
-        childrenMap[pid]!.add(cat);
+      final parentId = cat.pids.isNotEmpty ? cat.pids.last : 0;
+      if (parentId != 0) {
+        childrenMap.putIfAbsent(parentId, () => []);
+        childrenMap[parentId]!.add(cat);
       }
     }
 
     for (final children in childrenMap.values) {
-      children.sort((a, b) => (a.sort ?? 0).compareTo(b.sort ?? 0));
+      children.sort((a, b) => b.weight.compareTo(a.weight));
     }
 
     emit(ProductSelectLoaded(
@@ -260,7 +251,7 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
     ));
 
     if (!hasChildren) {
-      final spuResult = await _dataSource.getSpuListByCategory(categoryId);
+      final spuResult = await _dataSource.getSpuListByMallCate(categoryId);
 
       if (spuResult.isSuccess) {
         final newState = state;
@@ -297,12 +288,12 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
 
     final newStack = [...currentState.navigationStack]..removeLast();
 
-    List<CategoryModel> sidebarCategories;
+    List<MallCategoryModel> sidebarCategories;
     List<SpuModel> spus = currentState.currentSpus;
 
     if (newStack.isEmpty) {
-      sidebarCategories = currentState.allCategories.where((c) => c.pid == 0 || c.pid == null).toList()
-        ..sort((a, b) => (a.sort ?? 0).compareTo(b.sort ?? 0));
+      sidebarCategories = currentState.allCategories.where((c) => c.level == 1).toList()
+        ..sort((a, b) => b.weight.compareTo(a.weight));
       spus = const [];
     } else {
       final parentId = newStack.last;

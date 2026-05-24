@@ -53,6 +53,7 @@ class _ProductTabState extends State<ProductTab> {
           );
         }
         if (state is ProductSelectLoaded) {
+          final categories = state.currentSidebarCategories;
           return Column(
             children: [
               Container(
@@ -72,14 +73,16 @@ class _ProductTabState extends State<ProductTab> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: state.categories.length + 1,
+                  itemCount: categories.length + 1,
                   itemBuilder: (context, index) {
                     final isSelected = index == _selectedCategoryIndex;
-                    final label = index == 0 ? '全部' : state.categories[index - 1].name;
+                    final label = index == 0 ? '全部' : categories[index - 1].title;
                     return GestureDetector(
                       onTap: () {
                         setState(() => _selectedCategoryIndex = index);
-                        context.read<ProductSelectBloc>().add(ProductSelectCategoryChanged(index));
+                        if (index > 0) {
+                          context.read<ProductSelectBloc>().add(ProductSelectCategoryTapped(categories[index - 1].id));
+                        }
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -101,7 +104,7 @@ class _ProductTabState extends State<ProductTab> {
                 ),
               ),
               Expanded(
-                child: _buildSpuGrid(state),
+                child: _buildSpuGrid(state, categories),
               ),
               if (state.cartTotalQuantity > 0)
                 _buildCartBar(context, state),
@@ -113,27 +116,10 @@ class _ProductTabState extends State<ProductTab> {
     );
   }
 
-  Widget _buildSpuGrid(ProductSelectLoaded state) {
-    final categories = state.searchKeyword.isEmpty && _selectedCategoryIndex == 0
-        ? state.categories
-        : state.filteredCategories;
+  Widget _buildSpuGrid(ProductSelectLoaded state, List<MallCategoryModel> categories) {
+    final displaySpus = state.currentSpus;
 
-    final displayCategories = _selectedCategoryIndex == 0
-        ? categories
-        : (_selectedCategoryIndex <= state.categories.length
-            ? [state.categories[_selectedCategoryIndex - 1]]
-            : categories);
-
-    if (displayCategories.isEmpty || displayCategories.every((c) => c.spus.isEmpty)) {
-      return const Center(child: Text('暂无商品'));
-    }
-
-    final allSpus = <SpuModel>[];
-    for (final cat in displayCategories) {
-      allSpus.addAll(cat.spus);
-    }
-
-    if (allSpus.isEmpty) {
+    if (displaySpus.isEmpty) {
       return const Center(child: Text('暂无商品'));
     }
 
@@ -145,9 +131,9 @@ class _ProductTabState extends State<ProductTab> {
         crossAxisSpacing: 12,
         childAspectRatio: 0.85,
       ),
-      itemCount: allSpus.length,
+      itemCount: displaySpus.length,
       itemBuilder: (context, index) {
-        final spu = allSpus[index];
+        final spu = displaySpus[index];
         return _SpuCard(
           spu: spu,
           onTap: () => _showSkuModal(context, spu),

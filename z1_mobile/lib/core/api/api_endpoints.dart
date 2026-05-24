@@ -64,8 +64,13 @@ class ApiEndpoints {
   static String categoryList({int type = 1}) => '/category/list?type=$type';
   /// 顶级分类列表
   static const String categoryTop = '/category/top';
+  /// 商城分类列表（3级结构：品类->品牌->系列）
+  /// 使用 pids 字段构建层级关系
+  static const String mallCategoryList = '/mall-category/list';
   /// SPU列表（按分类ID）
   static String spuList({int? cateId}) => cateId != null ? '/spu/list?cateId=$cateId' : '/spu/list';
+  /// SPU列表（按商城分类ID）
+  static String spuListByMallCate(int mallCateId) => '/spu/list?mallCateId=$mallCateId';
 
   // ===== 服务 =====
   /// 服务列表
