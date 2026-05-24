@@ -1,5 +1,51 @@
 # 变更日志
 
+## v1.18（2026-05-24）
+
+### 新增：服务选择文档
+
+| 文档 | 说明 |
+|------|------|
+| `service-select-prd.md` | 服务选择 PRD：分类、搜索、多选 |
+| `service-select-prototype.html` | 服务选择原型图 |
+
+**要点**：
+- 服务使用进销存分类（`/category/list?type=7`）
+- 接口：`/serve/list` + `/serve/count`
+- 支持单选和多选模式
+
+### 新增：SKU 选择规格流程
+
+| 文档 | 说明 |
+|------|------|
+| `category-select-prd.md` | 新增第九章：SKU 选择规格流程 |
+
+**要点**：
+- selectableLevels 定义可选层级：cate/spu/sku/goods
+- hasSerial=true 需进入 goods 列表选择具体商品
+- SKU 包含精确价格和库存
+- **修复**：SPU 列表接口参数 `mallCateId` → `mallCateIDs`
+
+---
+
+## v1.17（2026-05-24）
+
+### 新增：3级分类选购文档
+
+| 文档 | 说明 |
+|------|------|
+| `category-select-prd.md` | 产品需求文档：用户场景、交互流程、接口实现 |
+| `category-select-prototype.html` | 原型图：展示3级分类（品类→品牌→系列）UI |
+
+### 修复：库存接口路径
+- `/sku/stock-by-spu` → `/spu/get-stock`（POST）
+
+### 修正：分类体系
+- 开单使用商城分类（`/mall-category/list`），不是进销存分类（`/category/list`）
+- 商城分类层级固定3级：品类→品牌→系列
+
+---
+
 ## v1.13（2026-05-20）
 
 ### 新增：开单选择商品/服务页面 PRD

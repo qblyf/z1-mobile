@@ -16,7 +16,6 @@ class ProductTab extends StatefulWidget {
 
 class _ProductTabState extends State<ProductTab> {
   final TextEditingController _searchController = TextEditingController();
-  int _selectedCategoryIndex = 0;
 
   @override
   void initState() {
@@ -53,89 +52,17 @@ class _ProductTabState extends State<ProductTab> {
           );
         }
         if (state is ProductSelectLoaded) {
-          final categories = state.currentSidebarCategories;
           return Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                color: CupertinoColors.systemGroupedBackground,
-                child: CupertinoSearchTextField(
-                  controller: _searchController,
-                  placeholder: '搜索商品名称/条码',
-                  onChanged: (value) {
-                    context.read<ProductSelectBloc>().add(ProductSelectSearchChanged(value));
-                  },
-                ),
-              ),
-              Container(
-                height: 44,
-                color: CupertinoColors.white,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: categories.length + 1,
-                  itemBuilder: (context, index) {
-                    final isSelected = index == _selectedCategoryIndex;
-                    final label = index == 0 ? '全部' : categories[index - 1].title;
-                    // 检查该分类是否有子分类
-                    final hasChildren = index > 0 &&
-                        (state.categoryChildrenMap[categories[index - 1].id]?.isNotEmpty ?? false);
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedCategoryIndex = index);
-                        if (index > 0) {
-                          context.read<ProductSelectBloc>().add(ProductSelectCategoryTapped(categories[index - 1].id));
-                        }
-                      },
-                      // 有子分类时支持长按直接查看该分类商品
-                      onLongPress: hasChildren
-                          ? () {
-                              setState(() => _selectedCategoryIndex = index);
-                              _loadCategorySpus(context, categories[index - 1].id);
-                            }
-                          : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isSelected ? CupertinoColors.activeBlue : null,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                label,
-                                style: TextStyle(
-                                  color: isSelected ? CupertinoColors.white : CupertinoColors.label,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (hasChildren) ...[
-                              const SizedBox(width: 2),
-                              Icon(
-                                isSelected
-                                    ? CupertinoIcons.chevron_down
-                                    : CupertinoIcons.chevron_right,
-                                size: 10,
-                                color: isSelected
-                                    ? CupertinoColors.white.withValues(alpha: 0.7)
-                                    : CupertinoColors.systemGrey,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              // Header with back button and breadcrumb
+              _buildHeader(context, state),
+              // Search Bar
+              _buildSearchBar(context),
+              // Main Content: Sidebar + Grid
               Expanded(
-                child: _buildSpuGrid(state, categories),
+                child: _buildMainContent(context, state),
               ),
+              // Cart Bar
               if (state.cartTotalQuantity > 0)
                 _buildCartBar(context, state),
             ],
@@ -146,46 +73,226 @@ class _ProductTabState extends State<ProductTab> {
     );
   }
 
-  Widget _buildSpuGrid(ProductSelectLoaded state, List<MallCategoryModel> categories) {
-    final displaySpus = state.currentSpus;
-
-    if (displaySpus.isEmpty) {
-      return const Center(child: Text('暂无商品'));
-    }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.85,
+  Widget _buildHeader(BuildContext context, ProductSelectLoaded state) {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const BoxDecoration(
+        color: CupertinoColors.white,
+        border: Border(
+          bottom: BorderSide(color: CupertinoColors.separator, width: 0.5),
+        ),
       ),
-      itemCount: displaySpus.length,
+      child: Row(
+        children: [
+          if (state.canGoBack)
+            GestureDetector(
+              onTap: () => context.read<ProductSelectBloc>().add(const ProductSelectBackPressed()),
+              child: const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Icon(CupertinoIcons.chevron_left, color: CupertinoColors.activeBlue, size: 20),
+              ),
+            ),
+          Expanded(
+            child: Text(
+              state.breadcrumbTitle,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: CupertinoColors.label,
+              ),
+              textAlign: state.canGoBack ? TextAlign.left : TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      color: CupertinoColors.systemGroupedBackground,
+      child: Row(
+        children: [
+          Expanded(
+            child: CupertinoTextField(
+              controller: _searchController,
+              placeholder: '搜索商品名称',
+              prefix: const Padding(
+                padding: EdgeInsets.only(left: 12),
+                child: Icon(CupertinoIcons.search, color: CupertinoColors.secondaryLabel, size: 18),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: CupertinoColors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              onChanged: (value) {
+                context.read<ProductSelectBloc>().add(ProductSelectSearchChanged(value));
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              // TODO: Camera scan functionality
+            },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: CupertinoColors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(CupertinoIcons.camera, color: CupertinoColors.secondaryLabel, size: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent(BuildContext context, ProductSelectLoaded state) {
+    return Row(
+      children: [
+        // Left Sidebar (30%)
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.30,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: CupertinoColors.white,
+              border: Border(
+                right: BorderSide(color: CupertinoColors.separator, width: 0.5),
+              ),
+            ),
+            child: _buildCategorySidebar(context, state),
+          ),
+        ),
+        // Right Content (70%)
+        Expanded(
+          child: _buildSpuGrid(context, state),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategorySidebar(BuildContext context, ProductSelectLoaded state) {
+    final categories = state.currentSidebarCategories;
+
+    return ListView.builder(
+      itemCount: categories.length,
       itemBuilder: (context, index) {
-        final spu = displaySpus[index];
-        return _SpuCard(
-          spu: spu,
-          onTap: () => _showSkuModal(context, spu),
+        final category = categories[index];
+        final isSelected = state.currentCategoryId == category.id;
+
+        return GestureDetector(
+          onTap: () {
+            context.read<ProductSelectBloc>().add(ProductSelectCategoryTapped(category.id));
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFE8F4FF) : null,
+              border: Border(
+                left: BorderSide(
+                  color: isSelected ? CupertinoColors.activeBlue : CupertinoColors.white,
+                  width: 3,
+                ),
+              ),
+            ),
+            child: Text(
+              category.title,
+              style: TextStyle(
+                fontSize: 14,
+                color: isSelected ? CupertinoColors.activeBlue : CupertinoColors.label,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         );
       },
     );
   }
 
-  /// 直接加载指定分类的 SPU 列表（绕过子分类导航）
-  void _loadCategorySpus(BuildContext context, int categoryId) {
-    context.read<ProductSelectBloc>().add(ProductSelectCategorySpuRequested(categoryId));
+  Widget _buildSpuGrid(BuildContext context, ProductSelectLoaded state) {
+    final displaySpus = state.currentSpus;
+
+    if (state.isLoadingSpus) {
+      return const Center(child: CupertinoActivityIndicator());
+    }
+
+    if (displaySpus.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(CupertinoIcons.cube_box, size: 48, color: CupertinoColors.systemGrey),
+            const SizedBox(height: 12),
+            Text(
+              state.navigationStack.isEmpty ? '请选择分类' : '暂无商品',
+              style: const TextStyle(color: CupertinoColors.secondaryLabel),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Grid title - show count only, breadcrumb is in header
+    final spuCount = displaySpus.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+          child: Text(
+            '共 $spuCount 件商品',
+            style: const TextStyle(
+              fontSize: 13,
+              color: CupertinoColors.secondaryLabel,
+            ),
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.85,
+            ),
+            itemCount: displaySpus.length,
+            itemBuilder: (context, index) {
+              final spu = displaySpus[index];
+              return _SpuCard(
+                spu: spu,
+                onTap: () => _showSkuModal(context, spu),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   void _showSkuModal(BuildContext context, SpuModel spu) {
     showCupertinoModalPopup(
       context: context,
       builder: (ctx) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.6,
+        height: MediaQuery.of(context).size.height * 0.7,
         child: SkuSelectModal(
           spu: spu,
           onAddToCart: (sku) {
             context.read<ProductSelectBloc>().add(ProductSelectSkuAdded(sku: sku));
+          },
+          onSelectGoods: (spuId) {
+            // TODO: 引导到 goods 列表页面
+            // 这里可以导航到专门的 goods 选择页面
+            debugPrint('SPU $spuId 需要选择具体商品（hasSerial=2）');
           },
         ),
       ),
@@ -335,12 +442,10 @@ class _SpuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(symbol: '¥', decimalDigits: 2);
-
     return Container(
       decoration: BoxDecoration(
         color: CupertinoColors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(color: CupertinoColors.systemGrey.withValues(alpha: 0.1), blurRadius: 8),
         ],
@@ -351,13 +456,13 @@ class _SpuCard extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
-                color: CupertinoColors.systemGrey6,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                color: Color(0xFFF0F0F0),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
               ),
               alignment: Alignment.center,
               child: spu.image != null
                   ? ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                       child: Image.network(spu.image!, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
                     )
                   : const Icon(CupertinoIcons.cube_box, size: 48, color: CupertinoColors.systemGrey),
@@ -368,17 +473,47 @@ class _SpuCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(spu.spuName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  spu.spuName,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(currencyFormat.format((spu.retailPrice ?? 0) / 100), style: const TextStyle(color: CupertinoColors.destructiveRed, fontWeight: FontWeight.bold, fontSize: 13)),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            spu.priceDisplay,
+                            style: const TextStyle(
+                              color: Color(0xFFFF6B35),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          if (spu.saleStock != null)
+                            Text(
+                              '库存: ${spu.saleStock}',
+                              style: const TextStyle(
+                                color: CupertinoColors.systemGrey,
+                                fontSize: 11,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                     GestureDetector(
                       onTap: onTap,
                       child: Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: CupertinoColors.activeBlue, borderRadius: BorderRadius.circular(8)),
+                        decoration: BoxDecoration(
+                          color: CupertinoColors.activeBlue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: const Icon(CupertinoIcons.plus, color: CupertinoColors.white, size: 14),
                       ),
                     ),
@@ -419,9 +554,9 @@ class _CartSkuItem extends StatelessWidget {
           ),
           Row(
             children: [
-              CupertinoButton(padding: EdgeInsets.zero, minSize: 28, child: const Icon(CupertinoIcons.minus_circle, size: 22), onPressed: () => onQuantityChanged(-1)),
+              CupertinoButton(padding: EdgeInsets.zero, child: const Icon(CupertinoIcons.minus_circle, size: 22), onPressed: () => onQuantityChanged(-1)),
               Text('${item.quantity}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              CupertinoButton(padding: EdgeInsets.zero, minSize: 28, child: const Icon(CupertinoIcons.plus_circle, size: 22), onPressed: () => onQuantityChanged(1)),
+              CupertinoButton(padding: EdgeInsets.zero, child: const Icon(CupertinoIcons.plus_circle, size: 22), onPressed: () => onQuantityChanged(1)),
             ],
           ),
           const SizedBox(width: 8),

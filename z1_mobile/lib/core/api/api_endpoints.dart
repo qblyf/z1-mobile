@@ -70,7 +70,9 @@ class ApiEndpoints {
   /// SPU列表（按分类ID）
   static String spuList({int? cateId}) => cateId != null ? '/spu/list?cateId=$cateId' : '/spu/list';
   /// SPU列表（按商城分类ID）
-  static String spuListByMallCate(int mallCateId) => '/spu/list?mallCateId=$mallCateId';
+  static const String spuListByMallCate = '/spu/list';
+  /// SKU列表（按SPU ID）
+  static const String skuBySpu = '/product/sku-by-spu';
 
   // ===== 服务 =====
   /// 服务列表

@@ -157,6 +157,30 @@ class ServeModel extends Equatable {
   List<Object?> get props => [id, name, price];
 }
 
+/// SPU 库存信息
+class SpuStockInfo {
+  final int spuId;
+  final int stock;
+  final int lockStock;
+  final int saleStock;
+
+  const SpuStockInfo({
+    required this.spuId,
+    required this.stock,
+    required this.lockStock,
+    required this.saleStock,
+  });
+
+  factory SpuStockInfo.fromJson(Map<String, dynamic> json) {
+    return SpuStockInfo(
+      spuId: json['spuID'] ?? json['spuId'] ?? 0,
+      stock: json['stock'] ?? 0,
+      lockStock: json['lockStock'] ?? 0,
+      saleStock: json['saleStock'] ?? 0,
+    );
+  }
+}
+
 abstract class ProductRemoteDataSource {
   Future<Result<List<ProductModel>>> getProductList(ProductListParams params);
   Future<Result<List<ProductModel>>> searchProducts(String keyword);
@@ -166,10 +190,8 @@ abstract class ProductRemoteDataSource {
   Future<Result<ServeListResult>> getServeList();
   Future<Result<List<MallCategoryModel>>> getMallCategoryList();
   Future<Result<List<SpuModel>>> getSpuListByMallCate(int mallCateId);
-  /// 根据 SPU ID 获取商品详情（含 hasSerial 字段）
-  Future<Result<ProductModel?>> getProductBySpuId(int spuId);
-  /// 获取 SPU 库存（可能返回 90000 错误，需容错）
-  Future<Result<int>> getSpuStock(int spuId);
+  Future<Result<List<SkuModel>>> getSkuBySpu(int spuId);
+  Future<Result<List<SpuStockInfo>>> getSpuStock(List<int> spuIds);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -483,8 +505,10 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<List<SpuModel>>> getSpuListByMallCate(int mallCateId) async {
+    // 使用 queryParameters 传递数组参数，Dio 会正确处理
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.spuListByMallCate(mallCateId),
+      ApiEndpoints.spuListByMallCate,
+      queryParameters: {'mallCateIds': [mallCateId]},
       parser: (data) => data,
     );
 
@@ -501,39 +525,50 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<Result<ProductModel?>> getProductBySpuId(int spuId) async {
-    final response = await apiClient.z1func<Map<String, dynamic>>(
-      ApiEndpoints.productListBySpuId(spuId: spuId),
-      method: 'GET',
-      parser: (data) => data as Map<String, dynamic>,
+  Future<Result<List<SkuModel>>> getSkuBySpu(int spuId) async {
+    // 使用 queryParameters 传递参数，注意参数名是 spuID (大写 D)
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.skuBySpu,
+      queryParameters: {'spuID': spuId},
+      parser: (data) => data,
     );
 
     return response.map((data) {
-      // /product/list 返回 { list: [...], count: N }
-      final list = data['list'] as List<dynamic>? ?? data['data'] as List<dynamic>? ?? [];
-      if (list.isEmpty) return null;
-      final first = list.first as Map<String, dynamic>?;
-      if (first == null) return null;
-      return ProductModel.fromJson(first);
+      final list = data['data'] as List<dynamic>?
+          ?? data['list'] as List<dynamic>?
+          ?? data['skuList'] as List<dynamic>?
+          ?? data['skus'] as List<dynamic>?
+          ?? data['res'] as List<dynamic>?
+          ?? [];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SkuModel.fromJson(json))
+          .toList();
     });
   }
 
   @override
-  Future<Result<int>> getSpuStock(int spuId) async {
-    final response = await apiClient.z1func<Map<String, dynamic>>(
+  Future<Result<List<SpuStockInfo>>> getSpuStock(List<int> spuIds) async {
+    if (spuIds.isEmpty) {
+      return const Success([]);
+    }
+    
+    final response = await apiClient.post<Map<String, dynamic>>(
       ApiEndpoints.spuGetStock,
-      method: 'POST',
-      body: {'spuIDs': [spuId]},
-      parser: (data) => data as Map<String, dynamic>,
+      data: {'spuIDs': spuIds},
+      parser: (data) => data,
     );
 
     return response.map((data) {
-      // 成功返回 { code: 10000, result: [{spuID, stock, ...}] }
-      final result = data['result'] as List<dynamic>?;
-      if (result == null || result.isEmpty) return 0;
-      final first = result.first as Map<String, dynamic>?;
-      if (first == null) return 0;
-      return (first['stock'] as num?)?.toInt() ?? 0;
+      final list = data['data'] as List<dynamic>?
+          ?? data['list'] as List<dynamic>?
+          ?? data['res'] as List<dynamic>?
+          ?? data['result'] as List<dynamic>?
+          ?? [];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SpuStockInfo.fromJson(json))
+          .toList();
     });
   }
 }

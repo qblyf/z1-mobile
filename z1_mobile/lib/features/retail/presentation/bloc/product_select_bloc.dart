@@ -227,7 +227,21 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
       return;
     }
 
-    final categories = result.value!;
+    var categories = result.value!;
+
+    // 过滤测试分类（名称包含"测试"、"test"、"ceshi"等）
+    categories = categories.where((c) {
+      final name = c.title.toLowerCase();
+      return !name.contains('测试') && !name.contains('test') && !name.contains('ceshi');
+    }).toList();
+
+    // 去重：按ID去重
+    final seenIds = <int>{};
+    categories = categories.where((c) {
+      if (seenIds.contains(c.id)) return false;
+      seenIds.add(c.id);
+      return true;
+    }).toList();
 
     final topLevelCategories = categories.where((c) => c.level == 1).toList()
       ..sort((a, b) => b.weight.compareTo(a.weight));
@@ -265,39 +279,71 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
     final children = currentState.categoryChildrenMap[categoryId] ?? [];
     final hasChildren = children.isNotEmpty;
 
-    final newStack = [...currentState.navigationStack, categoryId];
-    final newSidebarCategories = hasChildren ? children : currentState.currentSidebarCategories;
+    // 构建新的导航栈
+    List<int> newStack;
+    
+    if (hasChildren) {
+      // 有子分类：添加到导航栈，显示子分类列表
+      // 检查是否点击了导航栈中已有的分类（返回到该层级）
+      final existingIndex = currentState.navigationStack.indexOf(categoryId);
+      if (existingIndex >= 0) {
+        // 点击了导航栈中的分类，截断到该位置
+        newStack = currentState.navigationStack.sublist(0, existingIndex);
+      } else {
+        // 点击了新的分类，追加到导航栈
+        newStack = [...currentState.navigationStack, categoryId];
+      }
+    } else {
+      // 无子分类（叶子节点）：不添加到导航栈，保持当前状态
+      // 导航栈不变，但需要清空侧边栏分类（因为是叶子节点）
+      newStack = currentState.navigationStack;
+    }
+    
+    final newSidebarCategories = hasChildren ? children : <MallCategoryModel>[];
 
     emit(currentState.copyWith(
       currentSidebarCategories: newSidebarCategories,
       navigationStack: newStack,
+      currentSpus: const [], // 清空旧数据
       isLoadingSpus: true,
     ));
 
-    if (!hasChildren) {
-      final spuResult = await _dataSource.getSpuListByMallCate(categoryId);
+    // 始终加载该分类下的 SPU（无论是否有子分类）
+    final spuResult = await _dataSource.getSpuListByMallCate(categoryId);
 
-      if (spuResult.isSuccess) {
-        final newState = state;
-        if (newState is ProductSelectLoaded) {
-          emit(newState.copyWith(
-            currentSpus: spuResult.value!,
-            isLoadingSpus: false,
-          ));
+    final newState = state;
+    if (newState is ProductSelectLoaded) {
+      if (spuResult.isSuccess && spuResult.value!.isNotEmpty) {
+        // 按 spuId 去重
+        final spuMap = <int, SpuModel>{};
+        for (final spu in spuResult.value!) {
+          spuMap[spu.spuId] = spu;
         }
+        final spus = spuMap.values.toList();
+        
+        // 批量获取 SPU 库存
+        final spuIds = spus.map((s) => s.spuId).toList();
+        final stockResult = await _dataSource.getSpuStock(spuIds);
+        
+        // 将库存信息填充到 SPU
+        List<SpuModel> spusWithStock = spus;
+        if (stockResult.isSuccess && stockResult.value!.isNotEmpty) {
+          final stockMap = {for (var s in stockResult.value!) s.spuId: s.saleStock};
+          spusWithStock = spus.map((spu) {
+            final saleStock = stockMap[spu.spuId];
+            return saleStock != null ? spu.copyWith(saleStock: saleStock) : spu;
+          }).toList();
+        }
+        
+        emit(newState.copyWith(
+          currentSpus: spusWithStock,
+          isLoadingSpus: false,
+        ));
       } else {
-        final newState = state;
-        if (newState is ProductSelectLoaded) {
-          emit(newState.copyWith(
-            currentSpus: const [],
-            isLoadingSpus: false,
-          ));
-        }
-      }
-    } else {
-      final newState = state;
-      if (newState is ProductSelectLoaded) {
-        emit(newState.copyWith(isLoadingSpus: false));
+        emit(newState.copyWith(
+          currentSpus: const [],
+          isLoadingSpus: false,
+        ));
       }
     }
   }

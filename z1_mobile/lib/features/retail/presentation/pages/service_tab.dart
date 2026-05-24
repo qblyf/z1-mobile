@@ -16,7 +16,6 @@ class ServiceTab extends StatefulWidget {
 
 class _ServiceTabState extends State<ServiceTab> {
   final TextEditingController _searchController = TextEditingController();
-  int _selectedCategoryIndex = 0;
 
   @override
   void initState() {
@@ -55,55 +54,17 @@ class _ServiceTabState extends State<ServiceTab> {
         if (state is ServiceLoaded) {
           return Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                color: CupertinoColors.systemGroupedBackground,
-                child: CupertinoSearchTextField(
-                  controller: _searchController,
-                  placeholder: '搜索服务名称',
-                  onChanged: (value) {
-                    context.read<ServiceBloc>().add(ServiceSearchChanged(value));
-                  },
-                ),
-              ),
-              Container(
-                height: 44,
-                color: CupertinoColors.white,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: state.categories.length + 1,
-                  itemBuilder: (context, index) {
-                    final isSelected = index == _selectedCategoryIndex;
-                    final label = index == 0 ? '全部' : state.categories[index - 1].name;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedCategoryIndex = index);
-                        final category = index == 0 ? null : state.categories[index - 1].name;
-                        context.read<ServiceBloc>().add(ServiceCategoryChanged(category));
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isSelected ? CupertinoColors.activeBlue : null,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          label,
-                          style: TextStyle(
-                            color: isSelected ? CupertinoColors.white : CupertinoColors.label,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              // Header
+              _buildHeader(state),
+              // Search Bar
+              _buildSearchBar(context, state),
+              // Breadcrumbs
+              if (state.viewMode != ServiceViewMode.search) _buildBreadcrumbs(context, state),
+              // Content
               Expanded(
-                child: _buildServiceList(state),
+                child: _buildContent(context, state),
               ),
+              // Cart Bar
               if (state.cartTotalQuantity > 0)
                 _buildCartBar(context, state),
             ],
@@ -114,23 +75,244 @@ class _ServiceTabState extends State<ServiceTab> {
     );
   }
 
-  Widget _buildServiceList(ServiceLoaded state) {
-    if (state.filteredServices.isEmpty) {
-      return const Center(child: Text('暂无服务'));
+  Widget _buildHeader(ServiceLoaded state) {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const BoxDecoration(
+        color: CupertinoColors.white,
+        border: Border(
+          bottom: BorderSide(color: CupertinoColors.separator, width: 0.5),
+        ),
+      ),
+      child: const Center(
+        child: Text(
+          '选择服务',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: CupertinoColors.label,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context, ServiceLoaded state) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      color: CupertinoColors.white,
+      child: Row(
+        children: [
+          Expanded(
+            child: CupertinoTextField(
+              controller: _searchController,
+              placeholder: '搜索服务名称或编号',
+              prefix: const Padding(
+                padding: EdgeInsets.only(left: 12),
+                child: Icon(CupertinoIcons.search, color: CupertinoColors.secondaryLabel, size: 18),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              onChanged: (value) {
+                context.read<ServiceBloc>().add(ServiceSearchChanged(value));
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              // TODO: Camera scan functionality
+            },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(CupertinoIcons.camera, color: CupertinoColors.secondaryLabel, size: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBreadcrumbs(BuildContext context, ServiceLoaded state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: CupertinoColors.white,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (int i = 0; i < state.breadcrumbs.length; i++) ...[
+              if (i > 0)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(CupertinoIcons.chevron_right, size: 12, color: CupertinoColors.secondaryLabel),
+                ),
+              GestureDetector(
+                onTap: () => context.read<ServiceBloc>().add(ServiceBreadcrumbTapped(i)),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: i == state.breadcrumbs.length - 1 
+                        ? const Color(0xFFE8F4FF) 
+                        : CupertinoColors.transparent,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    state.breadcrumbs[i].name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: i == state.breadcrumbs.length - 1 
+                          ? CupertinoColors.activeBlue 
+                          : CupertinoColors.secondaryLabel,
+                      fontWeight: i == state.breadcrumbs.length - 1 
+                          ? FontWeight.w500 
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, ServiceLoaded state) {
+    if (state.isLoadingServices) {
+      return const Center(child: CupertinoActivityIndicator());
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: state.filteredServices.length,
-      itemBuilder: (context, index) {
-        final service = state.filteredServices[index];
-        return _ServiceCard(
-          service: service,
-          onAddToCart: () {
-            context.read<ServiceBloc>().add(ServiceAddedToCart(service: service));
-          },
-        );
-      },
+    switch (state.viewMode) {
+      case ServiceViewMode.search:
+        return _buildServiceList(context, state, title: '搜索"${state.searchKeyword}"结果');
+      case ServiceViewMode.service:
+        return _buildServiceList(context, state, title: '${state.currentCategoryName}服务');
+      case ServiceViewMode.category:
+        return _buildCategoryList(context, state);
+    }
+  }
+
+  Widget _buildCategoryList(BuildContext context, ServiceLoaded state) {
+    if (state.currentCategories.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(CupertinoIcons.folder_open, size: 48, color: CupertinoColors.systemGrey),
+            const SizedBox(height: 12),
+            Text(
+              state.isRootLevel ? '暂无分类' : '该分类下暂无子分类',
+              style: const TextStyle(color: CupertinoColors.secondaryLabel),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      color: CupertinoColors.white,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: state.currentCategories.length,
+        separatorBuilder: (context, index) => Container(
+          height: 1,
+          margin: const EdgeInsets.only(left: 16),
+          color: CupertinoColors.separator,
+        ),
+        itemBuilder: (context, index) {
+          final category = state.currentCategories[index];
+          final hasChildren = (state.categoryChildrenMap[category.id] ?? []).isNotEmpty;
+
+          return GestureDetector(
+            onTap: () => context.read<ServiceBloc>().add(ServiceCategoryTapped(category.id)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              color: CupertinoColors.white,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      category.name,
+                      style: const TextStyle(fontSize: 14, color: CupertinoColors.label),
+                    ),
+                  ),
+                  if (hasChildren)
+                    const Icon(
+                      CupertinoIcons.chevron_right,
+                      size: 16,
+                      color: CupertinoColors.secondaryLabel,
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildServiceList(BuildContext context, ServiceLoaded state, {String? title}) {
+    if (state.currentServices.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(CupertinoIcons.wrench, size: 48, color: CupertinoColors.systemGrey),
+            const SizedBox(height: 12),
+            Text(
+              title?.contains('搜索') == true ? '未找到相关服务' : '暂无服务',
+              style: const TextStyle(color: CupertinoColors.secondaryLabel),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: CupertinoColors.label,
+              ),
+            ),
+          ),
+        Expanded(
+          child: Container(
+            color: CupertinoColors.systemGroupedBackground,
+            child: ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemCount: state.currentServices.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final service = state.currentServices[index];
+                return _ServiceCard(
+                  service: service,
+                  onAddToCart: () {
+                    context.read<ServiceBloc>().add(ServiceAddedToCart(service: service));
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -219,17 +401,7 @@ class _ServiceTabState extends State<ServiceTab> {
                     padding: EdgeInsets.zero,
                     child: const Text('清空'),
                     onPressed: () {
-                      // 健壮可扩展设计：
-                      // - 状态检查：确保 BLoC 处于可处理事件的状态
-                      // - 防止意外状态转换：仅在 ServiceLoaded 状态下允许清空购物车
-                      // - 时序保证：避免在状态过渡期间发送事件
-                      final bloc = context.read<ServiceBloc>();
-                      if (bloc.state is ServiceLoaded) {
-                        bloc.add(const ServiceCartCleared());
-                      } else {
-                        // 非期望状态：静默忽略，不抛出异常影响用户
-                        debugPrint('ServiceCartCleared 事件跳过：当前状态 ${bloc.state.runtimeType} 非 ServiceLoaded');
-                      }
+                      context.read<ServiceBloc>().add(const ServiceCartCleared());
                     },
                   ),
                 ],
@@ -292,43 +464,50 @@ class _ServiceCard extends StatelessWidget {
     final currencyFormat = NumberFormat.currency(symbol: '¥', decimalDigits: 2);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: CupertinoColors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: CupertinoColors.systemGrey.withValues(alpha: 0.1), blurRadius: 8),
-        ],
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: CupertinoColors.systemGrey6,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              service.isGoods ? CupertinoIcons.cube_box : CupertinoIcons.wrench,
-              size: 28,
-              color: CupertinoColors.systemGrey,
-            ),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(service.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                if (service.shortName != null && service.shortName!.isNotEmpty)
-                  Text(service.shortName!, style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel)),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        service.name,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (service.isGoods) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3E0),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          '热门',
+                          style: TextStyle(fontSize: 10, color: Color(0xFFFF9800)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Text(
                   currencyFormat.format(service.price / 100),
-                  style: const TextStyle(color: CupertinoColors.destructiveRed, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(
+                    color: Color(0xFFFF6B35),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -336,10 +515,11 @@ class _ServiceCard extends StatelessWidget {
           GestureDetector(
             onTap: onAddToCart,
             child: Container(
-              padding: const EdgeInsets.all(8),
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: CupertinoColors.activeBlue,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(CupertinoIcons.plus, color: CupertinoColors.white, size: 18),
             ),
@@ -382,9 +562,9 @@ class _ServiceCartItem extends StatelessWidget {
           ),
           Row(
             children: [
-              CupertinoButton(padding: EdgeInsets.zero, minSize: 28, child: const Icon(CupertinoIcons.minus_circle, size: 22), onPressed: () => onQuantityChanged(-1)),
+              CupertinoButton(padding: EdgeInsets.zero, child: const Icon(CupertinoIcons.minus_circle, size: 22), onPressed: () => onQuantityChanged(-1)),
               Text('${item.quantity}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              CupertinoButton(padding: EdgeInsets.zero, minSize: 28, child: const Icon(CupertinoIcons.plus_circle, size: 22), onPressed: () => onQuantityChanged(1)),
+              CupertinoButton(padding: EdgeInsets.zero, child: const Icon(CupertinoIcons.plus_circle, size: 22), onPressed: () => onQuantityChanged(1)),
             ],
           ),
           const SizedBox(width: 8),

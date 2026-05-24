@@ -15,8 +15,7 @@ class ProductModel extends Equatable {
   final int? stock;
   final String? image;
   final String? unit;
-  /// 是否需要序列号（0=否，1=是）
-  final int? hasSerial;
+  final int? hasSerial; // 是否有序列号：1=无序列号，2=有序列号
 
   const ProductModel({
     required this.productID,
@@ -38,6 +37,7 @@ class ProductModel extends Equatable {
 
   bool get isGoods => genre == 'goods';
   bool get isService => genre == 'service';
+  bool get requiresSerial => hasSerial == 2; // hasSerial=2 表示需要序列号
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     final retailPrice = json['retailPrice'] ?? json['price'];
@@ -57,7 +57,7 @@ class ProductModel extends Equatable {
       stock: json['stock'],
       image: json['image'],
       unit: json['unit'],
-      hasSerial: json['hasSerial'] is int ? json['hasSerial'] : ((json['hasSerial'] as num?)?.toInt()),
+      hasSerial: json['hasSerial'],
     );
   }
 
@@ -76,7 +76,6 @@ class ProductModel extends Equatable {
     int? stock,
     String? image,
     String? unit,
-    int? hasSerial,
   }) {
     return ProductModel(
       productID: productID ?? this.productID,
@@ -93,7 +92,6 @@ class ProductModel extends Equatable {
       stock: stock ?? this.stock,
       image: image ?? this.image,
       unit: unit ?? this.unit,
-      hasSerial: hasSerial ?? this.hasSerial,
     );
   }
 
@@ -193,6 +191,7 @@ class ProductPriceModel extends Equatable {
 
 class SkuModel extends Equatable {
   final int skuId;
+  final int spuId;
   final String skuName;
   final int price;
   final int? retailPrice;
@@ -200,12 +199,12 @@ class SkuModel extends Equatable {
   final int? stock;
   final String? unit;
   final String? image;
-  final Map<String, dynamic>? specs;
-  /// 是否需要序列号（0=否，1=是）
   final int? hasSerial;
+  final Map<String, dynamic>? specs;
 
   const SkuModel({
     required this.skuId,
+    this.spuId = 0,
     required this.skuName,
     required this.price,
     this.retailPrice,
@@ -213,13 +212,14 @@ class SkuModel extends Equatable {
     this.stock,
     this.unit,
     this.image,
-    this.specs,
     this.hasSerial,
+    this.specs,
   });
 
   factory SkuModel.fromJson(Map<String, dynamic> json) {
     return SkuModel(
-      skuId: json['skuId'] ?? json['id'] ?? 0,
+      skuId: json['skuId'] ?? json['skuID'] ?? json['id'] ?? 0,
+      spuId: json['spuId'] ?? json['spuID'] ?? 0,
       skuName: json['skuName'] ?? json['name'] ?? '',
       price: json['price'] is int ? json['price'] : ((json['price'] as num?)?.toInt() ?? 0),
       retailPrice: json['retailPrice'] is int ? json['retailPrice'] : ((json['retailPrice'] as num?)?.toInt()),
@@ -227,8 +227,8 @@ class SkuModel extends Equatable {
       stock: json['stock'],
       unit: json['unit'],
       image: json['image'],
+      hasSerial: json['hasSerial'] is int ? json['hasSerial'] : (json['hasSerial'] as num?)?.toInt(),
       specs: json['specs'] as Map<String, dynamic>?,
-      hasSerial: json['hasSerial'] is int ? json['hasSerial'] : ((json['hasSerial'] as num?)?.toInt()),
     );
   }
 
@@ -236,6 +236,7 @@ class SkuModel extends Equatable {
   factory SkuModel.fromProduct(ProductModel product) {
     return SkuModel(
       skuId: product.productID,
+      spuId: 0,
       skuName: product.productName,
       price: product.price,
       retailPrice: product.retailPrice,
@@ -243,38 +244,11 @@ class SkuModel extends Equatable {
       stock: product.stock,
       unit: product.unit,
       image: product.image,
-      hasSerial: product.hasSerial,
-    );
-  }
-
-  SkuModel copyWith({
-    int? skuId,
-    String? skuName,
-    int? price,
-    int? retailPrice,
-    int? memberPrice,
-    int? stock,
-    String? unit,
-    String? image,
-    Map<String, dynamic>? specs,
-    int? hasSerial,
-  }) {
-    return SkuModel(
-      skuId: skuId ?? this.skuId,
-      skuName: skuName ?? this.skuName,
-      price: price ?? this.price,
-      retailPrice: retailPrice ?? this.retailPrice,
-      memberPrice: memberPrice ?? this.memberPrice,
-      stock: stock ?? this.stock,
-      unit: unit ?? this.unit,
-      image: image ?? this.image,
-      specs: specs ?? this.specs,
-      hasSerial: hasSerial ?? this.hasSerial,
     );
   }
 
   @override
-  List<Object?> get props => [skuId, skuName, price];
+  List<Object?> get props => [skuId, spuId, skuName, price, hasSerial];
 }
 
 class SpuModel extends Equatable {
@@ -290,9 +264,9 @@ class SpuModel extends Equatable {
   final String? image;
   final String? categoryName;
   final List<SkuModel> skus;
-  /// 是否需要序列号（0=否，1=是），由 /product/list 接口获取
-  /// 注意：SPU 本身不含库存字段，库存需通过 /spu/get-stock 接口单独查询
-  final int? hasSerial;
+  final int? hasSerial; // 是否有序列号：1=无序列号，2=有序列号
+  final int? saleStock; // 可售库存数量（通过 /spu/get-stock 单独获取）
+  // 注意：SPU 本身不含库存字段，库存需通过 /spu/get-stock 接口单独查询
 
   const SpuModel({
     required this.spuId,
@@ -308,7 +282,11 @@ class SpuModel extends Equatable {
     this.categoryName,
     this.skus = const [],
     this.hasSerial,
+    this.saleStock,
   });
+
+  /// 是否需要序列号
+  bool get requiresSerial => hasSerial == 2;
 
   /// 获取显示价格（优先用 minPrice-maxPrice 范围价）
   String get priceDisplay {
@@ -324,30 +302,79 @@ class SpuModel extends Equatable {
     return '暂无价格';
   }
 
+  /// 解析图片字段，支持多种格式
+  static String? _parseImage(Map<String, dynamic> json) {
+    // 1. 直接的 image 字段
+    if (json['image'] != null && json['image'].toString().isNotEmpty) {
+      return json['image'].toString();
+    }
+    
+    // 2. mainImage 字段
+    if (json['mainImage'] != null && json['mainImage'].toString().isNotEmpty) {
+      return json['mainImage'].toString();
+    }
+    
+    // 3. mainImages 数组
+    final mainImages = json['mainImages'];
+    if (mainImages is List && mainImages.isNotEmpty) {
+      return mainImages.first.toString();
+    }
+    
+    // 4. images.thumbnail (嵌套结构)
+    final images = json['images'];
+    if (images is Map<String, dynamic>) {
+      if (images['thumbnail'] != null && images['thumbnail'].toString().isNotEmpty) {
+        return images['thumbnail'].toString();
+      }
+      final nestedMainImages = images['mainImages'];
+      if (nestedMainImages is List && nestedMainImages.isNotEmpty) {
+        return nestedMainImages.first.toString();
+      }
+    }
+    
+    // 5. imgUrl 字段
+    if (json['imgUrl'] != null && json['imgUrl'].toString().isNotEmpty) {
+      return json['imgUrl'].toString();
+    }
+    
+    return null;
+  }
+
   factory SpuModel.fromJson(Map<String, dynamic> json) {
     final skuList = json['skuList'] as List<dynamic>? ?? [];
+    
+    // 尝试多种可能的字段名获取价格
+    int? parsePrice(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is num) return value.toInt();
+      if (value is String && value.isNotEmpty) {
+        return int.tryParse(value);
+      }
+      return null;
+    }
+    
+    final minPrice = parsePrice(json['minPrice'] ?? json['min_price'] ?? json['minPriceYuan']);
+    final maxPrice = parsePrice(json['maxPrice'] ?? json['max_price'] ?? json['maxPriceYuan']);
+    final retailPrice = parsePrice(json['retailPrice'] ?? json['retail_price'] ?? json['price'] ?? json['salePrice']);
+    final memberPrice = parsePrice(json['memberPrice'] ?? json['member_price']);
+    
     return SpuModel(
       spuId: json['spuId'] ?? json['id'] ?? 0,
       spuName: json['spuName'] ?? json['name'] ?? '',
       brand: json['brand'] as String?,
       series: json['series'] as String?,
       generation: json['generation'] as String?,
-      minPrice: json['minPrice'] is int
-          ? json['minPrice']
-          : (json['minPrice'] as num?)?.toInt(),
-      maxPrice: json['maxPrice'] is int
-          ? json['maxPrice']
-          : (json['maxPrice'] as num?)?.toInt(),
-      retailPrice: json['retailPrice'] is int
-          ? json['retailPrice']
-          : (json['retailPrice'] as num?)?.toInt(),
-      memberPrice: json['memberPrice'] is int
-          ? json['memberPrice']
-          : (json['memberPrice'] as num?)?.toInt(),
-      image: json['image'],
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+      retailPrice: retailPrice,
+      memberPrice: memberPrice,
+      image: _parseImage(json),
       categoryName: json['categoryName'],
       skus: skuList.map((s) => SkuModel.fromJson(s as Map<String, dynamic>)).toList(),
-      hasSerial: json['hasSerial'] is int ? json['hasSerial'] : ((json['hasSerial'] as num?)?.toInt()),
+      hasSerial: json['hasSerial'],
+      saleStock: json['saleStock'] ?? json['stock'],
     );
   }
 
@@ -365,6 +392,7 @@ class SpuModel extends Equatable {
     String? categoryName,
     List<SkuModel>? skus,
     int? hasSerial,
+    int? saleStock,
   }) {
     return SpuModel(
       spuId: spuId ?? this.spuId,
@@ -380,11 +408,12 @@ class SpuModel extends Equatable {
       categoryName: categoryName ?? this.categoryName,
       skus: skus ?? this.skus,
       hasSerial: hasSerial ?? this.hasSerial,
+      saleStock: saleStock ?? this.saleStock,
     );
   }
 
   @override
-  List<Object?> get props => [spuId, spuName, brand, series, minPrice, maxPrice, skus];
+  List<Object?> get props => [spuId, spuName, brand, series, minPrice, maxPrice, skus, saleStock];
 }
 
 class CategoryWithSpu extends Equatable {
