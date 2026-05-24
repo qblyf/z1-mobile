@@ -51,10 +51,17 @@ class ApiEndpoints {
   static const String skuSelectBase = '/sku/select-base';
 
   // ===== 分类 =====
-  /// 分类列表（type: 1=商品分类）
+  /// 分类列表（type: 1=商品分类，pid=0 表示顶级）
   static String categoryList({int type = 1}) => '/category/list?type=$type';
-  /// 商城分类列表（3级结构：品类 -> 品牌 -> 系列）
-  static const String mallCategoryList = '/mall-category/list';
+  /// SPU列表（支持 cateId 筛选）
+  static String spuList({int? cateId, int limit = 100, int offset = 0}) {
+    final params = <String, String>{
+      'limit': limit.toString(),
+      'offset': offset.toString(),
+    };
+    if (cateId != null) params['cateId'] = cateId.toString();
+    return '/spu/list?${_encodeParams(params)}';
+  }
 
   // ===== 服务 =====
   /// 服务列表

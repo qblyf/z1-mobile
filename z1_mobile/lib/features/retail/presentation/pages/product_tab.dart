@@ -16,7 +16,6 @@ class ProductTab extends StatefulWidget {
 
 class _ProductTabState extends State<ProductTab> {
   final TextEditingController _searchController = TextEditingController();
-  int _selectedCategoryIndex = 0;
 
   @override
   void initState() {
@@ -66,42 +65,13 @@ class _ProductTabState extends State<ProductTab> {
                   },
                 ),
               ),
-              Container(
-                height: 44,
-                color: CupertinoColors.white,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: state.categories.length + 1,
-                  itemBuilder: (context, index) {
-                    final isSelected = index == _selectedCategoryIndex;
-                    final label = index == 0 ? '全部' : state.categories[index - 1].name;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedCategoryIndex = index);
-                        context.read<ProductSelectBloc>().add(ProductSelectCategoryChanged(index));
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isSelected ? CupertinoColors.activeBlue : null,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          label,
-                          style: TextStyle(
-                            color: isSelected ? CupertinoColors.white : CupertinoColors.label,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
               Expanded(
-                child: _buildSpuGrid(state),
+                child: Row(
+                  children: [
+                    _buildCategorySidebar(context, state),
+                    Expanded(child: _buildProductGrid(context, state)),
+                  ],
+                ),
               ),
               if (state.cartTotalQuantity > 0)
                 _buildCartBar(context, state),
@@ -113,46 +83,107 @@ class _ProductTabState extends State<ProductTab> {
     );
   }
 
-  Widget _buildSpuGrid(ProductSelectLoaded state) {
-    final categories = state.searchKeyword.isEmpty && _selectedCategoryIndex == 0
-        ? state.categories
-        : state.filteredCategories;
-
-    final displayCategories = _selectedCategoryIndex == 0
-        ? categories
-        : (_selectedCategoryIndex <= state.categories.length
-            ? [state.categories[_selectedCategoryIndex - 1]]
-            : categories);
-
-    if (displayCategories.isEmpty || displayCategories.every((c) => c.spus.isEmpty)) {
-      return const Center(child: Text('暂无商品'));
-    }
-
-    final allSpus = <SpuModel>[];
-    for (final cat in displayCategories) {
-      allSpus.addAll(cat.spus);
-    }
-
-    if (allSpus.isEmpty) {
-      return const Center(child: Text('暂无商品'));
-    }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.85,
+  Widget _buildCategorySidebar(BuildContext context, ProductSelectLoaded state) {
+    return Container(
+      width: 100,
+      color: CupertinoColors.white,
+      child: Column(
+        children: [
+          if (state.canGoBack)
+            _buildBackButton(context)
+          else
+            const SizedBox(height: 44),
+          Expanded(
+            child: ListView.builder(
+              itemCount: state.currentSidebarCategories.length,
+              itemBuilder: (context, index) {
+                final category = state.currentSidebarCategories[index];
+                final isSelected = state.currentCategoryId == category.id;
+                return _CategoryItem(
+                  name: category.name,
+                  spell: category.spell ?? '',
+                  isSelected: isSelected,
+                  onTap: () {
+                    context.read<ProductSelectBloc>().add(ProductSelectCategoryTapped(category.id));
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
-      itemCount: allSpus.length,
-      itemBuilder: (context, index) {
-        final spu = allSpus[index];
-        return _SpuCard(
-          spu: spu,
-          onTap: () => _showSkuModal(context, spu),
-        );
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.read<ProductSelectBloc>().add(const ProductSelectBackPressed());
       },
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: CupertinoColors.separator, width: 0.5),
+          ),
+        ),
+        child: const Row(
+          children: [
+            Icon(CupertinoIcons.back, size: 16, color: CupertinoColors.activeBlue),
+            SizedBox(width: 4),
+            Text('返回', style: TextStyle(fontSize: 14, color: CupertinoColors.activeBlue)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductGrid(BuildContext context, ProductSelectLoaded state) {
+    if (state.isLoadingSpus) {
+      return const Center(child: CupertinoActivityIndicator());
+    }
+
+    final displaySpus = state.searchKeyword.isEmpty
+        ? state.currentSpus
+        : state.currentSpus.where((spu) {
+            return spu.spuName.toLowerCase().contains(state.searchKeyword.toLowerCase());
+          }).toList();
+
+    if (displaySpus.isEmpty) {
+      return const Center(child: Text('暂无商品'));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          child: Text(
+            state.breadcrumbTitle.isEmpty ? '全部商品' : '${state.breadcrumbTitle} · 全部商品',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.85,
+            ),
+            itemCount: displaySpus.length,
+            itemBuilder: (context, index) {
+              final spu = displaySpus[index];
+              return _SpuCard(
+                spu: spu,
+                onTap: () => _showSkuModal(context, spu),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -256,9 +287,7 @@ class _ProductTabState extends State<ProductTab> {
                     padding: EdgeInsets.zero,
                     child: const Text('清空'),
                     onPressed: () {
-                      for (final item in state.cartItems) {
-                        context.read<ProductSelectBloc>().add(ProductSelectSkuAdded(sku: item.sku, quantity: -item.quantity));
-                      }
+                      context.read<ProductSelectBloc>().add(const ProductSelectClearCart());
                     },
                   ),
                 ],
@@ -299,6 +328,63 @@ class _ProductTabState extends State<ProductTab> {
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryItem extends StatelessWidget {
+  final String name;
+  final String spell;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryItem({
+    required this.name,
+    required this.spell,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE8F4FF) : null,
+          border: Border(
+            left: BorderSide(
+              color: isSelected ? CupertinoColors.activeBlue : CupertinoColors.transparent,
+              width: 3,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 14,
+                color: isSelected ? CupertinoColors.activeBlue : CupertinoColors.label,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (spell.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                spell,
+                style: const TextStyle(fontSize: 11, color: CupertinoColors.secondaryLabel),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ],
         ),
       ),

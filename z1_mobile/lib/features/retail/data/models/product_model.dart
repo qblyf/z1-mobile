@@ -98,6 +98,7 @@ class ProductModel extends Equatable {
 class CategoryModel extends Equatable {
   final int id;
   final String name;
+  final String? spell; // 拼音码
   final int? parentId;
   final int? sort;
   final int? pid; // 上级分类 ID（0=顶级）
@@ -107,6 +108,7 @@ class CategoryModel extends Equatable {
   const CategoryModel({
     required this.id,
     required this.name,
+    this.spell,
     this.parentId,
     this.sort,
     this.pid,
@@ -121,6 +123,7 @@ class CategoryModel extends Equatable {
     return CategoryModel(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
+      spell: json['spell'] as String?,
       parentId: json['parentId'] ?? json['parent_id'] ?? json['pid'],
       sort: json['sort'] ?? json['order'],
       pid: json['pid'],
@@ -130,7 +133,7 @@ class CategoryModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, parentId, sort, pid, chain, state];
+  List<Object?> get props => [id, name, spell, parentId, sort, pid, chain, state];
 }
 
 class ProductListParams extends Equatable {
