@@ -430,7 +430,7 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
 
     // 并行获取 hasSerial 和库存
     final productFuture = _dataSource.getProductBySpuId(spuId);
-    final stockFuture = _dataSource.getSpuStock(spuId);
+    final stockFuture = _dataSource.getSpuStock([spuId]);
 
     final productResult = await productFuture;
     final stockResult = await stockFuture;
@@ -441,8 +441,8 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
 
     // 更新 stockMap
     final newStockMap = Map<int, int?>.from(newState.stockMap);
-    if (stockResult.isSuccess) {
-      newStockMap[spuId] = stockResult.value;
+    if (stockResult.isSuccess && stockResult.value != null && stockResult.value!.isNotEmpty) {
+      newStockMap[spuId] = stockResult.value!.first.stock;
     } else {
       // 90000 错误或其他失败，标记为 -1（"获取失败"）
       newStockMap[spuId] = -1;

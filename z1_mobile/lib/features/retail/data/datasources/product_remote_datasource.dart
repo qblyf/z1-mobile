@@ -192,6 +192,8 @@ abstract class ProductRemoteDataSource {
   Future<Result<List<SpuModel>>> getSpuListByMallCate(int mallCateId);
   Future<Result<List<SkuModel>>> getSkuBySpu(int spuId);
   Future<Result<List<SpuStockInfo>>> getSpuStock(List<int> spuIds);
+  /// 根据 SPU ID 获取商品详情（含 hasSerial 字段）
+  Future<Result<ProductModel?>> getProductBySpuId(int spuId);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -552,7 +554,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     if (spuIds.isEmpty) {
       return const Success([]);
     }
-    
+
     final response = await apiClient.post<Map<String, dynamic>>(
       ApiEndpoints.spuGetStock,
       data: {'spuIDs': spuIds},
@@ -569,6 +571,23 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           .whereType<Map<String, dynamic>>()
           .map((json) => SpuStockInfo.fromJson(json))
           .toList();
+    });
+  }
+
+  @override
+  Future<Result<ProductModel?>> getProductBySpuId(int spuId) async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.productList,
+      queryParameters: {'spuId': spuId.toString()},
+      parser: (data) => data,
+    );
+
+    return response.map((data) {
+      final list = data['data'] as List<dynamic>? ?? [];
+      if (list.isEmpty) return null;
+      final first = list.first as Map<String, dynamic>?;
+      if (first == null) return null;
+      return ProductModel.fromJson(first);
     });
   }
 }

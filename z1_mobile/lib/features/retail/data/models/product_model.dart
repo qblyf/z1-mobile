@@ -247,6 +247,34 @@ class SkuModel extends Equatable {
     );
   }
 
+  SkuModel copyWith({
+    int? skuId,
+    int? spuId,
+    String? skuName,
+    int? price,
+    int? retailPrice,
+    int? memberPrice,
+    int? stock,
+    String? unit,
+    String? image,
+    int? hasSerial,
+    Map<String, dynamic>? specs,
+  }) {
+    return SkuModel(
+      skuId: skuId ?? this.skuId,
+      spuId: spuId ?? this.spuId,
+      skuName: skuName ?? this.skuName,
+      price: price ?? this.price,
+      retailPrice: retailPrice ?? this.retailPrice,
+      memberPrice: memberPrice ?? this.memberPrice,
+      stock: stock ?? this.stock,
+      unit: unit ?? this.unit,
+      image: image ?? this.image,
+      hasSerial: hasSerial ?? this.hasSerial,
+      specs: specs ?? this.specs,
+    );
+  }
+
   @override
   List<Object?> get props => [skuId, spuId, skuName, price, hasSerial];
 }
