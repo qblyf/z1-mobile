@@ -510,13 +510,14 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     // 使用 queryParameters 传递数组参数，Dio 会正确处理
     final response = await apiClient.get<Map<String, dynamic>>(
       ApiEndpoints.spuListByMallCate,
-      queryParameters: {'mallCateIds': [mallCateId]},
+      queryParameters: {'cateId': mallCateId},
       parser: (data) => data,
     );
 
     return response.map((data) {
-      final list = data['data'] as List<dynamic>?
-          ?? data['list'] as List<dynamic>?
+      // API 返回格式: {"code":10000,"list":[...]}
+      final list = data['list'] as List<dynamic>?
+          ?? data['data'] as List<dynamic>?
           ?? data['res'] as List<dynamic>?
           ?? [];
       return list
