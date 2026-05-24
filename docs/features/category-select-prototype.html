@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3级分类选购（手机品类）- 原型图</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .prototype-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .device-row {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #fff;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .screen {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #f7f7f7;
+        }
+
+        /* Header */
+        .header {
+            height: 44px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #eee;
+            padding: 0 16px;
+            padding-top: 30px;
+        }
+
+        .header-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .header-back {
+            position: absolute;
+            left: 16px;
+            font-size: 16px;
+            color: #0575FF;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            background: #fff;
+            display: flex;
+            padding: 8px 16px;
+            gap: 8px;
+        }
+
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 15px;
+            color: #666;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .tab-item.active {
+            background: #0575FF;
+            color: #fff;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            background: #fff;
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            height: 36px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 18px;
+            padding: 0 16px;
+            font-size: 14px;
+        }
+
+        .search-icon {
+            width: 36px;
+            height: 36px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Category Sidebar */
+        .category-sidebar {
+            width: 30%;
+            background: #fff;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+        }
+
+        .category-item {
+            padding: 14px 12px;
+            font-size: 14px;
+            color: #333;
+            border-left: 3px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .category-item.active {
+            background: #E8F4FF;
+            color: #0575FF;
+            border-left-color: #0575FF;
+            font-weight: 500;
+        }
+
+        .category-item .spell {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .grid-title {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .product-img {
+            height: 100px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        .product-info {
+            padding: 8px;
+        }
+
+        .product-name {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .product-price {
+            font-size: 14px;
+            color: #FF6B35;
+            font-weight: 600;
+        }
+
+        .product-stock {
+            font-size: 11px;
+            color: #999;
+            margin-left: 8px;
+        }
+
+        /* Bottom Cart */
+        .bottom-cart {
+            height: 56px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cart-icon {
+            position: relative;
+            font-size: 24px;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -8px;
+            background: #FF6B35;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .cart-total {
+            font-size: 16px;
+            color: #FF6B35;
+            font-weight: 600;
+        }
+
+        .cart-btn {
+            background: #0575FF;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Label */
+        .label {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .label span {
+            background: #FF6B35;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* Subtitle */
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Description */
+        .desc {
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            max-width: 375px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="prototype-title">3级分类选购（手机品类）· 原型图</h1>
+
+<!-- Screen 1: 顶级分类 -->
+<div class="subtitle">页面1：选择品类（顶级分类）</div>
+<div class="device-row">
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <div class="header">
+                <span class="header-title">商品选购</span>
+            </div>
+            <div class="tab-bar">
+                <div class="tab-item active">商品</div>
+                <div class="tab-item">服务</div>
+                <div class="tab-item">非标品</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索商品名称">
+                <div class="search-icon">📷</div>
+            </div>
+            <div class="main-content">
+                <div class="category-sidebar">
+                    <div class="category-item active">
+                        手机
+                        <div class="spell">shouji</div>
+                    </div>
+                    <div class="category-item">
+                        平板电脑
+                        <div class="spell">pingbandiannao</div>
+                    </div>
+                    <div class="category-item">
+                        电脑整机
+                        <div class="spell">diannaozhengji</div>
+                    </div>
+                    <div class="category-item">
+                        穿戴设备
+                        <div class="spell">chuandaishebei</div>
+                    </div>
+                    <div class="category-item">
+                        家用电器
+                        <div class="spell">jiayongdianqi</div>
+                    </div>
+                </div>
+                <div class="product-grid">
+                    <div class="grid-title">手机 · 全部商品</div>
+                    <div class="product-list">
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">足金999手镯</div>
+                                <div class="product-price">¥328<span class="product-stock">库存:5</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">古法金吊坠</div>
+                                <div class="product-price">¥1580<span class="product-stock">库存:3</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">5G黄金项链</div>
+                                <div class="product-price">¥2680<span class="product-stock">库存:8</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">金镶玉戒指</div>
+                                <div class="product-price">¥4200<span class="product-stock">库存:2</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-cart">
+                <div class="cart-info">
+                    <div class="cart-icon">
+                        🛒
+                        <span class="cart-badge">2</span>
+                    </div>
+                    <div class="cart-total">¥1,908</div>
+                </div>
+                <div class="cart-btn">去结算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="desc">点击左侧分类「手机」→ 显示手机品类下的所有商品 + 第2级分类（品牌）</p>
+
+<!-- Screen 2: 第2级分类（品牌）-->
+<div class="subtitle">页面2：选择品牌（第2级分类）</div>
+<div class="device-row">
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <div class="header">
+                <span class="header-back">←</span>
+                <span class="header-title">商品选购</span>
+            </div>
+            <div class="tab-bar">
+                <div class="tab-item active">商品</div>
+                <div class="tab-item">服务</div>
+                <div class="tab-item">非标品</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索商品名称">
+                <div class="search-icon">📷</div>
+            </div>
+            <div class="main-content">
+                <div class="category-sidebar">
+                    <div class="category-item">
+                        < 返回
+                    </div>
+                    <div class="category-item">
+                        全部
+                        <div class="spell">quanbu</div>
+                    </div>
+                    <div class="category-item active">
+                        苹果
+                        <div class="spell">pingguo</div>
+                    </div>
+                    <div class="category-item">
+                        vivo
+                        <div class="spell">vivo</div>
+                    </div>
+                    <div class="category-item">
+                        华为
+                        <div class="spell">huawei</div>
+                    </div>
+                    <div class="category-item">
+                        realme
+                        <div class="spell">realme</div>
+                    </div>
+                    <div class="category-item">
+                        OPPO
+                        <div class="spell">OPPO</div>
+                    </div>
+                </div>
+                <div class="product-grid">
+                    <div class="grid-title">苹果 · 全部商品</div>
+                    <div class="product-list">
+                        <div class="product-card">
+                            <div class="product-img">
+                                商品图
+                                <div class="label"><span>热销</span></div>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 16 Pro Max</div>
+                                <div class="product-price">¥9999<span class="product-stock">库存:5</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 16 Pro</div>
+                                <div class="product-price">¥7999<span class="product-stock">库存:8</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 16</div>
+                                <div class="product-price">¥5999<span class="product-stock">库存:10</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 15</div>
+                                <div class="product-price">¥4999<span class="product-stock">库存:7</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-cart">
+                <div class="cart-info">
+                    <div class="cart-icon">
+                        🛒
+                        <span class="cart-badge">2</span>
+                    </div>
+                    <div class="cart-total">¥9,999</div>
+                </div>
+                <div class="cart-btn">去结算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="desc">点击品牌「苹果」→ 显示苹果品牌下的所有商品 + 第3级分类（系列）</p>
+
+<!-- Screen 3: 第3级分类（系列）-->
+<div class="subtitle">页面3：选择系列（第3级分类）</div>
+<div class="device-row">
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <div class="header">
+                <span class="header-back">←</span>
+                <span class="header-title">商品选购</span>
+            </div>
+            <div class="tab-bar">
+                <div class="tab-item active">商品</div>
+                <div class="tab-item">服务</div>
+                <div class="tab-item">非标品</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索商品名称">
+                <div class="search-icon">📷</div>
+            </div>
+            <div class="main-content">
+                <div class="category-sidebar">
+                    <div class="category-item">
+                        < 返回
+                    </div>
+                    <div class="category-item">
+                        全部
+                        <div class="spell">quanbu</div>
+                    </div>
+                    <div class="category-item">
+                        iPhone 17系列
+                        <div class="spell">iPhone17</div>
+                    </div>
+                    <div class="category-item active">
+                        iPhone 16系列
+                        <div class="spell">iPhone16</div>
+                    </div>
+                    <div class="category-item">
+                        iPhone 15系列
+                        <div class="spell">iPhone15</div>
+                    </div>
+                    <div class="category-item">
+                        iPhone 13系列
+                        <div class="spell">iPhone13</div>
+                    </div>
+                    <div class="category-item">
+                        iPhone SE系列
+                        <div class="spell">iPhoneSE</div>
+                    </div>
+                </div>
+                <div class="product-grid">
+                    <div class="grid-title">苹果 · iPhone 16系列 · 全部商品</div>
+                    <div class="product-list">
+                        <div class="product-card">
+                            <div class="product-img">
+                                商品图
+                                <div class="label"><span>新品</span></div>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 16 Pro Max</div>
+                                <div class="product-price">¥9999<span class="product-stock">库存:5</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 16 Pro</div>
+                                <div class="product-price">¥7999<span class="product-stock">库存:8</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 16</div>
+                                <div class="product-price">¥5999<span class="product-stock">库存:10</span></div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-img">商品图</div>
+                            <div class="product-info">
+                                <div class="product-name">iPhone 16 Plus</div>
+                                <div class="product-price">¥6999<span class="product-stock">库存:6</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-cart">
+                <div class="cart-info">
+                    <div class="cart-icon">
+                        🛒
+                        <span class="cart-badge">2</span>
+                    </div>
+                    <div class="cart-total">¥9,999</div>
+                </div>
+                <div class="cart-btn">去结算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="desc">点击系列「iPhone 16系列」→ 显示苹果 iPhone 16 系列下的具体商品（叶子节点，显示商品列表）</p>
+
+<!-- Flow Diagram -->
+<div style="text-align: center; margin-top: 60px;">
+    <h2 style="color: #333; margin-bottom: 30px;">交互流程</h2>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div style="background: #fff; padding: 16px 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="font-size: 14px; color: #333; font-weight: 500;">第1级：品类</div>
+            <div style="font-size: 12px; color: #999; margin-top: 4px;">手机 / 电脑 / 家电</div>
+        </div>
+        <div style="font-size: 20px; color: #0575FF;">→</div>
+        <div style="background: #fff; padding: 16px 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="font-size: 14px; color: #333; font-weight: 500;">第2级：品牌</div>
+            <div style="font-size: 12px; color: #999; margin-top: 4px;">苹果 / 华为 / vivo</div>
+        </div>
+        <div style="font-size: 20px; color: #0575FF;">→</div>
+        <div style="background: #fff; padding: 16px 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="font-size: 14px; color: #333; font-weight: 500;">第3级：系列</div>
+            <div style="font-size: 12px; color: #999; margin-top: 4px;">iPhone 16 / iPhone 15</div>
+        </div>
+        <div style="font-size: 20px; color: #0575FF;">→</div>
+        <div style="background: #E8F4FF; padding: 16px 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 2px solid #0575FF;">
+            <div style="font-size: 14px; color: #0575FF; font-weight: 500;">商品列表</div>
+            <div style="font-size: 12px; color: #0575FF; margin-top: 4px;">叶子节点，显示具体商品</div>
+        </div>
+    </div>
+</div>
+
+<!-- Implementation Notes -->
+<div style="max-width: 800px; margin: 60px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h2 style="color: #333; margin-bottom: 20px;">实现说明</h2>
+
+    <h3 style="color: #666; font-size: 14px; margin: 16px 0 8px;">数据获取</h3>
+    <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; line-height: 1.6;">
+// 1. 获取顶级分类
+GET /category/top  → 26条顶级分类
+
+// 2. 获取子级分类
+GET /category/list?type=1  → 9298条数据
+// pid = 0 表示顶级
+// pid = 父级ID 表示子级
+
+// 3. 获取 SPU
+GET /spu/list?cateId=X  → 该分类下的商品
+
+// 4. Tab 参数
+// type=1: 商品
+// type=7: 服务</pre>
+
+    <h3 style="color: #666; font-size: 14px; margin: 16px 0 8px;">分类数据结构</h3>
+    <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; line-height: 1.6;">
+Category {
+  id: number,       // 分类ID
+  name: string,     // 分类名称
+  spell: string,    // 拼音码
+  pid: number,     // 父级ID（0=顶级）
+  order: number,    // 排序
+  type: number,     // 类型（1=商品，7=服务）
+  state: number,    // 状态
+  chain: number[],  // 分类链
+}</pre>
+
+    <h3 style="color: #FF6B35; font-size: 14px; margin: 16px 0 8px;">⚠️ 待补充</h3>
+    <pre style="background: #FFF3E0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; line-height: 1.6;">
+1. SKU 详情接口（含库存、价格）
+2. 购物车 API 接口
+3. 非标品 type 参数值
+4. 商品图片获取方式（当前 SPU 中 thumbnail/mainImages 为空）</pre>
+
+    <h3 style="color: #666; font-size: 14px; margin: 16px 0 8px;">示例数据</h3>
+    <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; line-height: 1.6;">
+实际数据结构示例（手机品类）：
+Level 1 (品类): id=1  "手机"
+Level 2 (品牌): pid=1 "苹果" (id=166)
+Level 3 (系列): pid=166 "iPhone 16系列" (id=359)</pre>
+</div>
+
+</body>
+</html>
