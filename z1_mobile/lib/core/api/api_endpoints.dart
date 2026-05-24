@@ -49,12 +49,23 @@ class ApiEndpoints {
   // ===== SKU（标品） =====
   /// SKU选择基础数据（标品）
   static const String skuSelectBase = '/sku/select-base';
+  /// SPU总库存查询（POST）
+  /// Body: { spuIDs: [1, 2, 3], warehouseIDs?: [1, 2] }
+  /// 返回: [{spuID, stock, lockStock, saleStock}]
+  static const String spuGetStock = '/spu/get-stock';
+  /// SKU库存查询（GET）
+  /// Query: spu={spuId}
+  /// 返回: [{skuID, virtualStock, saleStock}]
+  static String spuSkuStock(int spuId) => '/spu/sku-stock?spu=$spuId';
 
   // ===== 分类 =====
-  /// 分类列表（type: 1=商品分类）
+  /// 分类列表（type: 1=商品分类，pid=0 表示顶级）
+  /// 返回数据通过 pid 字段构建分类树
   static String categoryList({int type = 1}) => '/category/list?type=$type';
-  /// 商城分类列表（3级结构：品类 -> 品牌 -> 系列）
-  static const String mallCategoryList = '/mall-category/list';
+  /// 顶级分类列表
+  static const String categoryTop = '/category/top';
+  /// SPU列表（按分类ID）
+  static String spuList({int? cateId}) => cateId != null ? '/spu/list?cateId=$cateId' : '/spu/list';
 
   // ===== 服务 =====
   /// 服务列表

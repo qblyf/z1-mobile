@@ -98,6 +98,7 @@ class ProductModel extends Equatable {
 class CategoryModel extends Equatable {
   final int id;
   final String name;
+  final String? spell; // 拼音码
   final int? parentId;
   final int? sort;
   final int? pid; // 上级分类 ID（0=顶级）
@@ -107,6 +108,7 @@ class CategoryModel extends Equatable {
   const CategoryModel({
     required this.id,
     required this.name,
+    this.spell,
     this.parentId,
     this.sort,
     this.pid,
@@ -121,6 +123,7 @@ class CategoryModel extends Equatable {
     return CategoryModel(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
+      spell: json['spell'] as String?,
       parentId: json['parentId'] ?? json['parent_id'] ?? json['pid'],
       sort: json['sort'] ?? json['order'],
       pid: json['pid'],
@@ -130,7 +133,7 @@ class CategoryModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, parentId, sort, pid, chain, state];
+  List<Object?> get props => [id, name, spell, parentId, sort, pid, chain, state];
 }
 
 class ProductListParams extends Equatable {
@@ -240,40 +243,105 @@ class SkuModel extends Equatable {
 class SpuModel extends Equatable {
   final int spuId;
   final String spuName;
+  final String? brand; // 品牌
+  final String? series; // 系列
+  final String? generation; // 代际
+  final int? minPrice; // 最低价格（分）
+  final int? maxPrice; // 最高价格（分）
   final int? retailPrice;
   final int? memberPrice;
-  final int? stock;
   final String? image;
   final String? categoryName;
   final List<SkuModel> skus;
+  // 注意：SPU 本身不含库存字段，库存需通过 /spu/get-stock 接口单独查询
 
   const SpuModel({
     required this.spuId,
     required this.spuName,
+    this.brand,
+    this.series,
+    this.generation,
+    this.minPrice,
+    this.maxPrice,
     this.retailPrice,
     this.memberPrice,
-    this.stock,
     this.image,
     this.categoryName,
     this.skus = const [],
   });
+
+  /// 获取显示价格（优先用 minPrice-maxPrice 范围价）
+  String get priceDisplay {
+    if (minPrice != null && maxPrice != null) {
+      if (minPrice == maxPrice) {
+        return '¥${(minPrice! / 100).toStringAsFixed(2)}';
+      }
+      return '¥${(minPrice! / 100).toStringAsFixed(2)}-${(maxPrice! / 100).toStringAsFixed(2)}';
+    }
+    if (retailPrice != null) {
+      return '¥${(retailPrice! / 100).toStringAsFixed(2)}';
+    }
+    return '暂无价格';
+  }
 
   factory SpuModel.fromJson(Map<String, dynamic> json) {
     final skuList = json['skuList'] as List<dynamic>? ?? [];
     return SpuModel(
       spuId: json['spuId'] ?? json['id'] ?? 0,
       spuName: json['spuName'] ?? json['name'] ?? '',
-      retailPrice: json['retailPrice'] is int ? json['retailPrice'] : ((json['retailPrice'] as num?)?.toInt()),
-      memberPrice: json['memberPrice'] is int ? json['memberPrice'] : ((json['memberPrice'] as num?)?.toInt()),
-      stock: json['stock'],
+      brand: json['brand'] as String?,
+      series: json['series'] as String?,
+      generation: json['generation'] as String?,
+      minPrice: json['minPrice'] is int
+          ? json['minPrice']
+          : (json['minPrice'] as num?)?.toInt(),
+      maxPrice: json['maxPrice'] is int
+          ? json['maxPrice']
+          : (json['maxPrice'] as num?)?.toInt(),
+      retailPrice: json['retailPrice'] is int
+          ? json['retailPrice']
+          : (json['retailPrice'] as num?)?.toInt(),
+      memberPrice: json['memberPrice'] is int
+          ? json['memberPrice']
+          : (json['memberPrice'] as num?)?.toInt(),
       image: json['image'],
       categoryName: json['categoryName'],
       skus: skuList.map((s) => SkuModel.fromJson(s as Map<String, dynamic>)).toList(),
     );
   }
 
+  SpuModel copyWith({
+    int? spuId,
+    String? spuName,
+    String? brand,
+    String? series,
+    String? generation,
+    int? minPrice,
+    int? maxPrice,
+    int? retailPrice,
+    int? memberPrice,
+    String? image,
+    String? categoryName,
+    List<SkuModel>? skus,
+  }) {
+    return SpuModel(
+      spuId: spuId ?? this.spuId,
+      spuName: spuName ?? this.spuName,
+      brand: brand ?? this.brand,
+      series: series ?? this.series,
+      generation: generation ?? this.generation,
+      minPrice: minPrice ?? this.minPrice,
+      maxPrice: maxPrice ?? this.maxPrice,
+      retailPrice: retailPrice ?? this.retailPrice,
+      memberPrice: memberPrice ?? this.memberPrice,
+      image: image ?? this.image,
+      categoryName: categoryName ?? this.categoryName,
+      skus: skus ?? this.skus,
+    );
+  }
+
   @override
-  List<Object?> get props => [spuId, spuName, skus];
+  List<Object?> get props => [spuId, spuName, brand, series, minPrice, maxPrice, skus];
 }
 
 class CategoryWithSpu extends Equatable {
