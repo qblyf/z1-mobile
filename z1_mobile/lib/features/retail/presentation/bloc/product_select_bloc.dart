@@ -299,7 +299,17 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
       newStack = currentState.navigationStack;
     }
     
-    final newSidebarCategories = hasChildren ? children : <MallCategoryModel>[];
+    // 叶子节点（无子分类）：显示同级分类，避免侧边栏消失
+    List<MallCategoryModel> newSidebarCategories;
+    if (hasChildren) {
+      newSidebarCategories = children;
+    } else {
+      // 找同级分类（父分类的其他子节点）
+      final parentId = currentState.navigationStack.isNotEmpty
+          ? currentState.navigationStack.last
+          : 0;
+      newSidebarCategories = currentState.categoryChildrenMap[parentId] ?? [];
+    }
 
     emit(currentState.copyWith(
       currentSidebarCategories: newSidebarCategories,
