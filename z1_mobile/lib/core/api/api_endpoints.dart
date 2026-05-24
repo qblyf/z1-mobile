@@ -155,6 +155,10 @@ class ApiEndpoints {
   /// 条码查商品（遗留接口）
   static String productBarcode(String code) => '/product/barcode/$code';
 
+  // ===== 商品 =====
+  /// 商品列表（支持 spuId 等条件查询，返回 hasSerial 等完整字段）
+  static String productListBySpuId({int? spuId}) => spuId != null ? '/product/list?spuId=$spuId' : '/product/list';
+
   // ===== 商品价格 =====
   /// 商品价格列表（批量获取价格）
   static const String productPriceList = '/product-price/list';

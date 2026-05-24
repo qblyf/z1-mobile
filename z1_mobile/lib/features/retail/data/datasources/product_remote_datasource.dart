@@ -166,6 +166,10 @@ abstract class ProductRemoteDataSource {
   Future<Result<ServeListResult>> getServeList();
   Future<Result<List<MallCategoryModel>>> getMallCategoryList();
   Future<Result<List<SpuModel>>> getSpuListByMallCate(int mallCateId);
+  /// 根据 SPU ID 获取商品详情（含 hasSerial 字段）
+  Future<Result<ProductModel?>> getProductBySpuId(int spuId);
+  /// 获取 SPU 库存（可能返回 90000 错误，需容错）
+  Future<Result<int>> getSpuStock(int spuId);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -493,6 +497,43 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           .whereType<Map<String, dynamic>>()
           .map((json) => SpuModel.fromJson(json))
           .toList();
+    });
+  }
+
+  @override
+  Future<Result<ProductModel?>> getProductBySpuId(int spuId) async {
+    final response = await apiClient.z1func<Map<String, dynamic>>(
+      ApiEndpoints.productListBySpuId(spuId: spuId),
+      method: 'GET',
+      parser: (data) => data as Map<String, dynamic>,
+    );
+
+    return response.map((data) {
+      // /product/list 返回 { list: [...], count: N }
+      final list = data['list'] as List<dynamic>? ?? data['data'] as List<dynamic>? ?? [];
+      if (list.isEmpty) return null;
+      final first = list.first as Map<String, dynamic>?;
+      if (first == null) return null;
+      return ProductModel.fromJson(first);
+    });
+  }
+
+  @override
+  Future<Result<int>> getSpuStock(int spuId) async {
+    final response = await apiClient.z1func<Map<String, dynamic>>(
+      ApiEndpoints.spuGetStock,
+      method: 'POST',
+      body: {'spuIDs': [spuId]},
+      parser: (data) => data as Map<String, dynamic>,
+    );
+
+    return response.map((data) {
+      // 成功返回 { code: 10000, result: [{spuID, stock, ...}] }
+      final result = data['result'] as List<dynamic>?;
+      if (result == null || result.isEmpty) return 0;
+      final first = result.first as Map<String, dynamic>?;
+      if (first == null) return 0;
+      return (first['stock'] as num?)?.toInt() ?? 0;
     });
   }
 }

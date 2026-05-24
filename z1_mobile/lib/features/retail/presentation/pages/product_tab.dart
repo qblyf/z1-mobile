@@ -77,6 +77,9 @@ class _ProductTabState extends State<ProductTab> {
                   itemBuilder: (context, index) {
                     final isSelected = index == _selectedCategoryIndex;
                     final label = index == 0 ? '全部' : categories[index - 1].title;
+                    // 检查该分类是否有子分类
+                    final hasChildren = index > 0 &&
+                        (state.categoryChildrenMap[categories[index - 1].id]?.isNotEmpty ?? false);
                     return GestureDetector(
                       onTap: () {
                         setState(() => _selectedCategoryIndex = index);
@@ -84,6 +87,13 @@ class _ProductTabState extends State<ProductTab> {
                           context.read<ProductSelectBloc>().add(ProductSelectCategoryTapped(categories[index - 1].id));
                         }
                       },
+                      // 有子分类时支持长按直接查看该分类商品
+                      onLongPress: hasChildren
+                          ? () {
+                              setState(() => _selectedCategoryIndex = index);
+                              _loadCategorySpus(context, categories[index - 1].id);
+                            }
+                          : null,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         alignment: Alignment.center,
@@ -91,12 +101,32 @@ class _ProductTabState extends State<ProductTab> {
                           color: isSelected ? CupertinoColors.activeBlue : null,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Text(
-                          label,
-                          style: TextStyle(
-                            color: isSelected ? CupertinoColors.white : CupertinoColors.label,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  color: isSelected ? CupertinoColors.white : CupertinoColors.label,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (hasChildren) ...[
+                              const SizedBox(width: 2),
+                              Icon(
+                                isSelected
+                                    ? CupertinoIcons.chevron_down
+                                    : CupertinoIcons.chevron_right,
+                                size: 10,
+                                color: isSelected
+                                    ? CupertinoColors.white.withValues(alpha: 0.7)
+                                    : CupertinoColors.systemGrey,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     );
@@ -140,6 +170,11 @@ class _ProductTabState extends State<ProductTab> {
         );
       },
     );
+  }
+
+  /// 直接加载指定分类的 SPU 列表（绕过子分类导航）
+  void _loadCategorySpus(BuildContext context, int categoryId) {
+    context.read<ProductSelectBloc>().add(ProductSelectCategorySpuRequested(categoryId));
   }
 
   void _showSkuModal(BuildContext context, SpuModel spu) {

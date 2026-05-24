@@ -20,6 +20,14 @@ class ProductSelectCategoryTapped extends ProductSelectEvent {
   List<Object?> get props => [categoryId];
 }
 
+/// 直接加载指定分类的 SPU 列表（绕过子分类导航）
+class ProductSelectCategorySpuRequested extends ProductSelectEvent {
+  final int categoryId;
+  const ProductSelectCategorySpuRequested(this.categoryId);
+  @override
+  List<Object?> get props => [categoryId];
+}
+
 class ProductSelectBackPressed extends ProductSelectEvent {
   const ProductSelectBackPressed();
 }
@@ -27,6 +35,14 @@ class ProductSelectBackPressed extends ProductSelectEvent {
 class ProductSelectSpuSelected extends ProductSelectEvent {
   final SpuModel spu;
   const ProductSelectSpuSelected(this.spu);
+  @override
+  List<Object?> get props => [spu];
+}
+
+class ProductSelectSkuModalOpened extends ProductSelectEvent {
+  /// 打开 SKU 弹窗时触发：获取 hasSerial 和库存
+  final SpuModel spu;
+  const ProductSelectSkuModalOpened(this.spu);
   @override
   List<Object?> get props => [spu];
 }
@@ -100,6 +116,8 @@ class ProductSelectLoaded extends ProductSelectState {
   final String searchKeyword;
   final SpuModel? selectedSpu;
   final bool isLoadingSpus;
+  /// SKU 弹窗内库存数据（SPU ID -> 库存值，null 表示加载中，-1 表示获取失败）
+  final Map<int, int?> stockMap;
 
   const ProductSelectLoaded({
     required this.allCategories,
@@ -111,6 +129,7 @@ class ProductSelectLoaded extends ProductSelectState {
     this.searchKeyword = '',
     this.selectedSpu,
     this.isLoadingSpus = false,
+    this.stockMap = const {},
   });
 
   int get cartTotalQuantity => cartItems.fold(0, (sum, item) => sum + item.quantity);
@@ -147,6 +166,7 @@ class ProductSelectLoaded extends ProductSelectState {
     String? searchKeyword,
     SpuModel? selectedSpu,
     bool? isLoadingSpus,
+    Map<int, int?>? stockMap,
   }) {
     return ProductSelectLoaded(
       allCategories: allCategories ?? this.allCategories,
@@ -158,6 +178,7 @@ class ProductSelectLoaded extends ProductSelectState {
       searchKeyword: searchKeyword ?? this.searchKeyword,
       selectedSpu: selectedSpu,
       isLoadingSpus: isLoadingSpus ?? this.isLoadingSpus,
+      stockMap: stockMap ?? this.stockMap,
     );
   }
 
@@ -172,6 +193,7 @@ class ProductSelectLoaded extends ProductSelectState {
     searchKeyword,
     selectedSpu,
     isLoadingSpus,
+    stockMap,
   ];
 }
 
@@ -183,8 +205,10 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
         super(const ProductSelectInitial()) {
     on<ProductSelectLoadRequested>(_onLoadRequested);
     on<ProductSelectCategoryTapped>(_onCategoryTapped);
+    on<ProductSelectCategorySpuRequested>(_onCategorySpuRequested);
     on<ProductSelectBackPressed>(_onBackPressed);
     on<ProductSelectSpuSelected>(_onSpuSelected);
+    on<ProductSelectSkuModalOpened>(_onSkuModalOpened);
     on<ProductSelectSkuAdded>(_onSkuAdded);
     on<ProductSelectSearchChanged>(_onSearchChanged);
     on<ProductSelectClearCart>(_onClearCart);
@@ -278,6 +302,32 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
     }
   }
 
+  /// 直接加载指定分类的 SPU 列表（绕过子分类导航）
+  Future<void> _onCategorySpuRequested(
+    ProductSelectCategorySpuRequested event,
+    Emitter<ProductSelectState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! ProductSelectLoaded) return;
+
+    final categoryId = event.categoryId;
+
+    emit(currentState.copyWith(
+      isLoadingSpus: true,
+    ));
+
+    final spuResult = await _dataSource.getSpuListByMallCate(categoryId);
+
+    if (isClosed) return;
+    final newState = state;
+    if (newState is ProductSelectLoaded) {
+      emit(newState.copyWith(
+        currentSpus: spuResult.isSuccess ? spuResult.value! : const [],
+        isLoadingSpus: false,
+      ));
+    }
+  }
+
   void _onBackPressed(
     ProductSelectBackPressed event,
     Emitter<ProductSelectState> emit,
@@ -319,6 +369,55 @@ class ProductSelectBloc extends Bloc<ProductSelectEvent, ProductSelectState> {
     if (currentState is ProductSelectLoaded) {
       emit(currentState.copyWith(selectedSpu: event.spu));
     }
+  }
+
+  /// 打开 SKU 弹窗时触发：获取 hasSerial 和库存数据
+  Future<void> _onSkuModalOpened(
+    ProductSelectSkuModalOpened event,
+    Emitter<ProductSelectState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! ProductSelectLoaded) return;
+
+    final spu = event.spu;
+    final spuId = spu.spuId;
+
+    // 并行获取 hasSerial 和库存
+    final productFuture = _dataSource.getProductBySpuId(spuId);
+    final stockFuture = _dataSource.getSpuStock(spuId);
+
+    final productResult = await productFuture;
+    final stockResult = await stockFuture;
+
+    if (isClosed) return;
+    final newState = state;
+    if (newState is! ProductSelectLoaded) return;
+
+    // 更新 stockMap
+    final newStockMap = Map<int, int?>.from(newState.stockMap);
+    if (stockResult.isSuccess) {
+      newStockMap[spuId] = stockResult.value;
+    } else {
+      // 90000 错误或其他失败，标记为 -1（"获取失败"）
+      newStockMap[spuId] = -1;
+    }
+
+    // 更新 hasSerial 到 SPU
+    SpuModel? updatedSpu;
+    if (productResult.isSuccess && productResult.value != null) {
+      final product = productResult.value!;
+      if (product.hasSerial != null) {
+        final updatedSkus = spu.skus.map((sku) {
+          return sku.copyWith(hasSerial: product.hasSerial);
+        }).toList();
+        updatedSpu = spu.copyWith(hasSerial: product.hasSerial, skus: updatedSkus);
+      }
+    }
+
+    emit(newState.copyWith(
+      selectedSpu: updatedSpu ?? newState.selectedSpu,
+      stockMap: newStockMap,
+    ));
   }
 
   void _onSkuAdded(

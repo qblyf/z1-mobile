@@ -15,6 +15,8 @@ class ProductModel extends Equatable {
   final int? stock;
   final String? image;
   final String? unit;
+  /// 是否需要序列号（0=否，1=是）
+  final int? hasSerial;
 
   const ProductModel({
     required this.productID,
@@ -31,6 +33,7 @@ class ProductModel extends Equatable {
     this.stock,
     this.image,
     this.unit,
+    this.hasSerial,
   });
 
   bool get isGoods => genre == 'goods';
@@ -54,6 +57,7 @@ class ProductModel extends Equatable {
       stock: json['stock'],
       image: json['image'],
       unit: json['unit'],
+      hasSerial: json['hasSerial'] is int ? json['hasSerial'] : ((json['hasSerial'] as num?)?.toInt()),
     );
   }
 
@@ -72,6 +76,7 @@ class ProductModel extends Equatable {
     int? stock,
     String? image,
     String? unit,
+    int? hasSerial,
   }) {
     return ProductModel(
       productID: productID ?? this.productID,
@@ -88,6 +93,7 @@ class ProductModel extends Equatable {
       stock: stock ?? this.stock,
       image: image ?? this.image,
       unit: unit ?? this.unit,
+      hasSerial: hasSerial ?? this.hasSerial,
     );
   }
 
@@ -195,6 +201,8 @@ class SkuModel extends Equatable {
   final String? unit;
   final String? image;
   final Map<String, dynamic>? specs;
+  /// 是否需要序列号（0=否，1=是）
+  final int? hasSerial;
 
   const SkuModel({
     required this.skuId,
@@ -206,6 +214,7 @@ class SkuModel extends Equatable {
     this.unit,
     this.image,
     this.specs,
+    this.hasSerial,
   });
 
   factory SkuModel.fromJson(Map<String, dynamic> json) {
@@ -219,6 +228,7 @@ class SkuModel extends Equatable {
       unit: json['unit'],
       image: json['image'],
       specs: json['specs'] as Map<String, dynamic>?,
+      hasSerial: json['hasSerial'] is int ? json['hasSerial'] : ((json['hasSerial'] as num?)?.toInt()),
     );
   }
 
@@ -233,6 +243,33 @@ class SkuModel extends Equatable {
       stock: product.stock,
       unit: product.unit,
       image: product.image,
+      hasSerial: product.hasSerial,
+    );
+  }
+
+  SkuModel copyWith({
+    int? skuId,
+    String? skuName,
+    int? price,
+    int? retailPrice,
+    int? memberPrice,
+    int? stock,
+    String? unit,
+    String? image,
+    Map<String, dynamic>? specs,
+    int? hasSerial,
+  }) {
+    return SkuModel(
+      skuId: skuId ?? this.skuId,
+      skuName: skuName ?? this.skuName,
+      price: price ?? this.price,
+      retailPrice: retailPrice ?? this.retailPrice,
+      memberPrice: memberPrice ?? this.memberPrice,
+      stock: stock ?? this.stock,
+      unit: unit ?? this.unit,
+      image: image ?? this.image,
+      specs: specs ?? this.specs,
+      hasSerial: hasSerial ?? this.hasSerial,
     );
   }
 
@@ -253,7 +290,9 @@ class SpuModel extends Equatable {
   final String? image;
   final String? categoryName;
   final List<SkuModel> skus;
-  // 注意：SPU 本身不含库存字段，库存需通过 /spu/get-stock 接口单独查询
+  /// 是否需要序列号（0=否，1=是），由 /product/list 接口获取
+  /// 注意：SPU 本身不含库存字段，库存需通过 /spu/get-stock 接口单独查询
+  final int? hasSerial;
 
   const SpuModel({
     required this.spuId,
@@ -268,6 +307,7 @@ class SpuModel extends Equatable {
     this.image,
     this.categoryName,
     this.skus = const [],
+    this.hasSerial,
   });
 
   /// 获取显示价格（优先用 minPrice-maxPrice 范围价）
@@ -307,6 +347,7 @@ class SpuModel extends Equatable {
       image: json['image'],
       categoryName: json['categoryName'],
       skus: skuList.map((s) => SkuModel.fromJson(s as Map<String, dynamic>)).toList(),
+      hasSerial: json['hasSerial'] is int ? json['hasSerial'] : ((json['hasSerial'] as num?)?.toInt()),
     );
   }
 
@@ -323,6 +364,7 @@ class SpuModel extends Equatable {
     String? image,
     String? categoryName,
     List<SkuModel>? skus,
+    int? hasSerial,
   }) {
     return SpuModel(
       spuId: spuId ?? this.spuId,
@@ -337,6 +379,7 @@ class SpuModel extends Equatable {
       image: image ?? this.image,
       categoryName: categoryName ?? this.categoryName,
       skus: skus ?? this.skus,
+      hasSerial: hasSerial ?? this.hasSerial,
     );
   }
 
