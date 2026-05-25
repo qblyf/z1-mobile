@@ -514,17 +514,72 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       parser: (data) => data,
     );
 
-    return response.map((data) {
-      // API 返回格式: {"code":10000,"list":[...]}
-      final list = data['list'] as List<dynamic>?
-          ?? data['data'] as List<dynamic>?
-          ?? data['res'] as List<dynamic>?
-          ?? [];
-      return list
-          .whereType<Map<String, dynamic>>()
-          .map((json) => SpuModel.fromJson(json))
-          .toList();
-    });
+    // 处理响应错误
+    if (response.isFailure) {
+      return Failure(response.failure!);
+    }
+
+    final data = response.value!;
+
+    // API 返回格式: {"code":10000,"list":[...]}
+    final list = data['list'] as List<dynamic>?
+        ?? data['data'] as List<dynamic>?
+        ?? data['res'] as List<dynamic>?
+        ?? [];
+    var spus = list
+        .whereType<Map<String, dynamic>>()
+        .map((json) => SpuModel.fromJson(json))
+        .toList();
+
+    // 获取所有 SKU ID
+    final skuIds = <int>[];
+    for (final spu in spus) {
+      for (final sku in spu.skus) {
+        if (sku.skuId > 0) skuIds.add(sku.skuId);
+      }
+    }
+
+    // 如果有 SKU，获取价格信息
+    if (skuIds.isNotEmpty) {
+      final priceResult = await getProductPriceList(skuIds);
+      if (priceResult.isSuccess && priceResult.value != null) {
+        final priceMap = <int, int>{};
+        for (final p in priceResult.value!) {
+          priceMap[p.productId] = p.price;
+        }
+
+        // 填充价格到 SKU
+        spus = spus.map((spu) {
+          final updatedSkus = spu.skus.map((sku) {
+            final price = priceMap[sku.skuId];
+            if (price != null && price > 0) {
+              return sku.copyWith(retailPrice: price);
+            }
+            return sku;
+          }).toList();
+
+          // 计算 SPU 的最低和最高价格
+          int? minPrice;
+          int? maxPrice;
+          for (final sku in updatedSkus) {
+            final p = sku.retailPrice ?? 0;
+            if (p > 0) {
+              if (minPrice == null || p < minPrice) minPrice = p;
+              if (maxPrice == null || p > maxPrice) maxPrice = p;
+            }
+          }
+
+          return spu.copyWith(
+            skus: updatedSkus,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            retailPrice: minPrice,
+          );
+        }).toList();
+      }
+    }
+
+    return Success(spus);
   }
 
   @override
