@@ -223,9 +223,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<Result<List<ProductPriceModel>>> getProductPriceList(List<int> productIds) async {
-    final response = await apiClient.post<Map<String, dynamic>>(
+    final response = await apiClient.get<Map<String, dynamic>>(
       ApiEndpoints.productPriceList,
-      data: {'productIds': productIds},
+      queryParameters: {'productIDs': productIds},
       parser: (data) => data,
     );
 
