@@ -317,7 +317,13 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       final skuId = item['skuID'] as int? ?? 0;
       final spuId = item['spuID'] as int? ?? 0;
       final spuName = item['spuName'] as String? ?? '未知商品';
-      final mallThirdCate = (item['mallThirdCate'] as List<dynamic>?)?.cast<int>() ?? [];
+      final mallThirdCateRaw = item['mallThirdCate'];
+      final List<int> mallThirdCate;
+      if (mallThirdCateRaw is List) {
+        mallThirdCate = mallThirdCateRaw.whereType<int>().toList();
+      } else {
+        mallThirdCate = [];
+      }
 
       if (spuId == 0 || mallThirdCate.isEmpty) continue;
 
@@ -595,11 +601,17 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     );
 
     return response.map((data) {
-      final list = data['data'] as List<dynamic>?
-          ?? data['list'] as List<dynamic>?
-          ?? data['skuList'] as List<dynamic>?
-          ?? data['skus'] as List<dynamic>?
-          ?? data['res'] as List<dynamic>?
+      // 安全解析列表，防止 API 返回单个对象而非数组导致崩溃
+      List<dynamic>? parseList(dynamic raw) {
+        if (raw is List) return raw;
+        return null;
+      }
+
+      final list = parseList(data['data'])
+          ?? parseList(data['list'])
+          ?? parseList(data['skuList'])
+          ?? parseList(data['skus'])
+          ?? parseList(data['res'])
           ?? [];
       return list
           .whereType<Map<String, dynamic>>()

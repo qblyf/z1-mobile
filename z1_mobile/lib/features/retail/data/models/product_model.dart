@@ -131,7 +131,11 @@ class CategoryModel extends Equatable {
       parentId: json['parentId'] ?? json['parent_id'] ?? json['pid'],
       sort: json['sort'] ?? json['order'],
       pid: json['pid'],
-      chain: (json['chain'] as List<dynamic>?)?.map((e) => e as int).toList(),
+      chain: (() {
+        final raw = json['chain'];
+        if (raw is List) return raw.whereType<int>().toList();
+        return <int>[];
+      })(),
       state: json['state'],
     );
   }
@@ -369,7 +373,14 @@ class SpuModel extends Equatable {
   }
 
   factory SpuModel.fromJson(Map<String, dynamic> json) {
-    final skuList = json['skuList'] as List<dynamic>? ?? [];
+    // 安全解析 skuList：防止 API 返回单个对象而非数组导致崩溃
+    final skuListRaw = json['skuList'];
+    final List<dynamic> skuList;
+    if (skuListRaw is List) {
+      skuList = skuListRaw;
+    } else {
+      skuList = [];
+    }
     
     // 尝试多种可能的字段名获取价格
     int? parsePrice(dynamic value) {
@@ -458,7 +469,14 @@ class CategoryWithSpu extends Equatable {
   });
 
   factory CategoryWithSpu.fromJson(Map<String, dynamic> json) {
-    final spuList = json['spuList'] as List<dynamic>? ?? [];
+    // 安全解析 spuList：防止 API 返回单个对象而非数组导致崩溃
+    final spuListRaw = json['spuList'];
+    final List<dynamic> spuList;
+    if (spuListRaw is List) {
+      spuList = spuListRaw;
+    } else {
+      spuList = [];
+    }
     return CategoryWithSpu(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
@@ -557,7 +575,11 @@ class MallCategoryModel extends Equatable {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       level: json['level'] ?? 1,
-      pids: (json['pids'] as List<dynamic>?)?.map((e) => e as int).toList() ?? [],
+      pids: (() {
+        final raw = json['pids'];
+        if (raw is List) return raw.whereType<int>().toList();
+        return <int>[];
+      })(),
       weight: json['weight'] ?? 0,
       spell: json['spell'] as String?,
       imgUrl: json['imgUrl'] as String?,
