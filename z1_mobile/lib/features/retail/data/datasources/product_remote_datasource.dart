@@ -298,11 +298,12 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     final mallCategoryTree = mallCategoryTreeResult.$1;
     final nodeMap = mallCategoryTreeResult.$2;
 
-    // 解析 SKU 数据，按 (spuCateId, spuId) 分组
+    // 解析 SKU 数据，按 mallThirdCate[] 分组 SPU
+    // 关键：mallThirdCate 是 SKU 所属的商城3级分类 ID 数组，与 MallCategoryTreeNode.id 对应
     final resList = skuData['res'] as List<dynamic>? ?? [];
 
-    // 数据结构: Map<spuCateId, Map<spuId, { spuName, skus }>>
-    final spuByCategory = <int, Map<int, _SpuData>>{};
+    // 数据结构: Map<mallThirdCateId, Map<spuId, { spuName, skus }>>
+    final spuByMallCate = <int, Map<int, _SpuData>>{};
     // 同时收集所有 SKU 用于"全部商品"
     final allSkus = <SkuModel>[];
 
@@ -316,9 +317,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       final skuId = item['skuID'] as int? ?? 0;
       final spuId = item['spuID'] as int? ?? 0;
       final spuName = item['spuName'] as String? ?? '未知商品';
-      final spuCateId = item['spuCateID'] as int? ?? 0;
+      final mallThirdCate = (item['mallThirdCate'] as List<dynamic>?)?.cast<int>() ?? [];
 
-      if (spuId == 0 || spuCateId == 0) continue;
+      if (spuId == 0 || mallThirdCate.isEmpty) continue;
 
       // 解析 SKU 信息
       final sku = SkuModel(
@@ -335,15 +336,17 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
       allSkus.add(sku);
 
-      // 按分类分组 SPU
-      spuByCategory.putIfAbsent(spuCateId, () => {});
-      final spuMap = spuByCategory[spuCateId]!;
-      spuMap.putIfAbsent(spuId, () => _SpuData(spuName: spuName, skus: []));
-      spuMap[spuId]!.skus.add(sku);
+      // 按商城3级分类分组 SPU（一个 SKU 可能属于多个3级分类）
+      for (final cateId in mallThirdCate) {
+        spuByMallCate.putIfAbsent(cateId, () => {});
+        final spuMap = spuByMallCate[cateId]!;
+        spuMap.putIfAbsent(spuId, () => _SpuData(spuName: spuName, skus: []));
+        spuMap[spuId]!.skus.add(sku);
+      }
     }
 
-    // 将 SPU 关联到叶子分类节点（3级分类的 spuCateID 对应系列）
-    for (final entry in spuByCategory.entries) {
+    // 将 SPU 关联到叶子分类节点（3级分类的 id 对应 MallCategoryTreeNode.id）
+    for (final entry in spuByMallCate.entries) {
       final cateId = entry.key;
       final spuMap = entry.value;
 
@@ -510,7 +513,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     // 使用 queryParameters 传递数组参数，Dio 会正确处理
     final response = await apiClient.get<Map<String, dynamic>>(
       ApiEndpoints.spuListByMallCate,
-      queryParameters: {'cateId': mallCateId},
+      queryParameters: {'mallCateIDs': mallCateId},
       parser: (data) => data,
     );
 
