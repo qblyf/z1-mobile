@@ -601,21 +601,32 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     );
 
     return response.map((data) {
-      // 安全解析列表，防止 API 返回单个对象而非数组导致崩溃
-      List<dynamic>? parseList(dynamic raw) {
-        if (raw is List) return raw;
-        return null;
-      }
+      // 后端 /product/sku-by-spu 返回结构：
+      // { code, res: { spu, services, defaultService, skus[], recommend[] } }
+      // 字段映射：backend id→skuId, name→skuName, thumbnail→image, listPrice→retailPrice
+      final res = data['res'] as Map<String, dynamic>?;
+      if (res == null) return <SkuModel>[];
 
-      final list = parseList(data['data'])
-          ?? parseList(data['list'])
-          ?? parseList(data['skuList'])
-          ?? parseList(data['skus'])
-          ?? parseList(data['res'])
-          ?? [];
-      return list
+      final skusRaw = res['skus'];
+      if (skusRaw is! List) return <SkuModel>[];
+
+      return skusRaw
           .whereType<Map<String, dynamic>>()
-          .map((json) => SkuModel.fromJson(json))
+          .map((json) {
+            // 字段名映射：后端 → Flutter
+            final mapped = <String, dynamic>{
+              'skuId': json['id'] ?? 0,
+              'skuName': json['name'] ?? '',
+              'price': json['price'] ?? 0,
+              'retailPrice': json['listPrice'],
+              'image': json['thumbnail'],
+              'stock': json['stock'] ?? 0,
+              'unit': null,
+              'hasSerial': null,
+              'specs': null,
+            };
+            return SkuModel.fromJson(mapped);
+          })
           .toList();
     });
   }
