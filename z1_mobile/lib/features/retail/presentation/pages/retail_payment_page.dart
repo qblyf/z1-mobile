@@ -98,22 +98,31 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
     try {
       final dio = getIt<Dio>();
       final response = await dio.post(
-        '/order/shop-sale/add',
+        '/order/sale-shop-add',
         data: {
           'warehouseID': _order.warehouseID,
-          'customerIdent': _order.customerIdent,
-          'sellerIdent': _order.sellerIdent,
-          'productInfos': _order.products.map((p) => {
-            'productID': p.productID,
-            'price': p.discountPrice > 0 ? p.discountPrice : p.price,
-            'quantity': p.quantity,
-            'type': p.type,
-            'isGift': p.isGift,
+          'customerIdent': _order.customerIdent ?? 0,
+          'sellerIdent': _order.sellerIdent ?? 0,
+          'decreaseCoins': _order.decreaseCoins,
+          'productInfos': _order.products.map((p) {
+            final price = p.discountPrice > 0 ? p.discountPrice : p.price;
+            return {
+              'productID': p.productID,
+              'discountPrice': price,
+              'totalDiscountPrice': price * p.quantity,
+              'quantity': p.quantity,
+              'type': p.type,
+              'isGift': p.isGift ? 1 : 0,
+            };
           }).toList(),
           'payMode': _selectedPayments.entries.map((e) => {
-            'method': e.key,
+            'paymentTypeID': e.key,
             'amount': e.value,
           }).toList(),
+          if (_order.coupons.isNotEmpty)
+            'coupons': _order.coupons.map((c) => c.toJson()).toList(),
+          if (_order.recycleOrderNumber != null)
+            'recycleOrderNumber': _order.recycleOrderNumber,
           if (_order.remarks != null) 'remarks': _order.remarks,
         },
       );
@@ -121,7 +130,7 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
       final orderNumber = response.data['orderNumber'] ?? 'Z1-${DateTime.now().millisecondsSinceEpoch}';
 
       final payments = _selectedPayments.entries
-          .map((e) => PayItem(method: e.key, amount: e.value))
+          .map((e) => PayItem(paymentTypeID: e.key, amount: e.value))
           .toList();
 
       final completedOrder = _order.copyWith(

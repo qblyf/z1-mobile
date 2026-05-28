@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>服务选择 - 原型图</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .prototype-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .device-row {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #fff;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .screen {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #f7f7f7;
+        }
+
+        /* Header */
+        .header {
+            height: 44px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #eee;
+            padding: 0 16px;
+            padding-top: 30px;
+        }
+
+        .header-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .header-back {
+            position: absolute;
+            left: 16px;
+            font-size: 16px;
+            color: #0575FF;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            background: #fff;
+            display: flex;
+            padding: 8px 16px;
+            gap: 8px;
+        }
+
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 15px;
+            color: #666;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .tab-item.active {
+            background: #0575FF;
+            color: #fff;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            background: #fff;
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            height: 36px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 18px;
+            padding: 0 16px;
+            font-size: 14px;
+        }
+
+        .search-icon {
+            width: 36px;
+            height: 36px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            background: #fff;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .breadcrumb-item {
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .breadcrumb-item.active {
+            color: #0575FF;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item.inactive {
+            color: #999;
+        }
+
+        .breadcrumb-chevron {
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        /* Category/Service List */
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            background: #fff;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+        }
+
+        .list-item-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .list-item-chevron {
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        /* Service List */
+        .service-grid {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .grid-title {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .service-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .service-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .service-price {
+            font-size: 16px;
+            color: #FF6B35;
+            font-weight: 600;
+        }
+
+        .service-tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            background: #FFF3E0;
+            color: #FF9800;
+        }
+
+        .add-btn {
+            width: 32px;
+            height: 32px;
+            background: #0575FF;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Bottom Cart */
+        .bottom-cart {
+            height: 56px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cart-icon {
+            position: relative;
+            font-size: 24px;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -8px;
+            background: #FF6B35;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .cart-total {
+            font-size: 16px;
+            color: #FF6B35;
+            font-weight: 600;
+        }
+
+        .cart-btn {
+            background: #0575FF;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Subtitle */
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Description */
+        .desc {
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            max-width: 375px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="prototype-title">服务选择 · 原型图</h1>
+
+<!-- Screen 1: 服务分类列表 -->
+<div class="subtitle">页面1：服务分类列表（默认显示顶级分类）</div>
+<div class="device-row">
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <div class="header">
+                <span class="header-title">服务选择</span>
+            </div>
+            <div class="tab-bar">
+                <div class="tab-item">商品</div>
+                <div class="tab-item active">服务</div>
+                <div class="tab-item">非标品</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索服务名称或编号">
+                <div class="search-icon">📷</div>
+            </div>
+            <div class="breadcrumbs">
+                <span class="breadcrumb-item active">全部</span>
+            </div>
+            <div class="list-container">
+                <div class="list-item">
+                    <span class="list-item-name">刻字服务</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">清洗服务</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">保养服务</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">维修服务</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">鉴定服务</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">定制服务</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+            </div>
+            <div class="bottom-cart">
+                <div class="cart-info">
+                    <div class="cart-icon">
+                        🛒
+                        <span class="cart-badge">0</span>
+                    </div>
+                    <div class="cart-total">¥0</div>
+                </div>
+                <div class="cart-btn">去结算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="desc">服务分类层级不确定，通过面包屑逐级展开。点击分类进入下一级，可能还是分类或直接是服务列表。</p>
+
+<!-- Screen 2: 进入子分类 -->
+<div class="subtitle">页面2：进入"刻字服务"子分类</div>
+<div class="device-row">
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <div class="header">
+                <span class="header-title">服务选择</span>
+            </div>
+            <div class="tab-bar">
+                <div class="tab-item">商品</div>
+                <div class="tab-item active">服务</div>
+                <div class="tab-item">非标品</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索服务名称或编号">
+                <div class="search-icon">📷</div>
+            </div>
+            <div class="breadcrumbs">
+                <span class="breadcrumb-item inactive">全部</span>
+                <span class="breadcrumb-chevron">›</span>
+                <span class="breadcrumb-item active">刻字服务</span>
+            </div>
+            <div class="list-container">
+                <div class="list-item">
+                    <span class="list-item-name">黄金刻字</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">银饰刻字</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">铂金刻字</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+                <div class="list-item">
+                    <span class="list-item-name">翡翠刻字</span>
+                    <span class="list-item-chevron">›</span>
+                </div>
+            </div>
+            <div class="bottom-cart">
+                <div class="cart-info">
+                    <div class="cart-icon">
+                        🛒
+                        <span class="cart-badge">0</span>
+                    </div>
+                    <div class="cart-total">¥0</div>
+                </div>
+                <div class="cart-btn">去结算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="desc">面包屑：全部 › 刻字服务。子分类可能还有更深层级。</p>
+
+<!-- Screen 3: 显示服务列表 -->
+<div class="subtitle">页面3：进入具体分类，显示服务列表</div>
+<div class="device-row">
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <div class="header">
+                <span class="header-title">服务选择</span>
+            </div>
+            <div class="tab-bar">
+                <div class="tab-item">商品</div>
+                <div class="tab-item active">服务</div>
+                <div class="tab-item">非标品</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索服务名称或编号">
+                <div class="search-icon">📷</div>
+            </div>
+            <div class="breadcrumbs">
+                <span class="breadcrumb-item inactive">全部</span>
+                <span class="breadcrumb-chevron">›</span>
+                <span class="breadcrumb-item inactive">刻字服务</span>
+                <span class="breadcrumb-chevron">›</span>
+                <span class="breadcrumb-item active">黄金刻字</span>
+            </div>
+            <div class="service-grid">
+                <div class="grid-title">黄金刻字服务</div>
+                <div class="service-list">
+                    <div class="service-card">
+                        <div class="service-info">
+                            <div class="service-name">黄金刻字（英文）<span class="service-tag">热门</span></div>
+                            <div class="service-price">¥88</div>
+                        </div>
+                        <button class="add-btn">+</button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-info">
+                            <div class="service-name">黄金刻字（中文）</div>
+                            <div class="service-price">¥68</div>
+                        </div>
+                        <button class="add-btn">+</button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-info">
+                            <div class="service-name">黄金刻字（图案）</div>
+                            <div class="service-price">¥128</div>
+                        </div>
+                        <button class="add-btn">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-cart">
+                <div class="cart-info">
+                    <div class="cart-icon">
+                        🛒
+                        <span class="cart-badge">0</span>
+                    </div>
+                    <div class="cart-total">¥0</div>
+                </div>
+                <div class="cart-btn">去结算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="desc">当没有更多子分类时，显示服务列表。点击面包屑可返回上级。</p>
+
+<!-- Screen 4: 搜索结果 -->
+<div class="subtitle">页面4：搜索服务</div>
+<div class="device-row">
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <div class="header">
+                <span class="header-title">服务选择</span>
+            </div>
+            <div class="tab-bar">
+                <div class="tab-item">商品</div>
+                <div class="tab-item active">服务</div>
+                <div class="tab-item">非标品</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索服务名称或编号" value="清洗" style="background: #E3F2FD;">
+                <div class="search-icon">📷</div>
+            </div>
+            <div class="service-grid">
+                <div class="grid-title">搜索"清洗"结果</div>
+                <div class="service-list">
+                    <div class="service-card">
+                        <div class="service-info">
+                            <div class="service-name">珠宝清洗 <span class="service-tag">热门</span></div>
+                            <div class="service-price">¥38</div>
+                        </div>
+                        <button class="add-btn">+</button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-info">
+                            <div class="service-name">手表清洗</div>
+                            <div class="service-price">¥68</div>
+                        </div>
+                        <button class="add-btn">+</button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-info">
+                            <div class="service-name">眼镜清洗</div>
+                            <div class="service-price">¥18</div>
+                        </div>
+                        <button class="add-btn">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-cart">
+                <div class="cart-info">
+                    <div class="cart-icon">
+                        🛒
+                        <span class="cart-badge">0</span>
+                    </div>
+                    <div class="cart-total">¥0</div>
+                </div>
+                <div class="cart-btn">去结算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="desc">搜索时清空面包屑，直接显示匹配的服务列表。</p>
+
+<!-- Implementation Notes -->
+<div style="max-width: 800px; margin: 60px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h2 style="color: #333; margin-bottom: 20px;">实现说明</h2>
+
+    <h3 style="color: #666; font-size: 14px; margin: 16px 0 8px;">⚠️ 重要设计说明</h3>
+    <pre style="background: #FFF3E0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; line-height: 1.6;">
+服务分类层级不确定（无限层级），采用面包屑导航：
+- 顶部显示面包屑：全部 › 分类1 › 分类2 › ...
+- 点击分类进入下一级
+- 如果还有子分类 → 显示子分类列表
+- 如果没有子分类 → 显示服务列表
+- 点击面包屑可返回上级
+- 搜索时清空面包屑，直接显示结果</pre>
+
+    <h3 style="color: #666; font-size: 14px; margin: 16px 0 8px;">数据获取</h3>
+    <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; line-height: 1.6;">
+// 1. 获取服务分类
+GET /category/list?type=7  → 服务分类列表
+
+// 2. 获取服务列表
+GET /serve/list?cateID={id}  → 该分类下的服务
+GET /serve/list?keyWord={keyword}  → 搜索结果
+
+// 3. 获取服务数量
+GET /serve/count?cateID={id}  → 服务总数</pre>
+
+    <h3 style="color: #666; font-size: 14px; margin: 16px 0 8px;">服务数据结构</h3>
+    <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; line-height: 1.6;">
+Service {
+  id: number,
+  name: string,        // 服务名称
+  shortName: string,   // 简称
+  cent: number,        // 价格（分）
+  cate: number,        // 分类ID
+  isGoods: 1 | 2,    // 是否绑定序列号
+  mainImages: string[], // 主图列表
+  description: string,  // 服务描述
+}</pre>
+
+    <h3 style="color: #666; font-size: 14px; margin: 16px 0 8px;">与商品选择的区别</h3>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <tr style="background: #f5f5f5;">
+            <th style="padding: 8px; border: 1px solid #ddd;">对比项</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">商品选择</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">服务选择</th>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">分类体系</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">商城分类（3级固定）</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">进销存分类（无限层级）</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">导航方式</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">左侧固定分类面板</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">面包屑逐级展开</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">列表接口</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">/spu/list</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">/serve/list</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">展示形式</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">网格卡片（图片为主）</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">列表卡片（文字为主）</td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

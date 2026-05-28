@@ -1,10 +1,10 @@
 # 订单列表模块 · 详细 PRD
 
 > **模块**：订单管理（销售订单）
-> **版本**：v1.0
-> **日期**：2026-05-17
-> **状态**：初稿
-> **依据**：feature-list.md + api-endpoints.dart
+> **版本**：v1.2
+> **日期**：2026-05-28
+> **状态**：已更新（接口已确认，字段映射已修正）
+> **依据**：`lib/types/api/order-types.dart` + z1-deno 后端源码 + Flutter 代码分析
 
 ---
 
@@ -79,20 +79,26 @@
 
 ### 2.4 字段说明
 
-#### 订单列表项（ShopSaleSummary）
+#### 订单列表项（ShopSaleOrder）
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| orderId | int | 订单 ID |
-| orderNumber | string | 订单号 |
-| memberId | int | 会员 ID（可为 null）|
-| memberName | string | 会员姓名（散客显示"散客"）|
-| memberPhone | string | 会员手机号（脱敏）|
-| totalAmount | int | 订单总金额（分）|
-| payAmount | int | 实付金额（分）|
-| status | enum | 状态：`in_progress`/`completed`/`refunded` |
-| createdAt | datetime | 创建时间 |
-| itemCount | int | 商品品项数 |
+| Flutter 字段 | 后端字段 | 类型 | 说明 |
+|-------------|----------|------|------|
+| id | orderID | int | 订单 ID |
+| orderNumber | orderNumber | string | 订单号 |
+| createdAt | createdAt | timestamp | 创建时间 |
+| finalAmount | discountAmount / revenueAmount | int | 实付金额（分）|
+| status | status | int | 订单状态（需转换）|
+| customerName | ❌ 需单独获取 | string | 会员姓名 |
+
+**订单状态（OrderStatus）**：
+
+| 枚举值 | 说明 | Flutter 显示 |
+|--------|------|-------------|
+| 1 | 已发货已付款 | 已完成 |
+| 2 | 已发货未付款 | 进行中 |
+| 3 | 未发货未付款 | 进行中 |
+| 4 | 未发货已付款 | 进行中 |
+| 5 | 取消 | 已取消 |
 
 ### 2.5 异常/边界情况
 
@@ -168,11 +174,42 @@
 
 ### 3.3 核心交互逻辑
 
-#### 订单状态
+#### 订单状态（OrderStatus）
 
-- `in_progress`（进行中）：订单创建，待支付/待发货
-- `completed`（已完成）：支付完成，订单完成
-- `refunded`（已退款）：已退款
+| 状态 | 说明 | 显示 |
+|------|------|------|
+| shippedPaid (1) | 已发货已付款 | 已完成 |
+| shippedUnpaid (2) | 已发货未付款 | 进行中 |
+| unshippedUnpaid (3) | 未发货未付款 | 进行中 |
+| unshippedPaid (4) | 未发货已付款 | 进行中 |
+| cancelled (5) | 取消 | 已取消 |
+
+#### 退款订单展示
+
+当订单已退款时（关联退货退款申请），订单详情页应显示：
+
+```
+┌──────────────────────────────────┐
+│ 状态：[已退款]                    │
+│                                  │
+│  退款信息                        │
+│  ┌────────────────────────────┐  │
+│  │ 退款单号：TH202605170001   │  │
+│  │ 退款金额：¥2,000.00       │  │
+│  │ 退款时间：2026-05-18      │  │
+│  └────────────────────────────┘  │
+│                                  │
+│  [查看退款详情]                  │
+└──────────────────────────────────┘
+```
+
+**数据来源**：
+- 退款信息：需调用退货退款接口 `/return-refund-application/list` + `orderNumber` 参数
+- 退款金额：`ReturnRefundApplication.expectedCent`
+- 退款状态：`ReturnRefundApplication.status`
+- 退款时间：`ReturnRefundApplication.updatedAt`（退款完成时更新）
+
+**⚠️ 判断订单是否已退款**：通过 `orderNumber` 查询退货退款列表，如存在 `status='finished'` 的记录，则订单已退款。
 
 #### 商品明细
 
@@ -191,37 +228,40 @@
 
 ### 3.4 字段说明
 
-#### 订单详情（ShopSaleDetail）
+#### 订单详情（OrderDetail）
+
+| 字段 | 类型 | 说明 | 来源 |
+|------|------|------|------|
+| order.orderID | int | 订单 ID | Order |
+| order.orderNumber | string | 订单号 | Order |
+| order.orderAmount | int | 订单总金额（分）| Order |
+| order.discountAmount | int | 优惠后金额（分）| Order |
+| order.revenueAmount | int | 商家实收（分）| Order |
+| order.status | enum | 订单状态 | OrderStatus |
+| order.createdAt | timestamp | 创建时间 | Order |
+| order.remarks | string | 备注 | Order |
+
+#### 订单商品（OrderProduct）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| orderId | int | 订单 ID |
-| orderNumber | string | 订单号 |
-| memberId | int | 会员 ID（可为 null）|
-| memberName | string | 会员姓名 |
-| memberPhone | string | 会员手机号（脱敏）|
-| memberLevel | string | 会员等级 |
-| totalAmount | int | 订单总金额（分）|
-| discountAmount | int | 优惠金额（分）|
-| payAmount | int | 实付金额（分）|
-| couponId | int | 优惠券 ID（可选）|
-| couponName | string | 优惠券名称 |
-| status | enum | 状态 |
-| paymentMethod | string | 支付方式 |
-| paidAt | datetime | 支付时间（可选）|
-| createdAt | datetime | 创建时间 |
-| items | List<OrderItem> | 商品明细 |
-
-#### 订单商品项（OrderItem）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| productId | int | 商品 ID |
-| productName | string | 商品名称 |
-| spec | string | 规格（可选）|
-| unitPrice | int | 单价（分）|
+| id | int | 订单商品 ID |
+| productID | int | SKU ID |
+| productPrice | int | 单价（分）|
+| discountAmount | int | 实付金额（分）|
 | quantity | int | 数量 |
-| subtotal | int | 小计（分）|
+| isGift | enum | 是否赠品 |
+
+#### 支付记录（PaymentDetail）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| paymentDetailID | int | 支付记录 ID |
+| paymentTypeID | int | 支付方式 ID |
+| amount | int | 支付金额（分）|
+| status | enum | 支付状态 |
+| platformNumber | string | 第三方平台单号 |
+| createdAt | timestamp | 支付时间 |
 
 ### 3.5 异常/边界情况
 
@@ -248,9 +288,66 @@
 订单列表 → 订单详情
 
 API 调用序列：
-1. GET  /order/shop-sale-list      → 获取订单列表（支持日期筛选）
-2. GET  /order/shop-sale-info/:orderNumber  → 获取订单详情
+1. GET  /order/shop-sale-list?number=XXX    → 获取订单详情（Order & ShopSale）
+2. GET  /order-product/details-by-order-id?orderID=XXX → 获取订单商品列表（OrderProduct[]）
+3. GET  /members/specified?userIdents=XXX   → 获取会员信息（姓名、手机号、等级）
+4. GET  /product/list?spuId=XXX             → 获取商品名称（需批量查询）
 ```
+
+### 4.1 关键接口说明
+
+**订单详情**：GET `/order/shop-sale-list?number={orderNumber}`
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| number | string | 订单号 |
+
+**返回**：单个 `Order & ShopSale` 对象（不是数组）
+
+**⚠️ 注意**：Flutter 代码原使用 `/order/shop-sale-info/:orderNumber`，
+但后端该接口不存在，需改用 `/order/shop-sale-list?number=XXX`。
+
+### 4.2 字段映射
+
+Flutter 模型字段与后端字段对照：
+
+| Flutter OrderModel | 后端 Order | 说明 |
+|--------------------|------------|------|
+| id | orderID | 订单 ID |
+| orderNumber | orderNumber | 订单号 |
+| createdAt | createdAt | 创建时间（Unix 时间戳）|
+| customerName | ❌ 不存在 | 需单独调用 `/members/specified` |
+| finalAmount | discountAmount / revenueAmount | 实付金额（分）|
+| status | status | 状态（需转换）|
+
+### 4.3 会员信息获取
+
+当 `order.customerIdent` 不为空时，需调用：
+
+```
+GET /members/specified?userIdents={customerIdent}
+```
+
+返回会员信息后填充：
+- `customerName` → 会员姓名
+- `customerPhone` → 会员手机号（脱敏）
+- `memberLevel` → 会员等级
+
+### 4.4 商品名称获取
+
+`OrderProduct` 只有 `productID`（SkuID），需调用：
+
+```
+GET /product/list?spuId={spuId}
+```
+
+或批量查询：
+```
+POST /product/select
+Body: { ids: [skuId1, skuId2, ...] }
+```
+
+返回商品名称后填充商品列表。
 
 ---
 
@@ -258,17 +355,172 @@ API 调用序列：
 
 > **注意**：金额字段单位为分（cent），非元。数量字段为整数。
 
-| 页面 | 接口 | 方法 | 说明 |
-|------|------|------|------|
-| 订单列表 | `/order/shop-sale-list` | POST | 订单列表（支持日期筛选，body 参数：dateRange, memberId, status, offset, limit）|
-| 订单列表 | `/order/shop-sale-count` | GET | 订单数量统计（参数：dateRange, memberId, status）|
-| 订单详情 | `/order/shop-sale-info/:orderNumber` | GET | 订单详情 [urlKey: /order/shop-sale-info/{orderNumber}, GET] **⚠️ 测试不通过**：该接口返回 404，需查找替代接口 |
-| 订单详情 | `/order-product/list` | GET | 订单商品列表（参数：orderID）|
+### 5.1 订单相关接口
+
+| 页面 | 接口 | 方法 | 类型文件 | 说明 |
+|------|------|------|---------|------|
+| 订单列表 | `/order/shop-sale-list` | GET | `lib/types/api/order-types.dart` | 返回 `ShopSaleOrder[]`，支持 `number` 参数获取单个 |
+| 订单数量 | `/order/shop-sale-count` | GET | — | 订单数量统计 |
+| 订单商品 | `/order-product/details-by-order-id` | GET | `lib/types/api/order-types.dart` | 返回 `OrderProduct[]` |
+
+### 5.2 辅助接口
+
+| 页面 | 接口 | 方法 | 类型文件 | 说明 |
+|------|------|------|---------|------|
+| 会员信息 | `/members/specified` | GET | `lib/types/api/member-types.dart` | 获取会员姓名、手机号、等级 |
+| 商品信息 | `/product/list` | GET | `lib/types/api/product-types.dart` | 获取商品名称 |
+| 批量商品 | `/product/select` | POST | `lib/types/api/product-types.dart` | 批量获取商品信息 |
+
+### 5.3 类型说明
+
+**订单详情**：需组合调用：
+1. `/order/shop-sale-list?number=XXX` → 获取 `Order & ShopSale`
+2. `/order-product/details-by-order-id?orderID=XXX` → 获取商品列表
+3. `/members/specified?userIdents=XXX` → 获取会员信息
+
+```dart
+// 订单列表项
+class ShopSaleOrder {
+  final Order order;       // 订单主信息
+  final ShopSale? shopSale; // 零售单扩展信息
+}
+
+// 订单商品
+class OrderProduct {
+  final int id;            // 订单商品 ID
+  final SkuID productID;   // SKU ID（需查询名称）
+  final RMBFen productPrice; // 单价
+  final RMBFen discountAmount; // 实付金额
+  final int quantity;      // 数量
+}
+```
 
 ---
 
-## 六、待确认事项
+## 六、Flutter 代码修改清单
 
-1. 订单状态的具体枚举值定义
-2. 退款订单的展示逻辑
-3. 打印小票的格式模板
+### 6.1 接口路径修改
+
+| 文件 | 原代码 | 修改为 |
+|------|--------|--------|
+| `api_endpoints.dart` | `shopSaleInfoByNumber(orderNumber)` | `GET /order/shop-sale-list?number=XXX` |
+| `order_detail_remote_datasource.dart` | `ApiEndpoints.shopSaleInfoByNumber` | `ApiEndpoints.shopSaleList + '?number=$orderNumber'` |
+
+### 6.2 模型字段修改
+
+| 文件 | 原字段 | 修改为 |
+|------|--------|--------|
+| `order_model.dart` | `customerName` | 需组合调用 `/members/specified` |
+| `order_model.dart` | `finalAmount` | `discountAmount` |
+| `order_model.dart` | `status: String` | `status: int` (使用 OrderStatus 枚举) |
+
+### 6.3 OrderModel 参考实现
+
+```dart
+class OrderModel extends Equatable {
+  final int id;              // orderID
+  final String orderNumber;  // orderNumber
+  final int createdAt;       // createdAt
+  final String? customerName; // 需单独获取
+  final String? customerPhone; // 需单独获取
+  final String? memberLevel; // 需单独获取
+  final RMBFen orderAmount;  // orderAmount
+  final RMBFen discountAmount; // discountAmount
+  final int status;          // OrderStatus.value
+  final int? incCoins;       // shopSale.incCoins
+  final int? decCoins;       // shopSale.decCoins
+
+  OrderModel({
+    required this.id,
+    required this.orderNumber,
+    required this.createdAt,
+    this.customerName,
+    this.customerPhone,
+    this.memberLevel,
+    required this.orderAmount,
+    required this.discountAmount,
+    required this.status,
+    this.incCoins,
+    this.decCoins,
+  });
+
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
+    return OrderModel(
+      id: json['orderID'] as int? ?? 0,
+      orderNumber: json['orderNumber'] as String? ?? '',
+      createdAt: json['createdAt'] as int? ?? 0,
+      orderAmount: json['orderAmount'] as RMBFen? ?? 0,
+      discountAmount: json['discountAmount'] as RMBFen? ?? 0,
+      status: json['status'] as int? ?? 3,
+      incCoins: json['incCoins'] as int?,
+      decCoins: json['decCoins'] as int?,
+    );
+  }
+
+  OrderStatus get statusEnum => OrderStatus.fromValue(status);
+  String get statusLabel => statusEnum.label;
+  RMBFen get finalAmount => revenueAmount ?? discountAmount;
+}
+```
+
+---
+
+## 七、待确认事项
+
+1. ✅ 订单状态枚举值已定义（OrderStatus）
+2. ✅ 接口路径已确认（`/order/shop-sale-list?number=XXX`）
+3. ✅ 字段映射已确认
+4. 退款订单的展示逻辑（待产品确认）
+5. 打印小票的格式模板（待产品确认）
+6. ⚠️ Flutter 代码需修改接口路径和字段映射
+
+---
+
+## 八、模块关联图
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              订单模块关联                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│    ┌──────────┐                                                          │
+│    │ 零售开单 │                                                          │
+│    └────┬─────┘                                                          │
+│         │ 生成订单                                                        │
+│         ↓                                                                 │
+│    ┌──────────┐     ┌──────────┐     ┌──────────┐                        │
+│    │ 订单列表 │────→│ 订单详情 │────→│ 打印小票 │                        │
+│    └────┬─────┘     └────┬─────┘     └──────────┘                        │
+│         │                │                                              │
+│         │ 关联            │ 关联                                          │
+│         ↓                 ↓                                              │
+│    ┌──────────┐     ┌──────────┐                                        │
+│    │ 退货退款 │◀────│ 退款标签 │                                        │
+│    │ 列表     │     └──────────┘                                        │
+│    └────┬─────┘                                                         │
+│         │                                                                │
+│    ┌──────────┐                                                         │
+│    │ 换货筛选 │                                                         │
+│    │ types=3│                                                        │
+│    └──────────┘                                                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 8.1 模块跳转关系
+
+| 来源模块 | 触发条件 | 目标模块 | 说明 |
+|---------|---------|---------|------|
+| 订单列表 | 点击列表项 | 订单详情 | 查看订单详情 |
+| 订单详情 | 点击打印 | 打印小票 | 调用蓝牙打印 |
+| 订单详情 | 订单已退款 | 退款标签 | 显示退款信息，点击跳转 |
+| 订单列表 | 切换 Tab | 换货筛选 | types=3 |
+| 退款标签 | 点击查看 | 退货退款详情 | orderNumber 关联 |
+
+### 8.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `orderNumber` | 订单详情 | 退货退款、打印小票 |
+| `customerIdent` | 订单详情 | 会员信息查询 |
+| `status` | 订单详情 | 状态标签展示 |

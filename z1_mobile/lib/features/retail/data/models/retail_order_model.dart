@@ -78,20 +78,44 @@ class ProductItem extends Equatable {
   List<Object?> get props => [productID, quantity, discountPrice, isGift];
 }
 
-/// 支付项
+/// 代金券项（对应后端 AddOrderCoupon）
+class CouponItem extends Equatable {
+  final int couponId;
+  final int amount; // 抵扣金额（分）
+
+  const CouponItem({
+    required this.couponId,
+    required this.amount,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'couponID': couponId,
+        'amount': amount,
+      };
+
+  @override
+  List<Object?> get props => [couponId, amount];
+}
+
+/// 支付项（对应后端 AddOrderPayMode）
 class PayItem extends Equatable {
-  final int method; // 支付方式ID
+  final int paymentTypeID; // 支付方式ID
   final int amount; // 金额（分）
 
   const PayItem({
-    required this.method,
+    required this.paymentTypeID,
     required this.amount,
   });
 
   double get amountYuan => amount / 100;
 
+  Map<String, dynamic> toJson() => {
+        'paymentTypeID': paymentTypeID,
+        'amount': amount,
+      };
+
   @override
-  List<Object?> get props => [method, amount];
+  List<Object?> get props => [paymentTypeID, amount];
 }
 
 /// 零售订单（开单流程状态）
@@ -105,6 +129,8 @@ class RetailOrder extends Equatable {
   final List<ProductItem> products;
   final List<PayItem> payments;
   final int decreaseCoins; // 积分抵扣金额（分）
+  final List<CouponItem> coupons; // 代金券列表
+  final String? recycleOrderNumber; // 关联回收单号
   final String? remarks;
   final RetailOrderStatus status;
 
@@ -118,6 +144,8 @@ class RetailOrder extends Equatable {
     this.products = const [],
     this.payments = const [],
     this.decreaseCoins = 0,
+    this.coupons = const [],
+    this.recycleOrderNumber,
     this.remarks,
     this.status = RetailOrderStatus.draft,
   });
@@ -153,6 +181,8 @@ class RetailOrder extends Equatable {
     List<ProductItem>? products,
     List<PayItem>? payments,
     int? decreaseCoins,
+    List<CouponItem>? coupons,
+    String? recycleOrderNumber,
     String? remarks,
     RetailOrderStatus? status,
   }) {
@@ -166,6 +196,8 @@ class RetailOrder extends Equatable {
       products: products ?? this.products,
       payments: payments ?? this.payments,
       decreaseCoins: decreaseCoins ?? this.decreaseCoins,
+      coupons: coupons ?? this.coupons,
+      recycleOrderNumber: recycleOrderNumber ?? this.recycleOrderNumber,
       remarks: remarks ?? this.remarks,
       status: status ?? this.status,
     );

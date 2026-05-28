@@ -585,7 +585,7 @@ Tab：会员 Tab
 
 API 调用序列：
 1. GET  /members/list              → 获取会员列表
-2. GET  /members/specified         → 获取会员详情（含积分）
+2. GET  /member/specified         → 获取会员详情（含积分）
 3. POST /members/add               → 新增会员
 4. GET  /members/self              → 获取当前会员积分（experience 字段）
 5. POST /members/experience        → 调整积分
@@ -599,16 +599,15 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 会员首页 | `/members/list` | GET | 会员列表（keyword 搜索）|
-| 会员首页 | `/members/recent` | GET | 最近访问会员 |
-| 会员首页 | `/members/list` | GET | 会员列表（keyword 搜索）|
-| 会员详情 | `/members/specified` | GET | 会员详情（含积分，参数：**userIdents** 而非 memberId）|
-| 会员详情 | `/order/list` | GET | 会员消费记录（按 memberId 筛选）|
-| 新增会员 | `/members/add` | POST | 新增会员 |
-| 新增会员 | `/members/check-phone` | POST | 手机号唯一性校验 [缺失，后端未实现] |
-| 积分查询 | `/members/self` | GET | 获取当前会员积分（experience 字段）|
-| 积分调整 | `/members/experience` | POST | 调整会员积分 [urlKey: /members/experience, POST, 参数：memberId, direction, amount, reason, remark] |
-| 积分明细 | `/members/experience-log` | — | [缺失，后端未实现] |
+| 会员首页 | `/members/list` | GET | 会员列表（keyword 搜索）✅ |
+| 会员首页 | `/members/recent` | GET | 最近访问会员 ❌ **接口缺失** |
+| 会员详情 | `/member/specified` | GET | ⚠️ **注意路径是 member（单数），参数 userIdents** |
+| 会员详情 | `/order/shop-sale-list` | GET | 会员消费记录（按 customerIdent 筛选）✅ |
+| 新增会员 | `/members/add` | POST | 新增会员 ✅ |
+| 新增会员 | `/members/check-phone` | POST | 手机号唯一性校验 ❌ **接口缺失**（后端未实现）|
+| 积分查询 | `/members/self` | GET | 获取当前会员积分（experience 字段）✅ |
+| 积分调整 | `/members/experience` | POST | 调整会员积分 ✅ |
+| 积分明细 | `/members/experience-log` | — | ❌ **接口缺失**（后端未实现）|
 
 ---
 

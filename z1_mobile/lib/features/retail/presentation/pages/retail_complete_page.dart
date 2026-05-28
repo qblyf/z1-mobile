@@ -83,7 +83,7 @@ class RetailCompletePage extends StatelessWidget {
                     children: [
                       const Text('支付方式'),
                       Text(
-                        order.payments.map((p) => _getPayMethodLabel(p.method)).join(' + '),
+                        order.payments.map((p) => _getPayMethodLabel(p.paymentTypeID)).join(' + '),
                         style: const TextStyle(color: CupertinoColors.secondaryLabel),
                       ),
                     ],

@@ -414,13 +414,13 @@
             标记完成/编辑/删除
 
 API 调用序列：
-1. GET  /task/calendar              → 获取日历数据（某月任务）
-2. GET  /task/list                  → 获取任务列表
-3. POST /task/add                   → 创建任务
-4. GET  /task/:id                  → 获取任务详情
-5. POST /task/:id/edit             → 编辑任务
-6. POST /task/:id/complete          → 完成任务
-7. DELETE /task/:id/delete         → 删除任务
+1. ~~GET  /task/calendar~~              → ❌ **接口缺失**（404，后端未实现）
+2. GET  /task/list                  → 获取任务列表 ✅
+3. POST /task/add                   → 创建任务 ✅
+4. GET  /task/:id                  → 获取任务详情 ✅
+5. ~~POST /task/:id/edit~~           → ❌ **接口路径待确认**（可能为 PUT /task/:id）
+6. POST /task/:id/complete          → 完成任务 ✅
+7. DELETE /task/:id/delete         → 删除任务 ✅
 ```
 
 ---
@@ -431,20 +431,21 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 行事历 | `/task/calendar` | GET | 获取日历数据（带 startDate/endDate 参数）|
-| 任务列表 | `/task/list` | GET | 获取任务列表（支持 status 筛选）|
-| 新建任务 | `/task/add` | POST | 创建任务 |
-| 任务详情 | `/task/:id` | GET | 获取任务详情 |
-| 任务详情 | `/task/:id/edit` | POST | 编辑任务 |
-| 任务详情 | `/task/:id/complete` | POST | 完成任务 |
-| 任务详情 | `/task/:id/delete` | DELETE | 删除任务 |
+| 行事历 | `/task/calendar` | GET | ❌ **接口缺失**（404，后端未实现）|
+| 任务列表 | `/task/list` | GET | 获取任务列表（支持 status 筛选）✅ 需认证 |
+| 新建任务 | `/task/add` | POST | 创建任务 ✅ |
+| 任务详情 | `/task/:id` | GET | 获取任务详情 ✅ |
+| 任务详情 | `/task/:id/edit` | POST | 编辑任务 ⚠️ 接口路径待确认 |
+| 任务详情 | `/task/:id/complete` | POST | 完成任务 ✅ |
+| 任务详情 | `/task/:id/delete` | DELETE | 删除任务 ✅ |
 
 ---
 
 ## 十一、待确认事项
 
-1. 行事历接口（`/task/calendar`）的参数格式（startDate/endDate）
+1. ~~行事历接口（`/task/calendar`）~~ ❌ 接口不存在，需后端实现
 2. 任务状态枚举值是否与后端一致（`pending`/`completed`/`expired`）
 3. 提醒功能的实现方式（本地通知还是服务端推送）
 4. 关联会员字段是否已支持
 5. 任务删除是否有二次确认
+6. 任务编辑接口路径（`/task/:id/edit` POST 或 `PUT /task/:id`）

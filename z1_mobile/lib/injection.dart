@@ -22,6 +22,8 @@ import 'features/retail/presentation/bloc/member_bloc.dart';
 import 'features/retail/presentation/bloc/coin_discount_bloc.dart';
 import 'features/retail/presentation/bloc/service_bloc.dart';
 import 'features/retail/presentation/bloc/recycle_order_bloc.dart';
+import 'features/workbench/data/datasources/workbench_remote_datasource.dart';
+import 'features/workbench/presentation/bloc/workbench_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -129,5 +131,14 @@ Future<void> configureDependencies() async {
 
   getIt.registerFactory<RecycleOrderBloc>(
     () => RecycleOrderBloc(dataSource: getIt<RecycleOrderRemoteDataSource>()),
+  );
+
+  // Workbench DataSource & Bloc
+  getIt.registerLazySingleton<WorkbenchRemoteDataSource>(
+    () => WorkbenchRemoteDataSourceImpl(apiClient: getIt()),
+  );
+
+  getIt.registerFactory<WorkbenchBloc>(
+    () => WorkbenchBloc(dataSource: getIt<WorkbenchRemoteDataSource>()),
   );
 }

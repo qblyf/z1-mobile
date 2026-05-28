@@ -36,7 +36,7 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
   @override
   Future<Result<MemberModel>> getMemberDetail(int memberId) async {
     return _apiClient.get<MemberModel>(
-      '/members/specified',
+      '/member/specified',  // 注意：后端是 member（单数），不是 members（复数）
       queryParameters: {'userIdents': memberId.toString()},
       parser: (data) {
         final list = data['list'] as List<dynamic>? ?? [];

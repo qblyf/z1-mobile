@@ -11,15 +11,104 @@ class ApiEndpoints {
   /// 创建零售单
   static const String shopSaleAdd = '/order/sale-shop-add';
   /// 查询零售单列表
-  static const String shopSaleList = '/order/shop-sale-list';
+  /// params: types(1=卖,2=退,3=换), status, minCreatedAt, maxCreatedAt, page, pageSize
+  static String shopSaleList({Map<String, dynamic>? params}) {
+    return '/order/shop-sale-list${params != null && params.isNotEmpty ? '?${_encodeParams(params)}' : ''}';
+  }
   /// 查询零售单数量
+  /// params: types, status, minCreatedAt, maxCreatedAt
   static String shopSaleCount([Map<String, dynamic>? params]) {
-    return '/order/shop-sale-count${params != null ? '?${_encodeParams(params)}' : ''}';
+    return '/order/shop-sale-count${params != null && params.isNotEmpty ? '?${_encodeParams(params)}' : ''}';
   }
   /// 零售单详情（订单商品列表）
-  static String shopSaleInfo(int orderId) => '/order-product/list?orderID=$orderId';
-  /// 零售单详情
-  static String shopSaleInfoByNumber(String orderNumber) => '/order/shop-sale-info/$orderNumber';
+  static String shopSaleInfo(int orderId) => '/order-product/details-by-order-id?orderID=$orderId';
+  /// 零售单详情（按单号查订单基本信息）
+  static String shopSaleInfoByNumber(String orderNumber) => '/order/shop-sale-list?number=$orderNumber';
+
+  // ===== 退货退款 =====
+  /// 退货退款列表（门店）
+  /// params: id, orderNumber, status, page, pageSize
+  static String returnRefundList({Map<String, dynamic>? params}) {
+    return '/return-refund-application/list${params != null && params.isNotEmpty ? '?${_encodeParams(params)}' : ''}';
+  }
+  /// 退货退款列表（商城）
+  /// params: id, mallOrderNumber, status, page, pageSize
+  static String returnRefundMallList({Map<String, dynamic>? params}) {
+    return '/return-refund-application/mall${params != null && params.isNotEmpty ? '?${_encodeParams(params)}' : ''}';
+  }
+  /// 退货退款数量统计
+  static const String returnRefundCount = '/return-refund-application/count';
+  /// 创建退货退款
+  static const String returnRefundAdd = '/return-refund-application/add';
+  /// 审核退货退款
+  static const String returnRefundAudit = '/return-refund-application/audit';
+  /// 完成退款
+  static const String returnRefundComplete = '/return-refund-application/complete';
+  /// 驳回退货退款
+  static const String returnRefundReject = '/return-refund-application/reject-audit';
+  /// 取消退货退款
+  static const String returnRefundCancel = '/return-refund-application/cancel';
+  /// 顾客同意退货
+  static const String returnRefundCustomerAgree = '/return-refund-application/customer/agree';
+  /// 顾客添加描述
+  static const String returnRefundCustomerAddDescript = '/return-refund-application/customer/add-descript';
+
+  // ===== 预订单 =====
+  /// 预订单列表（门店）
+  /// params: status(unpaid/paid/completed/apply-refund/refunded/canceled), page, pageSize
+  static String preSaleOrderList({Map<String, dynamic>? params}) {
+    return '/pre-sale-order/list${params != null && params.isNotEmpty ? '?${_encodeParams(params)}' : ''}';
+  }
+  /// 预订单列表（商城）
+  /// params: status, page, pageSize
+  static String preSaleOrderMallList({Map<String, dynamic>? params}) {
+    return '/pre-sale-order/mall-list${params != null && params.isNotEmpty ? '?${_encodeParams(params)}' : ''}';
+  }
+  /// 预订单数量统计
+  static const String preSaleOrderCount = '/pre-sale-order/count';
+  /// 预订单详情
+  static String preSaleOrderDetail(int id) => '/pre-sale-order/mall-detail?id=$id';
+  /// 创建预订单
+  static const String preSaleOrderAdd = '/pre-sale-order/add';
+  /// 编辑预订单（设置 mallOrderNumber 转正式订单）
+  static const String preSaleOrderEdit = '/pre-sale-order/edit';
+  /// 支付定金
+  static const String preSaleOrderPay = '/pre-sale-order/pay';
+  /// 申请退款
+  static const String preSaleOrderReturnRefund = '/pre-sale-order/return-refund';
+  /// 审核退款
+  static const String preSaleOrderAuditRefund = '/pre-sale-order/audit-return-refund';
+
+  // ===== 商城订单 =====
+  /// 商城订单列表
+  /// params: status, page, pageSize
+  static String mallOrderList({Map<String, dynamic>? params}) {
+    return '/mall-order/list${params != null && params.isNotEmpty ? '?${_encodeParams(params)}' : ''}';
+  }
+  /// 商城订单数量
+  static const String mallOrderCount = '/mall-order/count';
+  /// 创建商城订单（用于预订单转正式订单）
+  static const String mallOrderAdd = '/mall-order/add';
+  /// 商城订单详情
+  static String mallOrderDetail(int id) => '/mall-order/detail?id=$id';
+  /// 门店订单详情（通过商城订单号）
+  static String mallOrderToOrder(String number) => '/mall-order/order-mall-order-detail?number=$number';
+  /// 确认发货
+  static const String mallOrderOutWarehouse = '/mall-order/outed-of-warehouse';
+  /// 完成订单
+  static const String mallOrderFinish = '/mall-order/finish';
+  /// 待支付取消
+  static const String mallOrderUnpaidCancel = '/mall-order/unpaid-cancel';
+  /// 已支付取消（需审核）
+  static const String mallOrderPaidCancel = '/mall-order/paid-cancel';
+
+  // ===== 换货 =====
+  /// 门店换货
+  static const String orderChangeShopSale = '/order-change/add/shop-sale';
+  /// 网销换货
+  static const String orderChangeNetSale = '/order-change/add/net-sale';
+  /// 批发换货
+  static const String orderChangeOutSale = '/order-change/add/out-sale';
 
   // ===== 金额单位说明 =====
   // 所有金额字段单位是分（cent），显示时需除以 100
@@ -31,7 +120,8 @@ class ApiEndpoints {
   static String memberList({String keyword = '', int page = 1, int pageSize = 20}) =>
       '/members/list?keyword=$keyword&page=$page&pageSize=$pageSize';
   /// 会员详情（GET）
-  static String memberSpecified(int memberId) => '/members/specified?userIdents=$memberId';
+  /// 后端路径：/member/specified（单数 member，不是复数 members）
+  static String memberSpecified(int memberId) => '/member/specified?userIdents=$memberId';
   /// 新增会员
   static const String memberAdd = '/members/add';
   /// 积分查询：直接用 GET /members/self 返回的 experience 字段
@@ -174,6 +264,26 @@ class ApiEndpoints {
   // ===== 积分兑换 =====
   /// 积分兑换转订单（POST）
   static const String pointsRedeemOrderToMallOrder = '/points-redeem/order/to-mall-order';
+
+  // ===== 审批 =====
+  /// 审批列表（GET，支持 status/approvalTypes/platforms 筛选）
+  static const String approvalList = '/approval/list';
+  /// 审批数量统计（GET）
+  static const String approvalCount = '/approval/count';
+
+  // ===== 任务 =====
+  /// 任务列表（GET，支持 status/date 筛选）
+  static const String taskList = '/task/list';
+  /// 日历数据（GET，带 startDate/endDate 参数）
+  static const String taskCalendar = '/task/calendar';
+  /// 创建任务（POST）
+  static const String taskAdd = '/task/add';
+  /// 任务详情（GET）
+  static String taskDetail(int id) => '/task/$id';
+  /// 完成任务（POST）
+  static String taskComplete(int id) => '/task/$id/complete';
+  /// 删除任务（DELETE）
+  static String taskDelete(int id) => '/task/$id/delete';
 }
 
 /// 辅助方法：URL 参数编码

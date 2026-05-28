@@ -113,12 +113,12 @@ Tab：TabBar 第 5 项（我的）
 
 | 页面区块 | 接口 | 方法 | 说明 |
 |----------|------|------|------|
-| 用户信息 | `/members/self` | GET | 获取当前用户信息（含门店）|
-| 消息数量 | `/notification/unread-count` | GET | 未读消息数量（待确认）|
+| 用户信息 | `/members/self` | GET | 获取当前用户信息（含门店）✅ |
+| 消息数量 | `/notification/unread-count` | GET | ❌ **接口缺失**（404，后端未实现）|
 
 **说明**：
 - 用户信息使用首页同接口 `/members/self`
-- 消息数量接口待确认（可能使用 `/message/count` 或其他）
+- 消息通知功能暂不可用，需后端实现 `/notification/*` 接口
 
 ### 2.5 异常/边界情况
 
@@ -165,13 +165,12 @@ Tab：无（独立页面）
 
 | 页面区块 | 接口 | 方法 | 说明 |
 |----------|------|------|------|
-| 账号信息 | `/account/edit/init` | GET | 获取账号信息（待确认）|
-| 修改密码 | `/account/edit/password` | POST | 修改登录密码（待确认）|
-| 修改支付密码 | `/account/edit/pay-password` | POST | 修改支付密码（待确认）|
+| 账号信息 | `/account/edit/init` | GET | ❌ **接口缺失**（404，后端未实现）|
+| 修改密码 | `/account/edit/password` | POST | ❌ **接口缺失**（后端未实现）|
+| 修改支付密码 | `/account/edit/pay-password` | POST | ❌ **接口缺失**（后端未实现）|
 
-**待确认事项**：
-1. `/account/edit/init` 接口是否存在？
-2. 密码修改接口的具体参数？
+**说明**：
+- 账号设置功能暂不可用，需后端实现 `/account/*` 接口
 
 ---
 
@@ -216,23 +215,12 @@ Tab：无（独立页面）
 
 | 页面区块 | 接口 | 方法 | 说明 |
 |----------|------|------|------|
-| 销售统计 | `/sales-statistic/get` | GET | 销售统计数据（支持日/周/月切换）|
-| 商品排行 | `/sales-statistic/sku-ranking` | GET | 商品销量排行（待确认）|
+| 销售统计 | `/sales-statistic/get` | GET | ❌ **接口缺失**（404，后端未实现）|
+| 商品排行 | `/sales-statistic/sku-ranking` | GET | ❌ **接口缺失**（后端未实现）|
 
-**`/sales-statistic/get` 参数**：
-
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| fields | string | 是 | 统计维度（`department`/`seller`/`cashier`）|
-| minCreatedDate | number | 是 | 开始时间（Unix 秒）|
-| maxCreatedDate | number | 否 | 结束时间（Unix 秒，默认当天）|
-| departments | string | 否 | 部门 ID（逗号分隔）|
-| sellers | string | 否 | 销售员 ID（逗号分隔）|
-| types | string | 否 | 订单类型（`retail`/`wholesale`）|
-
-**待确认事项**：
-1. 销售趋势图数据接口？
-2. 商品排行榜接口？
+**说明**：
+- 数据看板功能暂不可用，需后端实现 `/sales-statistic/*` 接口
+- 可考虑复用 `/order/shop-sale-count` 接口获取基础统计
 
 ---
 
@@ -275,13 +263,12 @@ Tab：无（独立页面）
 
 | 页面区块 | 接口 | 方法 | 说明 |
 |----------|------|------|------|
-| 消息列表 | `/notification/list` | GET | 消息列表（待确认）|
-| 未读数量 | `/notification/unread-count` | GET | 未读消息数量（待确认）|
-| 标记已读 | `/notification/read` | POST | 标记消息已读（待确认）|
+| 消息列表 | `/notification/list` | GET | ❌ **接口缺失**（404，后端未实现）|
+| 未读数量 | `/notification/unread-count` | GET | ❌ **接口缺失**（404，后端未实现）|
+| 标记已读 | `/notification/read` | POST | ❌ **接口缺失**（后端未实现）|
 
-**待确认事项**：
-1. 消息通知相关接口是否存在？
-2. 消息类型有哪些？
+**说明**：
+- 消息通知功能暂不可用，需后端实现 `/notification/*` 接口
 
 ---
 
@@ -320,11 +307,10 @@ Tab：无（独立页面）
 
 | 页面区块 | 接口 | 方法 | 说明 |
 |----------|------|------|------|
-| 操作日志 | `/log/operation/list` | GET | 操作日志列表（待确认）|
+| 操作日志 | `/log/operation/list` | GET | ❌ **接口缺失**（404，后端未实现）|
 
-**待确认事项**：
-1. 操作日志接口是否存在？
-2. 日志内容包含哪些字段？
+**说明**：
+- 操作日志功能暂不可用，需后端实现 `/log/*` 接口
 
 ---
 
@@ -347,10 +333,12 @@ Tab：无（独立页面）
 
 ## 八、待确认事项
 
-1. **消息通知接口**：`/notification/list` 和 `/notification/unread-count` 是否存在？
-2. **操作日志接口**：`/log/operation/list` 是否存在？
-3. **账号设置接口**：`/account/edit/init` 及密码修改接口是否存在？
-4. **数据看板详情接口**：销售趋势图、商品排行榜接口？
+> ⚠️ **已确认接口缺失**（后端 404）
+
+1. **消息通知接口**：`/notification/*` ❌ 全部缺失，需后端实现
+2. **操作日志接口**：`/log/operation/list` ❌ 缺失，需后端实现
+3. **账号设置接口**：`/account/*` ❌ 全部缺失，需后端实现
+4. **数据看板接口**：`/sales-statistic/*` ❌ 全部缺失，需后端实现
 
 ---
 

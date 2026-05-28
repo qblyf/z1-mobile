@@ -852,14 +852,14 @@ Tab：无（独立页面，不在 TabBar 内）
 用户选择销售类型 → 选择/绑定会员 → 添加商品到购物车 → 确认订单（优惠+积分） → 收款 → 创建订单 → 订单详情
 
 API 调用序列：
-1. POST /members/search-by-phones      → 查找会员
-2. GET  /product/search                → 搜索商品
-3. GET  /product/list                  → 获取商品列表
-4. GET  /members/coupon-list           → 获取可用优惠券
-5. GET  /members/experience/:memberId  → 获取会员积分（需传会员ID）
-6. POST /order/shop-sale/add           → 创建零售单
-7. GET  /order/:orderNumber            → 获取订单详情
-8. GET  /order/:orderNumber/print      → 打印小票
+1. GET  /members/list-phones           → 查找会员（参数：phones）
+2. GET  /product/list                  → 获取商品列表 ✅
+3. GET  /product-price/list            → 获取商品价格 ✅
+4. GET  /coupons/self                  → 获取可用优惠券 ✅
+5. POST /members/experience            → 获取/计算会员积分抵扣 ✅
+6. POST /order/sale-shop-add          → 创建零售单 ✅
+7. GET  /order/shop-sale-list?number=XXX → 获取订单详情 ✅
+8. 本地打印                             → 蓝牙打印小票
 ```
 
 ---
@@ -871,20 +871,18 @@ API 调用序列：
 
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 开单入口 | `/members/list-phones` | POST | 手机号查找会员 |
-| 商品选购 | `/product/list` | GET | 商品列表（按分类/搜索）|
-| 商品选购 | `/product-price/list` | GET | 获取商品价格（零售价/批发价/工程价，根据 saleType 筛选）|
-| 订单确认 | `/coupons/self` | GET | 获取当前会员可用优惠券 |
-| 订单确认 | `/members/experience` | POST | 获取/计算会员积分抵扣（需传会员ID） |
-| 收款 | `/order/shop-sale/add` | POST | 创建零售单 |
-| 订单详情 | `GET /order-product/list?orderID=xxx` | GET | 订单商品明细列表 |
-| 订单详情 | `/order/:orderNumber/print` | GET | 打印小票 |
+| 开单入口 | `/members/list-phones` | GET | 手机号查找会员（参数：phones）✅ |
+| 商品选购 | `/product/list` | GET | 商品列表（按分类/搜索）✅ |
+| 商品选购 | `/product-price/list` | GET | 获取商品价格（零售价/批发价/工程价，根据 saleType 筛选）✅ |
+| 订单确认 | `/coupons/self` | GET | 获取当前会员可用优惠券 ✅ |
+| 订单确认 | `/members/experience` | POST | 获取/计算会员积分抵扣（需传会员ID） ✅ |
+| 收款 | `/order/sale-shop-add` | POST | 创建零售单 ✅ |
 
-> ⚠️ `/order/shop-sale/add` 和 `/order/:orderNumber` 路径待测试最终确认。
+> ✅ 所有接口已验证可用
 
 ---
 
-> 后续行动：确认以下内容后，可推进开发
-> 1. 积分抵扣规则（100积分=¥1，最高抵扣 20%）
-> 2. 打印机对接方案（蓝牙/USB）
-> 3. 离线模式下订单创建的处理策略
+> 后续行动：
+> 1. 积分抵扣规则（100积分=¥1，最高抵扣 20%）✅ 已在 `/members/experience` 接口实现
+> 2. 打印机对接方案（蓝牙/USB）✅ 使用蓝牙打印机
+> 3. 离线模式下订单创建的处理策略 - 暂不支持

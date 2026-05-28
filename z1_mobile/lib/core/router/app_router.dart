@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/workbench/presentation/bloc/workbench_bloc.dart';
 import '../../features/workbench/presentation/pages/workbench_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/retail/presentation/pages/retail_entry_page.dart';
@@ -29,7 +30,6 @@ import '../../features/inventory/presentation/pages/purchase_list_page.dart';
 import '../../features/inventory/presentation/pages/purchase_detail_page.dart';
 import '../../features/inventory/presentation/pages/purchase_inbound_page.dart';
 import '../../features/inventory/presentation/pages/serial_search_page.dart';
-import '../../features/retail/presentation/bloc/product_bloc.dart';
 import '../../features/retail/presentation/bloc/product_select_bloc.dart';
 import '../../features/retail/presentation/bloc/member_bloc.dart';
 import '../../features/retail/presentation/bloc/coin_discount_bloc.dart';
@@ -181,7 +181,10 @@ final appRouter = GoRouter(
         // 工作台
         GoRoute(
           path: '/workbench',
-          builder: (context, state) => const WorkbenchPage(),
+          builder: (context, state) => BlocProvider(
+            create: (_) => getIt<WorkbenchBloc>()..add(const WorkbenchLoadRequested()),
+            child: const WorkbenchPage(),
+          ),
         ),
         // 任务
         GoRoute(

@@ -53,7 +53,7 @@ void main() {
         '当未登录时应发出 AuthUnauthenticated 状态',
         setUp: () {
           when(() => mockTokenService.isLoggedIn())
-              .thenAnswer((_) async => false);
+              .thenReturn(false);
         },
         build: () => authBloc,
         act: (bloc) => bloc.add(const AuthCheckRequested()),

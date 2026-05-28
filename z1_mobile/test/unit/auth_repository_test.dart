@@ -225,7 +225,7 @@ void main() {
     test('当存在有效 Token 时返回 true', () async {
       // arrange
       when(() => mockLocalDataSource.isAuthenticated())
-          .thenAnswer((_) async => true);
+          .thenReturn(true);
 
       // act
       final result = await repository.isAuthenticated();
@@ -237,7 +237,7 @@ void main() {
     test('当不存在 Token 时返回 false', () async {
       // arrange
       when(() => mockLocalDataSource.isAuthenticated())
-          .thenAnswer((_) async => false);
+          .thenReturn(false);
 
       // act
       final result = await repository.isAuthenticated();
