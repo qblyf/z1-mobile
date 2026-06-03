@@ -8,6 +8,8 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/retail/presentation/pages/retail_entry_page.dart';
 import '../../features/order/presentation/pages/order_list_page.dart';
 import '../../features/order/presentation/pages/order_detail_page.dart';
+import '../../features/mall_order/presentation/pages/mall_order_detail_page.dart';
+import '../../features/mall_order/presentation/pages/mall_order_list_page.dart';
 import '../../features/retail/presentation/pages/retail_product_page.dart';
 import '../../features/retail/presentation/pages/retail_confirm_page.dart';
 import '../../features/retail/presentation/pages/retail_payment_page.dart';
@@ -37,6 +39,7 @@ import '../../features/retail/presentation/bloc/service_bloc.dart';
 import '../../features/retail/presentation/pages/select_cash_coupons_page.dart';
 import '../../features/retail/presentation/pages/select_renew_subsidy_page.dart';
 import '../../features/retail/presentation/pages/select_recycle_order_page.dart';
+import '../../features/retail/presentation/pages/coupon_select_page.dart';
 import '../../injection.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
@@ -128,6 +131,13 @@ final appRouter = GoRouter(
                 return const SelectRecycleOrderPage();
               },
             ),
+            // 优惠券选择
+            GoRoute(
+              path: 'retail/coupon-select',
+              builder: (context, state) {
+                return const CouponSelectPage();
+              },
+            ),
             // 订单列表
             GoRoute(
               path: 'order/list',
@@ -139,6 +149,18 @@ final appRouter = GoRouter(
               builder: (context, state) {
                 final orderNumber = state.pathParameters['orderNumber'] ?? '';
                 return OrderDetailPage(orderNumber: orderNumber);
+              },
+            ),
+            // 商城订单列表（v1.29 接入）/ 详情（v1.31 接入）
+            GoRoute(
+              path: 'mall-order/list',
+              builder: (context, state) => const MallOrderListPage(),
+            ),
+            GoRoute(
+              path: 'mall-order/:number',
+              builder: (context, state) {
+                final number = state.pathParameters['number'] ?? '';
+                return MallOrderDetailPage(number: number);
               },
             ),
           ],

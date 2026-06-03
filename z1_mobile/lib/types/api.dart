@@ -22,3 +22,4 @@ export 'api/stocktaking-types.dart';    // 盘库类型
 export 'api/serial-types.dart';          // 序列号类型
 export 'api/dashboard-types.dart';       // 仪表盘类型
 export 'api/task-types.dart';           // 任务类型
+export 'api/mall-order-types.dart';     // 商城订单类型

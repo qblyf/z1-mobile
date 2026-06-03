@@ -1,11 +1,13 @@
 # 商城订单模块 · PRD
 
 > **模块**：商城订单
-> **版本**：v1.2
+> **版本**：v1.3
 > **日期**：2026-05-28
-> **状态**：待开发
+> **状态**：待开发（类型文件已就绪）
 > **依据**：`z1-mid/src/types/mall-order-types.ts` + 后端接口分析
-> **⚠️ 类型文件**：`lib/types/api/mall-order-types.dart` **待生成**（需从后端 TS 翻译）
+> **类型文件**：`lib/types/api/mall-order-types.dart` ✅ 已生成（0 errors）
+
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/mall-order-types.dart` 为准。本 PRD 不复制具体字段名/类型。
 
 ---
 
@@ -142,123 +144,81 @@
 
 ## 四、类型定义
 
-### 4.1 商城订单状态
+> ✅ 类型文件已生成：`lib/types/api/mall-order-types.dart`（17 个类/枚举，含 `MallOrder`、`MallOrderStatus`、`MallOrderInfo`（联合类型）、`MallOrderDiscountInfo`（联合类型）、`OrderMallOrderDetail` 等）。本 PRD 不维护字段表，开发时直接 import。
 
-```dart
-enum MallOrderStatus {
-  待支付(1),              // 待支付
-  部分支付(21),            // 部分支付
-  已支付(22),              // 已支付
-  已支付未完成(23),        // 锁货流程未完成
-  未支付撤销(31),          // 未支付撤销
-  已支付撤销(32),          // 已支付撤销
-  未发货已退款(41),        // 未发货已退款
-  已发货已退款(42),        // 已发货已退款
-  已出库(6),              // 已出库
-  已送达(61),             // 已送达
-  已完成(7),              // 已完成
-  已评价(8);              // 已评价
-
-  final int value;
-  const MallOrderStatus(this.value);
-
-  static MallOrderStatus fromValue(int value) {
-    return MallOrderStatus.values.firstWhere(
-      (e) => e.value == value,
-      orElse: () => MallOrderStatus.待支付,
-    );
-  }
-
-  String get label {
-    switch (this) {
-      case MallOrderStatus.待支付: return '待支付';
-      case MallOrderStatus.部分支付: return '部分支付';
-      case MallOrderStatus.已支付: return '已支付';
-      case MallOrderStatus.已支付未完成: return '待确认';
-      case MallOrderStatus.未支付撤销: return '已取消';
-      case MallOrderStatus.已支付撤销: return '已取消';
-      case MallOrderStatus.未发货已退款: return '已退款';
-      case MallOrderStatus.已发货已退款: return '已退款';
-      case MallOrderStatus.已出库: return '已发货';
-      case MallOrderStatus.已送达: return '已送达';
-      case MallOrderStatus.已完成: return '已完成';
-      case MallOrderStatus.已评价: return '已评价';
-    }
-  }
-}
-```
-
-### 4.2 商城订单
-
-> **⚠️ 重要**：以下类型定义参考 `lib/types/api/mall-order-types.ts`（唯一真实源）
-
-```dart
-// 类型文件：z1-mid/src/types/mall-order-types.ts
-
-class MallOrder {
-  final int mallID;                    // 商城订单 ID
-  final String number;                  // 商城订单号
-  final String customerIdent;           // 顾客（UserIdent）
-  final int departmentID;               // 销售部门 ID
-  final List<MallOrderInfo> info;       // 商品/服务信息
-  final MallOrderStatus status;         // 状态
-  final int orderAmount;                // 订单原始应付金额（分）
-  final int discountAmount;             // 订单折扣后金额（分）
-  final int costAmount;                 // 成本金额（分）
-  final int? coinsUsed;                // 使用积分
-  final int? coinsUsedAmount;          // 积分抵现金额（分）
-  final int? postAmount;               // 邮费（分）
-  final int payAmount;                  // 实付金额（分）
-  final MallOrderTransportType transport; // 运输方式
-  final MallOrderPostInfo? postInfo;   // 邮寄信息
-  final List<MallOrderCoupon>? cashCoupons; // 代金券信息
-  final List<MallOrderCoupon>? coupons;    // 优惠券信息
-  final String? remarks;              // 备注
-  final int createdAt;                 // 创建时间
-  final int? payAt;                   // 支付时间
-  final List<String>? images;         // 附件
-  final String? logisticsCompany;      // 物流公司
-  final String? logisticsNumber;       // 物流单号
-}
-
-enum MallOrderTransportType {
-  邮寄('post'),
-  自提('store');
-
-  final String value;
-  const MallOrderTransportType(this.value);
-}
-
-class MallOrderPostInfo {
-  final String name;
-  final String mobilePhone;
-  final String address;
-}
-
-// 订单详情（包含门店订单）
-class OrderMallOrderDetail {
-  final MallOrder mallOrder;           // 商城订单
-  final Order order;                   // 门店销售订单
-  final NetSale salesNet;              // 网销信息
-  final List<OrderProduct>? orderProduct; // 订单商品
-  final List<OrderService>? orderService; // 订单服务
-}
-```
+> ⚠️ **遗留依赖**：`NetSale`、`OrderService`、`CouponID`、`CouponClassID`、`ItemID`、`LabelID` 等周边类型尚未生成对应 Dart 文件，当前用 `dynamic`/typedef 兜底。如本模块开发涉及这些字段的强类型，需补全对应类型文件。
 
 ---
 
 ## 五、接口清单
 
-| 页面 | 接口 | 方法 | 说明 |
-|------|------|------|------|
-| 商城订单列表 | `/mall-order/list` | GET | 商城订单列表 |
-| 商城订单数量 | `/mall-order/count` | GET | 商城订单数量统计 |
-| 商城订单详情 | `/mall-order/detail` | GET | 商城订单详情 |
-| 待支付取消 | `/mall-order/unpaid-cancel` | POST | 待支付取消订单 |
-| 已支付取消 | `/mall-order/paid-cancel` | POST | 已支付取消订单（需审核）|
-| 确认发货 | `/mall-order/outed-of-warehouse` | POST | 确认发货出库 |
-| 完成订单 | `/mall-order/finish` | POST | 完成订单 |
-| 门店订单详情 | `/mall-order/order-mall-order-detail` | GET | 通过商城订单号获取门店订单详情 |
+| 页面 | 接口 | 方法 | 状态 | 说明 |
+|------|------|------|------|------|
+| 商城订单列表 | `/mall-order/list` | GET | ✅ v1.30 已接入并空跑 | 商城订单列表 |
+| 商城订单数量 | `/mall-order/count` | GET | 🔵 未做 | 商城订单数量统计 |
+| 商城订单详情 | `/mall-order/detail` | GET | ✅ v1.31 已接入并空跑 | `mallOrderNumbers` 复数+逗号串 |
+| 待支付取消 | `/mall-order/unpaid-cancel` | POST | 🟡 v1.32 datasource + UI 完成，**未空跑**（破坏性） | body `{mallOrderNumber, remarks?}` |
+| 已支付取消 | `/mall-order/paid-cancel` | POST | 🔵 未做 | 需审核流程，跨模块 |
+| 确认发货 | `/mall-order/outed-of-warehouse` | POST | 🔵 未做 | 自提订单无意义 |
+| 完成订单 | `/mall-order/finish` | POST | 🟡 v1.32 datasource + UI 完成，**未空跑**（破坏性） | body `{mallOrderNumber, code?}` 取货码 |
+| 门店订单详情 | `/mall-order/order-mall-order-detail` | GET | 🔵 未做 | 通过商城订单号获取门店订单详情 |
+| 积分兑换转订单 | `/points-redeem/order/to-mall-order` | POST | 🔵 未做 | 积分商城场景 |
+
+⚠️ **POST 操作接口参数名风险**：cancel/finish 的 body 用 `mallOrderNumber` **单数**，与详情接口 `mallOrderNumbers` **复数** 不一致。同模块同语义 API 命名风格不统一，上线前需业务方提供可作废测试订单做一次 curl 空跑（参考 §5.2 的 5 连错 + 唯一生效）。
+
+### 5.1 真实响应已知差异（2026-05-29 实测，环境 z1-fun.zsqk.com.cn/deno）
+
+针对 `GET /mall-order/list`：
+
+**响应差异**：
+
+| 差异点 | 实际情况 | 文档/协议层假设 | 处理 |
+|--------|---------|----------------|------|
+| 顶层包装 | `{ "code": 10000, "res": [...] }` | 部分接口是 `{list, total}` | datasource 取 `data['res']` |
+| `customerIdent` | string（`"235787983"`） | 协议层 int | 展示层模型用 String 兜底 |
+| `customerName` | **响应不含** | 假设 join 返回 | BLoC 异步补查 `/members/*` |
+| `info[].skuName` | **响应不含** | 假设 join 返回 | 摘要走 `'商品 x{qty}'` fallback |
+| `transport` | 抽样 100% 为 `"store"` | 协议层有 `post`/`store` 两种 | 默认 `store`；详情页区分自提/邮寄 |
+| `postInfo` / `postAmount` / `postageID` | `null` | 协议层 required | 模型用 `?` 可空 |
+| 错误响应 | HTTP 403 + `{code:90000, message:"..."}` | 文档未写 | datasource 双重判定 |
+
+**请求参数差异（坑！）**：
+
+| 假设的参数名 | 真实情况 | 处理 |
+|-------------|---------|------|
+| `pageSize` | ❌ **被忽略**，返回固定 100 条上限 | 改用 `limit` |
+| `page` | ❌ **被忽略**（page=1/2/999 同样结果） | 改用 `offset` |
+| `status[]=21&status[]=22` 数组 | ❌ 被忽略，等同于不筛选 | 改用 `status=21,22,23` 逗号串 |
+| `status=[21,22,23]` JSON 字符串 | ❌ 返回空 | 同上 |
+| `status=21&status=22` 重复 key | ❌ 只取第一个 | 同上 |
+
+**真正生效的格式**：`?offset={n}&limit={n}&status=21,22,23`
+
+### 5.2 详情接口真实响应（2026-05-29 实测）
+
+针对 `GET /mall-order/detail`：
+
+**请求参数差异（坑！）**：
+
+| 假设的参数名 / 方法 | 真实情况 | 处理 |
+|---------------------|---------|------|
+| `?mallOrderID=43711`（int） | ❌ `90002 前端传入参数类型有误 mallOrderID` | — |
+| `?id=` / `?number=` / `?mall_order_id=` / `?orderID=` / `?mallOrderNumber=` | ❌ 全部返回同一错误 | — |
+| `POST + body` | ❌ `90000 请求方法无效` | — |
+| **`GET ?mallOrderNumbers=<num1>,<num2>`** | ✅ 唯一生效 | datasource 用此格式 |
+| 批量查询 | ✅ 多个 number 逗号串，返回数组顺序对应 | 单查也取 `res[0]` |
+
+**响应差异**：
+
+| 差异点 | 实际情况 | 协议层假设 | 处理 |
+|--------|---------|-----------|------|
+| 顶层包装 | `{code:10000, res: MallOrder[] }` | 单对象 | datasource 取 `res[0]`，空数组转 `Failure("订单不存在")` |
+| 订单不存在 | HTTP 200 + `{code:10000, res:[]}` | HTTP 404 | 不能依赖 HTTP 状态 |
+| `assistantIdent` | object（实测含 7 角色字段，全 null） | 协议层已正确建模为 `AssistantIdent` object（9 字段，含 7 实测 + `qwCustomerService` + `recruitIdent`），后两者响应不返回但 fromJson `as UserIdent?` 返回 null 不崩 | MVP 展示层未用，无需改 |
+| `info[].skuName`/`serviceName`/`itemName` | **响应不含** | 假设 join 返回 | fallback "商品/服务/定制 x{qty}" |
+| `postInfo`/`postAmount`/`postageID`/`postCouponID` | null（抽样 5000+ 条 100% 自提） | required | 模型用 `?` 可空 |
+| `recycleOrderNumber`/`jointOrderNumber`/`mainOrderNumber`/`discountApprovalZID`/`shoppingGuide`/`deliveryInfo` | 抽样 100% null | required | 协议层需放宽 |
+| `info[]` 子类型分布 | 抽样 100% `skuID`（商品） | union of 3 | `MallOrderLineItem.fromJson` 留兜底，未来验 `serviceID`/`itemID` |
 
 ---
 
