@@ -6,6 +6,21 @@
 > **状态**：待开发
 > **依据**：z1-pwa 组件分析 + 接口验证
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：category-types.dart, mall-category-types.dart）。本 PRD 不复制具体字段名/类型。
+
+---
+
+## 〇、嵌入路径
+
+本模块**无独立路由**，作为子组件嵌入以下父级页面：
+
+| 父级路径 | 嵌入位置 | 触发方式 |
+|---------|---------|---------|
+| `/home/retail/product` | 商品 Tab 左侧分类侧栏 | 默认显示 |
+| `/inventory/serial-search`（待确认） | 分类筛选区 | 高级筛选 |
+
+详见 `retail-detail-prd.md` 第十一节模块关联。
+
 ---
 
 ## 一、产品概述
@@ -177,150 +192,31 @@
 
 > ⚠️ 开单使用商城分类（`cateType: 'mall'`），不是进销存分类
 
-```dart
-// 1. 获取商城分类列表
-GET /mall-category/list
-
-// 2. 分类过滤函数（根据 pids 构建树）
-List<MallCategory> getChildren(List<MallCategory> all, int parentId) {
-  return all.where((c) {
-    final pid = c.pids.isNotEmpty ? c.pids.last : 0;
-    return pid == parentId;
-  }).toList();
-}
-
-// 3. 分类节点
-class MallCategoryNode {
-  final int id;
-  final String name;       // title 字段
-  final int level;        // 1=品类, 2=品牌, 3=系列
-  final List<int> pids;   // 父级ID数组
-  final List<MallCategoryNode> children;
-
-  bool get isTopLevel => level == 1;
-  bool get isMiddleLevel => level == 2;
-  bool get isBottomLevel => level == 3;
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 5.2 数据结构
 
-```dart
-// 商城分类字段
-MallCategory {
-  id: number,           // 分类ID
-  title: string,        // 分类名称
-  weight: number,       // 排序权重
-  level: 1 | 2 | 3,    // 层级
-  pids: [],             // 品类：父级为空
-  pids: [品类ID],       // 品牌：父级为品类
-  pids: [品类ID, 品牌ID],  // 系列：父级为品牌
-  spell?: string,        // 系列才有
-  imgUrl?: string,      // 系列才有
-  createdAt: timestamp,
-  updatedAt: timestamp,
-}
-
-// 层级结构
-品类 (level=1, pids=[])
-└── 品牌 (level=2, pids=[品类ID])
-    └── 系列 (level=3, pids=[品类ID, 品牌ID])
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 5.3 获取 SPU
 
-```dart
-// 根据商城分类ID获取 SPU
-GET /spu/list?mallCateIDs={mallCategoryId}
-
-// 注意：参数是 mallCateIDs（数组），即使只有一个也要传数组
-GET /spu/list?mallCateIDs[]={mallCategoryId}
-
-// SPU 字段
-SPU {
-  id: number,
-  name: string,
-  brand: string,
-  series: string,
-  minPrice: number,      // 最低价格（分）
-  maxPrice: number,      // 最高价格（分）
-  images: [{url, isMain}],
-  // stock: ❌ 不存在，需通过 /spu/get-stock 查询
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 5.4 获取库存
 
-```dart
-// SPU 总库存（POST）
-POST /spu/get-stock
-Body: { spuIDs: [1, 2, 3], warehouseIDs?: [1, 2] }
-返回: [{spuID, stock, lockStock, saleStock}]
-
-// 商城分类库存
-POST /stock/mall-cate
-Body: { mallCateIDs: [1, 2], warehouseIDs?: [1, 2] }
-返回: [{mallCateID, stock, saleStock}]
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 5.2 数据结构
 
-```dart
-// 分类节点
-class CategoryNode {
-  final int id;           // 分类ID
-  final String name;       // 分类名称
-  final int pid;           // 父级ID（0表示顶级）
-  final String spell;       // 拼音码
-  final int order;         // 排序权重
-  final List<CategoryNode> children;  // 子分类
-}
-
-// 分类列表返回
-class CategoryListResponse {
-  final List<Category> list;
-  final int total;
-}
-
-// 分类字段
-// id, name, spell, pid, order, type, state, chain, icon
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 5.3 获取 SPU
 
-```dart
-// 根据分类ID获取 SPU
-final spuList = await getSPUList(cateId: categoryId, limit: 100);
-
-// SPU 字段（来自 SDK 源码）
-// id: number           - SPU ID
-// name: string         - SPU 名称
-// brand: string        - 品牌
-// series: string       - 系列
-// generation: string   - 代际
-// weight: number       - 权重
-// spell: string        - 拼音码
-// images: SPUImages    - 图片数组 [{url, isMain}]
-// minPrice: number     - 最低价格（分）
-// maxPrice: number     - 最高价格（分）
-// salesState: number   - 销售状态
-// stock: number        - ❌ 不存在，需通过 SKU 查询
-
-// 注意：SPU 不含库存字段，需调用 /spu/get-stock 查询
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 5.4 获取库存
 
-```dart
-// SPU 总库存（POST）
-POST /spu/get-stock
-Body: { spuIDs: [1, 2, 3], warehouseIDs?: [1, 2] }
-返回: [{spuID, stock, lockStock, saleStock}]
-
-// SKU 库存（GET）
-GET /spu/sku-stock?spu={spuId}
-返回: [{skuID, virtualStock, saleStock}]
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ---
 
@@ -338,21 +234,7 @@ GET /spu/sku-stock?spu={spuId}
 
 ### 6.2 组件状态
 
-```dart
-// CategorySelectPanel 状态
-enum CategoryPanelState {
-  loading,      // 加载中
-  topLevel,     // 显示顶级分类
-  secondLevel,   // 显示第2级
-  thirdLevel,    // 显示第3级
-}
-
-// 状态转换
-// loading → topLevel → secondLevel → thirdLevel
-// thirdLevel → secondLevel（点击返回）
-// secondLevel → topLevel（点击返回）
-// topLevel → topLevel（点击全部）
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ---
 
@@ -414,16 +296,7 @@ enum CategoryPanelState {
 
 ### 9.1 可选层级
 
-```dart
-// selectableLevels 定义可选层级
-enum SelectableLevel {
-  'cate',      // 分类级别
-  'spu',       // SPU 级别
-  'sku',       // SKU 级别
-  'goods',     // 商品个体级别（针对有序列号的 SKU）
-  'sku-no-serial', // 非强制序列号的 SKU
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 9.2 完整选择流程
 
@@ -462,19 +335,7 @@ enum SelectableLevel {
 
 规格信息存储在 **SPU.skuIDs** 数组中，不是 SKU 本身：
 
-```dart
-// SPU 包含 skuIDs 字段
-SPU {
-  id: number,
-  name: string,
-  skuIDs: [
-    {skuID: 1, color: "黑色", spec: "128GB", combo: "套餐1"},
-    {skuID: 2, color: "黑色", spec: "256GB", combo: "套餐1"},
-    {skuID: 3, color: "白色", spec: "128GB", combo: "套餐1"},
-    ...
-  ]
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 SkuIDs 支持的组合：
 - `color + spec + combo`
@@ -487,80 +348,18 @@ SkuIDs 支持的组合：
 
 ### 9.5 获取 SPU 及 SKU
 
-```dart
-// 获取 SPU 详情（含 skuIDs）
-GET /product/sku-by-spu?spuID={spuID}
-
-// SPU 字段
-SPU {
-  id: number,
-  name: string,
-  skuIDs: [...],  // 规格信息
-}
-
-// SKU 字段（基本信息）
-SKU {
-  id: number,
-  name: string,
-  listPrice: number,    // 标价（分）
-  price: number,        // 售价（分）
-  stock: number,       // 库存
-  virtualStock: number, // 虚拟库存
-  isAllowance: boolean, // 是否参与补贴
-  thumbnail: string,
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 9.6 规格匹配逻辑
 
-```dart
-// 从 skuIDs 获取规格选项
-List<String> getColors() {
-  return spu.skuIDs
-    .map((s) => s.color)
-    .where((c) => c != null)
-    .toSet()
-    .toList();
-}
-
-List<String> getSpecs() {
-  return spu.skuIDs
-    .map((s) => s.spec)
-    .where((s) => s != null)
-    .toSet()
-    .toList();
-}
-
-// 选择规格后匹配 SKU ID
-int? matchSkuId({color, spec, combo}) {
-  final match = spu.skuIDs.firstWhere(
-    (s) =>
-      (color == null || s.color == color) &&
-      (spec == null || s.spec == spec) &&
-      (combo == null || s.combo == combo),
-    orElse: () => null,
-  );
-  return match?.skuID;
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 9.7 hasSerial 获取方式
 
 > ⚠️ /product/sku-by-spu 接口未返回 hasSerial
 > ✅ 需使用 /product/list 接口
 
-```dart
-// 获取 Product（含 hasSerial）
-GET /product/list?spuId={spuID}
-
-// 返回字段
-Product {
-  id: number,
-  name: string,
-  hasSerial: 1 | 2,  // 1=无序列号, 2=有序列号
-  // ... 其他字段
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 9.8 数据获取流程
 
@@ -610,12 +409,13 @@ Product {
 
 | 接口 | 说明 | 状态 |
 |------|------|------|
-| `GET /category/list?type=1` | 获取商品分类 | ✅ 已验证 |
-| `GET /category/top` | 获取顶级分类 | ✅ 已验证 |
-| `GET /spu/list?mallCateIDs[]=X` | 获取 SPU 列表（含价格、图片）| ✅ 已验证 |
-| `GET /spu/count?cateId=X` | 获取 SPU 数量 | ✅ 已验证 |
-| `GET /product/sku-by-spu` | 获取 SPU+SKU（含 skuIDs 规格）| ✅ 已验证 |
-| `GET /product/list?spuId=X` | 获取 Product（含 hasSerial）| ✅ 已验证 |
+| `/category/list?type=1` | 获取商品分类（GET）| ✅ 已验证 |
+| `/category/top` | 获取顶级分类（GET）| ✅ 已验证 |
+| `/mall-category/list` | 商城分类列表（3级：品类→品牌→系列，GET）| ✅ 已验证 |
+| `/spu/list?mallCateIDs[]=X` | SPU 列表（含价格、图片，GET）| ✅ 已验证 |
+| `/spu/count?cateId=X` | SPU 数量（GET）| ✅ 已验证 |
+| `/product/sku-by-spu` | SPU+SKU（含 skuIDs 规格，GET）| ✅ 已验证 |
+| `/product/list?spuId=X` | Product 列表（含 hasSerial，GET）| ✅ 已验证 |
 
 ### 10.2 库存与价格
 
@@ -627,16 +427,46 @@ Product {
 
 ---
 
-## 十一、依赖关系
+## 十一、状态流转
 
-### 11.1 前置条件
+分类选择是导航/筛选页，**自身无业务状态机**。涉及的状态：
+
+### 11.1 页面内部状态
+
+```
+[未选择分类] → [选品类] → [选品牌] → [选系列] → [SPU 列表]
+                                                    │
+                                                    ↓
+                                              [选 SKU 规格]
+                                                    │
+                                                    ↓
+                                              [加入购物车]
+```
+
+### 11.2 数据相关状态
+
+| 字段 | 含义 | 来源 |
+|------|------|------|
+| `mallThirdCate` | 商城三级分类 ID（新系统）| `mall-category-types.dart` |
+| `spuCateID` | 旧分类系统（不用于商城匹配） | `category-types.dart` |
+| `selectableLevels` | 可选层级（cate/spu/sku/goods） | 页面参数 |
+| `hasSerial` | 是否有序列号 | SPU/SKU 字段 |
+| `stock` / `saleStock` | 库存数 / 可售库存 | `/spu/get-stock` |
+
+> ⚠️ 两套分类 ID 系统并存：开单使用商城分类（`mallThirdCate`），不要用旧的 `spuCateID`。详见 `AGENTS.md` 第 112 行。
+
+---
+
+## 十二、依赖关系
+
+### 12.1 前置条件
 
 | 依赖 | 说明 |
 |------|------|
 | 登录 | 需要用户登录获取 token |
 | 仓库绑定 | 需要当前用户绑定仓库 |
 
-### 11.2 后置操作
+### 12.2 后置操作
 
 | 操作 | 说明 |
 |------|------|

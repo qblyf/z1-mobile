@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：HTML 原型 + navigation-flow.html + feature-list.md
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：dashboard-types.dart, member-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -146,44 +148,6 @@ Tab：TabBar 第 1 项（首页）
 
 ### 2.4 字段说明
 
-#### 今日数据（TodayStat）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| todaySales | int | 今日销售额（分）|
-| salesChangePercent | decimal | 销售额同比涨跌百分比 |
-| todayOrderCount | int | 今日订单总数 |
-| completedOrderCount | int | 已完成订单数 |
-
-#### 最近订单项（OrderSummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| orderNumber | string | 订单号 |
-| orderType | enum | 订单类型：`retail`/`wholesale`/`project` |
-| createdAt | datetime | 下单时间（显示"X分钟前"）|
-| finalAmount | int | 实收金额（分）|
-| status | enum | 状态：`pending`/`completed`/`refunded` |
-| customerName | string | 客户姓名（散客显示"零售"）|
-
-#### 待处理事项（PendingItem）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| type | enum | 类型：`approval`/`task`/`transfer` |
-| title | string | 事项标题 |
-| subtitle | string | 事项描述 |
-| priority | enum | 优先级：`urgent`/`normal`/`low` |
-| targetUrl | string | 点击跳转目标路由 |
-| badge | string | 红点数字（可选）|
-
-#### 门店信息（Store）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 门店 ID |
-| name | string | 门店名称 |
-
 ### 2.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -252,7 +216,56 @@ Tab 切换：
 
 ---
 
-## 五、待确认事项
+## 五、状态流转
+
+首页是聚合展示页，**自身无状态机**。涉及的状态展示：
+
+| 状态 | 含义 | 来源 |
+|------|------|------|
+| 网络状态 | 在线 / 离线 | 顶部网络异常提示条 |
+| 用户登录态 | 已登录 / 未登录 | 未登录则路由到 `/login` |
+| 待办数量 | 红点数字 | `/approval/count`（首次加载，无轮询） |
+
+---
+
+## 六、模块关联
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     首页模块关联                         │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│              ┌──────────────┐                          │
+│              │   首页 /home  │                          │
+│              └──┬───────────┘                          │
+│         ┌───────┼────────┬─────────┬────────┐         │
+│         ↓       ↓        ↓         ↓        ↓         │
+│      零售开单 订单列表  会员中心  任务  底部订单按钮     │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 6.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/home` | 点击"零售开单"卡片 | `/home/retail/entry` | `home_page.dart:273` |
+| `/home` | 点击"订单"卡片 | `/home/order/list` | `home_page.dart:279` |
+| `/home` | 点击"会员"卡片 | `/member` | `home_page.dart:291` |
+| `/home` | 点击"任务"卡片 | `/task` | `home_page.dart:297` |
+| `/home` | 点击底部订单按钮 | `/home/order/list` | `home_page.dart:335` |
+
+### 6.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `member`（已登录用户信息） | `/members/self` | 顶部欢迎语 / 头像 / 所属门店 |
+| `approvalCount` | `/approval/count` | 待办红点 |
+| 最近订单列表 | `/order/shop-sale-list` | 首页订单卡片 |
+
+---
+
+## 七、待确认事项
 
 1. **今日数据聚合方式**：用订单列表+count接口前端聚合 vs 后端新增 `/dashboard/today-stat` 接口
 2. **快捷操作权限**：收银员角色是否可使用"查序列号"功能？

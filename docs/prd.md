@@ -1,9 +1,14 @@
 # Z1 全网连锁系统 · 移动端 App 产品需求文档（PRD）
 
+> ⚠️ **本文档已废弃（2026-05-28）**
+> - 路由命名已过时（如 `/order/retail/entry` 实际为 `/home/retail/entry`，`/order/sales-list` 实际为 `/order/list`，`/inventory/serial-search` 实际为 `/serial/query`）。
+> - 已被 `docs/features/*-detail-prd.md` 按模块拆分替代。
+> - 仅作为历史参考保留，新开发请勿引用。
+
 > **项目代号**：z1-mobile
-> **文档版本**：v1.0
+> **文档版本**：v1.0（已废弃）
 > **日期**：2026-05-14
-> **状态**：初稿
+> **状态**：⚠️ 已废弃
 
 ---
 

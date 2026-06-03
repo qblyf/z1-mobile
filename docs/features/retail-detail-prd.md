@@ -6,6 +6,8 @@
 > **状态**：开发中
 > **依据**：HTML 原型 + API Spec + feature-list.md + 代码路由核对
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：order-types.dart, member-types.dart, product-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -124,14 +126,6 @@ Tab：无（独立页面，不在 TabBar 内）
 - 携带参数：`saleType` + `customerId?`（可选）
 - 跳转到 `/home/retail/product`
 
-### 2.4 字段说明
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| saleType | enum | 销售类型：`retail`/`wholesale`/`project` |
-| customerId | string | 会员 ID（可选，null 表示散客）|
-| customerName | string | 会员姓名（展示用）|
-
 ### 2.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -141,16 +135,6 @@ Tab：无（独立页面，不在 TabBar 内）
 | 会员不存在 | 显示"该手机号未注册为会员" |
 | 扫码失败/无法识别 | Toast 提示"无法识别，请重试" |
 | 网络错误 | 显示"网络异常，请检查网络" |
-
-### 2.5 会员卡字段说明
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| name | string | 会员姓名（无则取 wxName） |
-| mobilePhone | string | 手机号 |
-| levelName | string | 等级标签（如"金卡"、"银卡"）|
-| experience | number | 可用积分（单位：分） |
-| totalConsume | number | 历史消费金额（单位：分） |
 
 ### 2.6 跳转关系
 
@@ -259,33 +243,6 @@ Tab：无（独立页面，不在 TabBar 内）
 - 点击"清空"可清空购物车
 
 ### 3.4 字段说明
-
-#### 商品模型（Product）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | number | 商品 ID |
-| name | string | 商品名称 |
-| skuId | number | SKU ID |
-| categoryId | number | 分类 ID |
-| categoryName | string | 分类名称 |
-| barcode | string | 条码 |
-| retailPrice | int | 零售价（分） |
-| memberPrice | int | 会员价（分，绑定会员时显示）|
-| stock | int | 库存数量 |
-| image | string | 商品图片 URL |
-| unit | string | 计量单位 |
-
-#### 购物车项（CartItem）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| productId | number | 商品 ID |
-| skuId | number | SKU ID |
-| name | string | 商品名称 |
-| price | int | 单价（分，根据 saleType 取对应价格）|
-| quantity | int | 数量 |
-| subtotal | int | 小计金额 = price × quantity（分）|
 
 ### 3.5 接口清单
 
@@ -397,22 +354,6 @@ Tab：无（独立页面，不在 TabBar 内）
 - 计算优惠后的应收金额
 - 点击"去收款" → 跳转到收款页
 
-### 4.4 字段说明
-
-#### 订单确认数据
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| customerId | string | 会员 ID（可选）|
-| customerName | string | 会员姓名（展示用）|
-| items | List<CartItem> | 商品列表 |
-| couponId | string | 优惠券 ID（可选）|
-| couponDiscount | decimal | 优惠券抵扣金额 |
-| experienceAmount | decimal | 积分抵扣金额 |
-| remark | string | 订单备注（可选）|
-| totalAmount | decimal | 商品小计 |
-| finalAmount | decimal | 应收金额 = total - coupon - experience |
-
 ### 4.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -511,15 +452,6 @@ Tab：无（独立页面，不在 TabBar 内）
 
 ### 5.4 字段说明
 
-#### 支付信息（Payment）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| method | enum | 支付方式：`cash`/`wechat`/`alipay`/`card` |
-| receivedAmount | decimal | 实收金额（现金时）|
-| changeAmount | decimal | 找零金额 = receivedAmount - finalAmount |
-| transactionId | string | 第三方交易号（扫码支付时）|
-
 #### 订单创建请求（AddShopSaleParams）
 
 ```json
@@ -591,7 +523,7 @@ Tab：无（独立页面，不在 TabBar 内）
 │  ┌────────────────────────────┐  │
 │  │ ¥120    满500可用           │  │  ← 可用优惠券（可点击选中）
 │  │ 母亲节专享券               │  │
-│  │ 有效期至 2025-05-20        │  │
+│  │ 有效期至 2026-12-31        │  │
 │  │ ✓ 已选中，可省 ¥120        │  │
 │  └────────────────────────────┘  │
 │                                  │
@@ -651,27 +583,6 @@ Tab：无（独立页面，不在 TabBar 内）
 - 订单确认页更新显示抵扣金额
 
 ### 6.4 字段说明
-
-#### 优惠券（Coupon）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 优惠券 ID |
-| name | string | 优惠券名称 |
-| type | enum | 类型：`cash`（满减）/`discount`（折扣）|
-| amount | decimal | 面额（满减金额）|
-| minConsume | decimal | 最低消费门槛（满 X 可用）|
-| validStart | date | 有效期开始 |
-| validEnd | date | 有效期结束 |
-| applicableProducts | string[] | 适用商品 ID 列表（空=全部可用）|
-| status | enum | 状态：`available`/`used`/`expired` |
-
-#### 选中结果
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| couponId | string | 优惠券 ID（不使用时为 null）|
-| couponAmount | decimal | 优惠金额（不使用时为 0）|
 
 ### 6.5 异常/边界情况
 
@@ -794,37 +705,6 @@ Tab：无（独立页面，不在 TabBar 内）
 
 ### 6.4 字段说明
 
-#### 订单详情（Order）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| orderNumber | string | 订单号 |
-| orderType | enum | 订单类型：`retail`/`wholesale`/`project` |
-| status | enum | 状态：`completed`/`pending`/`refunded` |
-| customerId | string | 会员 ID（可选）|
-| customerName | string | 顾客姓名 |
-| items | List<OrderItem> | 商品列表 |
-| totalAmount | decimal | 商品小计 |
-| couponDiscount | decimal | 优惠券抵扣 |
-| experienceDiscount | decimal | 积分抵扣 |
-| finalAmount | decimal | 实收金额 |
-| paymentMethod | enum | 支付方式 |
-| receivedAmount | decimal | 实收金额 |
-| changeAmount | decimal | 找零 |
-| createdAt | datetime | 下单时间 |
-| remarks | string | 订单备注 |
-
-#### 商品明细（OrderItem）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| productId | string | 商品 ID |
-| productName | string | 商品名称 |
-| skuId | string | SKU ID（可选）|
-| quantity | int | 数量 |
-| price | decimal | 单价 |
-| subtotal | decimal | 小计 |
-
 ### 6.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -869,16 +749,124 @@ API 调用序列：
 > **注意**：金额字段（如 price、amount 等）单位为**分（cent）**，非元。
 > 例如 price: 280000 表示 ¥2800.00。
 
+### 9.1 核心接口
+
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
 | 开单入口 | `/members/list-phones` | GET | 手机号查找会员（参数：phones）✅ |
 | 商品选购 | `/product/list` | GET | 商品列表（按分类/搜索）✅ |
-| 商品选购 | `/product-price/list` | GET | 获取商品价格（零售价/批发价/工程价，根据 saleType 筛选）✅ |
-| 订单确认 | `/coupons/self` | GET | 获取当前会员可用优惠券 ✅ |
-| 订单确认 | `/members/experience` | POST | 获取/计算会员积分抵扣（需传会员ID） ✅ |
+| 商品选购 | `/product-price/list` | GET | 获取商品价格（按 saleType 筛选）✅ |
+| 订单确认 | `/coupons/self` | GET | 当前会员可用优惠券 ✅ |
+| 订单确认 | `/members/experience` | POST | 计算会员积分抵扣 ✅ |
 | 收款 | `/order/sale-shop-add` | POST | 创建零售单 ✅ |
 
+### 9.2 优惠/补贴/回收（订单确认页可选叠加）
+
+| 接口 | 方法 | 说明 | 状态 |
+|------|------|------|------|
+| `/cash-coupon/available` | GET | 可用代金券（开单时筛选当前会员可用券）| ✅ |
+| `/cash-coupon/list` | GET | 会员持有代金券列表 | ✅ |
+| `/renew-subsidy/available` | GET | 可用换新补贴券 | ✅ |
+| `/coupon-class/list` | GET | 换新补贴券分类（用于按分类筛选）| ✅ |
+| `/ahs/allow-bind` | GET | 可绑定回收单列表（以旧换新场景）| ✅ |
+| `/ahs/check/:id` | GET | 校验回收单是否可关联当前订单 | ✅ |
+
+> 以上接口均在零售开单订单确认环节使用，参考 z1-pwa CreateOrder 组件。
+
 > ✅ 所有接口已验证可用
+
+---
+
+## 十、状态流转
+
+零售开单创建的订单走 `OrderStatus` 状态机（与订单列表共用）：
+
+| 值 | key | 中文 |
+|----|-----|------|
+| 1 | shippedPaid | 已发货已付款 |
+| 2 | shippedUnpaid | 已发货未付款 |
+| 3 | unshippedUnpaid | 未发货未付款 |
+| 4 | unshippedPaid | 未发货已付款 |
+| 5 | cancelled | 已取消 |
+
+> 源码：`order-types.dart:54`。详细流转见 `order-list-detail-prd.md` 第七节。
+
+### 10.1 零售开单流程内部状态
+
+```
+[选会员] → [选购商品/服务] → [订单确认] → [收款] → [订单详情]
+   │           │                  │           │
+   │           │                  │           │
+  必选        可空购物车         可改价/优惠     刷卡/微信/支付宝
+   ↓           ↓                  ↓           ↓
+  会员卡     购物车数据         订单草稿     调用 /order/sale-shop-add
+                                              │
+                                              ↓
+                                       创建为 OrderStatus=1（已付款）
+                                       或 OrderStatus=4（待发货）
+```
+
+---
+
+## 十一、模块关联
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    零售开单模块关联                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   首页 ─"零售开单"─→ /home/retail/entry (会员选择)            │
+│                              │                              │
+│                              ↓                              │
+│                       /home/retail/product (商品/服务选购)   │
+│                              │                              │
+│                              ↓                              │
+│                       /home/retail/confirm (订单确认)         │
+│                              │ ←─── 优惠券选择 (子页面)       │
+│                              ↓                              │
+│                       /home/retail/payment (收款)             │
+│                              │                              │
+│                              ↓                              │
+│                       /home/retail/detail (订单详情)          │
+│                              │                              │
+│                              ├─→ 打印小票 (蓝牙)              │
+│                              └─→ 退款/换货 (订单变更)         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 11.1 模块跳转
+
+| 来源 | 触发 | 目标 |
+|------|------|------|
+| `/home` | 点击"零售开单"卡片 | `/home/retail/entry`（home_page.dart:273） |
+| 开单入口 | 选定会员，点"开始选购" | 商品/服务选择 |
+| 商品/服务选择 | 点击"去结算" | 订单确认 |
+| 订单确认 | 点击"使用优惠券" | 优惠券选择 |
+| 订单确认 | 点击"去支付" | 收款 |
+| 收款 | 支付成功 | 订单详情 |
+| 订单详情 | 点击"打印小票" | 蓝牙打印（不跳页） |
+| 订单详情 | 点击"退款"/"换货" | 订单变更流程 |
+
+### 11.2 子模块 PRD
+
+| 子模块 | PRD 文件 |
+|--------|---------|
+| 商品/服务选择 | `product-service-select-prd.md` |
+| 分类选择（3 级商城分类） | `category-select-prd.md` |
+| 服务选择 | `service-select-prd.md` |
+| 订单变更（退货/换货） | `order-change-prd.md` |
+| 退货退款 | `return-refund-prd.md` |
+| 小票打印 | `print-receipt-prd.md` |
+
+### 11.3 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `memberID` | 开单入口 | 商品价格计算 / 优惠券 / 积分 |
+| `cartItems` | 商品/服务选购 | 订单确认 / 收款 |
+| `couponInfo` | 优惠券选择 | 订单金额计算 |
+| `orderNumber` | `/order/sale-shop-add` 返回 | 订单详情 / 打印 / 退款 |
 
 ---
 

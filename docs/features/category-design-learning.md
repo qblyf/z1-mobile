@@ -3,6 +3,8 @@
 > **日期**：2026-05-23
 > **来源**：z1-mid SDK 源码分析 + PWA 组件分析
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：category-types.dart, mall-category-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、两种分类体系
@@ -20,36 +22,11 @@
 
 ### 2.1 分类类型 (CategoryType)
 
-```typescript
-enum CategoryType {
-  商品 = 1,
-  部门 = 2,
-  仓库 = 3,
-  往来单位 = 4,
-  标签 = 5,
-  支付方式 = 6,
-  服务 = 7,
-  商品价格 = 8,
-  SPU分类 = 9,
-  // ...
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 2.2 分类字段 (Category)
 
-```typescript
-interface Category {
-  id: number;           // 分类ID
-  name: string;         // 分类名称
-  spell: string;         // 拼音码
-  pid: number;          // 上级分类ID（0表示顶级）
-  order: number;        // 排序权重
-  type: CategoryType;    // 分类类型
-  state: CategoryState;  // 状态（正常=1，禁用=2）
-  chain: number[];      // 分类链 [父级ID, 祖父级ID, ...]
-  icon?: string;         // 图标
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 2.3 层级结构
 
@@ -68,11 +45,7 @@ interface Category {
 
 ### 2.4 获取子分类
 
-```typescript
-// 获取某分类的所有子分类
-const allCategories = await getCategoryList({ type: CategoryType.商品 });
-const children = allCategories.filter(c => c.pid === parentId);
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ---
 
@@ -80,36 +53,11 @@ const children = allCategories.filter(c => c.pid === parentId);
 
 ### 3.1 分类层级 (MallCategoryLevel)
 
-```typescript
-enum MallCategoryLevel {
-  '品类' = 1,  // 顶级
-  '品牌' = 2,  // 二级
-  '系列' = 3,  // 三级
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 3.2 分类字段 (MallCategory)
 
-```typescript
-interface MallCategory {
-  id: MallCategoryID;
-  title: string;       // 名称
-  weight: number;      // 排序权重
-  level: 1 | 2 | 3;  // 层级
-
-  // 父级ID数组，根据层级不同长度不同
-  pids: [] | [MallCategoryID] | [MallCategoryID, MallCategoryID];
-  // level=1: pids = []           （无父级）
-  // level=2: pids = [品类ID]     （父级为品类）
-  // level=3: pids = [品类ID, 品牌ID]  （父级为品牌）
-
-  // 拼音码（仅 level=3 有）
-  spell?: string;
-
-  // 分类图片（仅 level=3 有）
-  imgUrl?: string;
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 3.3 层级结构
 
@@ -146,20 +94,7 @@ interface MallCategory {
 
 **关键代码**：
 
-```typescript
-// 进销存分类 - 获取子分类
-const getNextLevelCates = (cateID: number): CateSimplified[] => {
-  return inventoryCates.filter(v => v.pid === cateID);
-};
-
-// 商城分类 - 获取子分类
-const getNextLevelCates = (cateID: number): CateSimplified[] => {
-  return mallCates.filter(v => {
-    const pid = v.pids.length ? v.pids.slice(-1)[0] || 0 : 0;
-    return pid === cateID;
-  });
-};
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 4.2 SelectService 组件（服务选择）
 
@@ -183,34 +118,7 @@ const getNextLevelCates = (cateID: number): CateSimplified[] => {
 
 **数据结构**：
 
-```dart
-class CategoryNode {
-  final int id;
-  final String name;
-  final int level;        // 1=品类 2=品牌 3=系列
-  final List<int> pids;   // 父级ID链
-
-  // 层级判断
-  bool get isTopLevel => level == 1;
-  bool get isMiddleLevel => level == 2;
-  bool get isBottomLevel => level == 3;
-
-  // 父级ID
-  int? get parentId => pids.isNotEmpty ? pids.last : null;
-}
-
-// 分类树构建
-List<CategoryNode> buildCategoryTree(List<CategoryNode> flatList) {
-  final root = flatList.where((c) => c.level == 1).toList();
-  for (final brand in flatList.where((c) => c.level == 2)) {
-    brand.children = flatList.where((c) => c.pids.last == brand.id).toList();
-  }
-  for (final series in flatList.where((c) => c.level == 3)) {
-    series.children = [];
-  }
-  return root;
-}
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ### 5.2 服务分类
 
@@ -241,21 +149,7 @@ List<CategoryNode> buildCategoryTree(List<CategoryNode> flatList) {
 
 **实现思路**：
 
-```dart
-// 1. 获取分类列表
-final categories = await mallCategoryList();
-
-// 2. 构建分类树（用于左侧展示）
-final categoryTree = buildCategoryTree(categories);
-
-// 3. 根据选中分类获取 SPU 列表
-final spuList = await getSPUList(cateId: selectedCategory.id);
-
-// 4. 获取选中分类的子分类（用于切换）
-final subCategories = categories
-    .where((c) => c.pids.last == selectedCategory.id)
-    .toList();
-```
+> 类型定义见 `category-types.dart, mall-category-types.dart`。
 
 ---
 

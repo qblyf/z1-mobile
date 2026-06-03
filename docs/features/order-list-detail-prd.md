@@ -6,6 +6,8 @@
 > **状态**：已更新（接口已确认，字段映射已修正）
 > **依据**：`lib/types/api/order-types.dart` + z1-deno 后端源码 + Flutter 代码分析
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：order-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -228,41 +230,6 @@
 
 ### 3.4 字段说明
 
-#### 订单详情（OrderDetail）
-
-| 字段 | 类型 | 说明 | 来源 |
-|------|------|------|------|
-| order.orderID | int | 订单 ID | Order |
-| order.orderNumber | string | 订单号 | Order |
-| order.orderAmount | int | 订单总金额（分）| Order |
-| order.discountAmount | int | 优惠后金额（分）| Order |
-| order.revenueAmount | int | 商家实收（分）| Order |
-| order.status | enum | 订单状态 | OrderStatus |
-| order.createdAt | timestamp | 创建时间 | Order |
-| order.remarks | string | 备注 | Order |
-
-#### 订单商品（OrderProduct）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | int | 订单商品 ID |
-| productID | int | SKU ID |
-| productPrice | int | 单价（分）|
-| discountAmount | int | 实付金额（分）|
-| quantity | int | 数量 |
-| isGift | enum | 是否赠品 |
-
-#### 支付记录（PaymentDetail）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| paymentDetailID | int | 支付记录 ID |
-| paymentTypeID | int | 支付方式 ID |
-| amount | int | 支付金额（分）|
-| status | enum | 支付状态 |
-| platformNumber | string | 第三方平台单号 |
-| createdAt | timestamp | 支付时间 |
-
 ### 3.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -298,9 +265,7 @@ API 调用序列：
 
 **订单详情**：GET `/order/shop-sale-list?number={orderNumber}`
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| number | string | 订单号 |
+> 字段类型见 `order-types.dart`。本 PRD 仅描述业务流程与 UI，不维护字段表。
 
 **返回**：单个 `Order & ShopSale` 对象（不是数组）
 
@@ -373,99 +338,64 @@ Body: { ids: [skuId1, skuId2, ...] }
 
 ### 5.3 类型说明
 
+> ⚠️ **类型唯一真实源**：所有字段定义见 `lib/types/api/order-types.dart`。本文档不复制字段，避免与代码不一致。
+
 **订单详情**：需组合调用：
-1. `/order/shop-sale-list?number=XXX` → 获取 `Order & ShopSale`
-2. `/order-product/details-by-order-id?orderID=XXX` → 获取商品列表
-3. `/members/specified?userIdents=XXX` → 获取会员信息
-
-```dart
-// 订单列表项
-class ShopSaleOrder {
-  final Order order;       // 订单主信息
-  final ShopSale? shopSale; // 零售单扩展信息
-}
-
-// 订单商品
-class OrderProduct {
-  final int id;            // 订单商品 ID
-  final SkuID productID;   // SKU ID（需查询名称）
-  final RMBFen productPrice; // 单价
-  final RMBFen discountAmount; // 实付金额
-  final int quantity;      // 数量
-}
-```
+1. `/order/shop-sale-list?number=XXX` → 返回 `ShopSaleOrder`（见 `order-types.dart`）
+2. `/order-product/details-by-order-id?orderID=XXX` → 返回 `OrderProduct[]`（见 `order-types.dart`）
+3. `/members/specified?userIdents=XXX` → 返回会员信息（见 `member-types.dart`）
 
 ---
 
-## 六、Flutter 代码修改清单
+## 六、Flutter 实现要点
 
-### 6.1 接口路径修改
+> 详细字段映射、`OrderModel` 实现请参考 `z1_mobile/lib/types/api/order-types.dart` 和现有数据源代码。本节仅记录关键约束：
 
-| 文件 | 原代码 | 修改为 |
-|------|--------|--------|
-| `api_endpoints.dart` | `shopSaleInfoByNumber(orderNumber)` | `GET /order/shop-sale-list?number=XXX` |
-| `order_detail_remote_datasource.dart` | `ApiEndpoints.shopSaleInfoByNumber` | `ApiEndpoints.shopSaleList + '?number=$orderNumber'` |
+- 接口路径以 `lib/datasources/order_*` 中的实际调用为准
+- 订单状态使用 `OrderStatus` 枚举（int 值），不要用字符串
+- 会员姓名/手机号需通过 `/members/specified` 单独获取
+- 金额单位统一为 `RMBFen`（分）
 
-### 6.2 模型字段修改
 
-| 文件 | 原字段 | 修改为 |
-|------|--------|--------|
-| `order_model.dart` | `customerName` | 需组合调用 `/members/specified` |
-| `order_model.dart` | `finalAmount` | `discountAmount` |
-| `order_model.dart` | `status: String` | `status: int` (使用 OrderStatus 枚举) |
+## 七、状态流转
 
-### 6.3 OrderModel 参考实现
+### 7.1 OrderStatus 枚举（实事）
 
-```dart
-class OrderModel extends Equatable {
-  final int id;              // orderID
-  final String orderNumber;  // orderNumber
-  final int createdAt;       // createdAt
-  final String? customerName; // 需单独获取
-  final String? customerPhone; // 需单独获取
-  final String? memberLevel; // 需单独获取
-  final RMBFen orderAmount;  // orderAmount
-  final RMBFen discountAmount; // discountAmount
-  final int status;          // OrderStatus.value
-  final int? incCoins;       // shopSale.incCoins
-  final int? decCoins;       // shopSale.decCoins
+> 源码：`order-types.dart:54`，对照 `z1-mid/src/types/order-types.ts:98`。
 
-  OrderModel({
-    required this.id,
-    required this.orderNumber,
-    required this.createdAt,
-    this.customerName,
-    this.customerPhone,
-    this.memberLevel,
-    required this.orderAmount,
-    required this.discountAmount,
-    required this.status,
-    this.incCoins,
-    this.decCoins,
-  });
+| 值 | key | 中文含义 |
+|----|-----|---------|
+| 1 | shippedPaid | 已发货已付款 |
+| 2 | shippedUnpaid | 已发货未付款 |
+| 3 | unshippedUnpaid | 未发货未付款 |
+| 4 | unshippedPaid | 未发货已付款 |
+| 5 | cancelled | 已取消 |
 
-  factory OrderModel.fromJson(Map<String, dynamic> json) {
-    return OrderModel(
-      id: json['orderID'] as int? ?? 0,
-      orderNumber: json['orderNumber'] as String? ?? '',
-      createdAt: json['createdAt'] as int? ?? 0,
-      orderAmount: json['orderAmount'] as RMBFen? ?? 0,
-      discountAmount: json['discountAmount'] as RMBFen? ?? 0,
-      status: json['status'] as int? ?? 3,
-      incCoins: json['incCoins'] as int?,
-      decCoins: json['decCoins'] as int?,
-    );
-  }
+字段名：`status`
 
-  OrderStatus get statusEnum => OrderStatus.fromValue(status);
-  String get statusLabel => statusEnum.label;
-  RMBFen get finalAmount => revenueAmount ?? discountAmount;
-}
+### 7.2 状态流转图
+
 ```
+       下单
+        │
+        ↓
+  [3 未发货未付款] ──付款──→ [4 未发货已付款]
+        │                          │
+       发货                       发货
+        │                          │
+        ↓                          ↓
+  [2 已发货未付款] ──付款──→ [1 已发货已付款]
+        │
+       取消（仅未发货阶段）
+        ↓
+  [5 已取消]
+```
+
+> ⚠️ 状态由业务操作触发（付款/发货/取消），无统一审核流程。具体触发接口在订单业务接口里（如 `/order/pay`、`/order/ship`），未在 z1-mid 见到统一定义。
 
 ---
 
-## 七、待确认事项
+## 八、待确认事项
 
 1. ✅ 订单状态枚举值已定义（OrderStatus）
 2. ✅ 接口路径已确认（`/order/shop-sale-list?number=XXX`）
@@ -476,7 +406,7 @@ class OrderModel extends Equatable {
 
 ---
 
-## 八、模块关联图
+## 九、模块关联图
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -507,7 +437,7 @@ class OrderModel extends Equatable {
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 8.1 模块跳转关系
+### 9.1 模块跳转关系
 
 | 来源模块 | 触发条件 | 目标模块 | 说明 |
 |---------|---------|---------|------|
@@ -517,7 +447,7 @@ class OrderModel extends Equatable {
 | 订单列表 | 切换 Tab | 换货筛选 | types=3 |
 | 退款标签 | 点击查看 | 退货退款详情 | orderNumber 关联 |
 
-### 8.2 数据共享
+### 9.2 数据共享
 
 | 数据 | 来源 | 消费者 |
 |------|------|--------|

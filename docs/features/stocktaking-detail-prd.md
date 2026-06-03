@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：feature-list.md + prd.md + api-spec.md
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：stocktaking-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -83,25 +85,6 @@
 #### 下拉刷新
 
 - 下拉刷新重新加载列表
-
-### 2.4 字段说明
-
-#### 盘库单列表项（StockTakingSummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 盘库单 ID |
-| code | string | 盘库单号 |
-| warehouseId | string | 仓库 ID |
-| warehouseName | string | 仓库名称 |
-| status | enum | 状态：`pending`/`in_progress`/`submitted`/`approved` |
-| totalItems | int | 总品项数 |
-| profitItems | int | 盘盈品项数 |
-| lossItems | int | 盘亏品项数 |
-| operatorId | string | 操作员 ID |
-| startedAt | datetime | 开始时间 |
-| submittedAt | datetime | 提交时间（可选）|
-| approvedAt | datetime | 审核时间（可选）|
 
 ### 2.5 异常/边界情况
 
@@ -203,25 +186,6 @@
 - 失败 → 显示错误提示
 
 ### 3.4 字段说明
-
-#### 盘库项（StockTakingItem）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| productId | string | 商品 ID |
-| productName | string | 商品名称 |
-| barcode | string | 条码 |
-| skuId | string | SKU ID（可选）|
-| systemQty | int | 系统库存数量 |
-| actualQty | int | 实际盘点数量 |
-| diff | int | 差异 = actualQty - systemQty |
-
-#### 新建盘库请求（AddStockTakingRequest）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| warehouseId | string | 仓库 ID |
-| items | List<StockTakingItem> | 盘点明细 |
 
 ### 3.5 异常/边界情况
 
@@ -329,39 +293,6 @@
 
 ### 4.4 字段说明
 
-#### 盘库单详情（StockTaking）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 盘库单 ID |
-| code | string | 盘库单号 |
-| warehouseId | string | 仓库 ID |
-| warehouseName | string | 仓库名称 |
-| status | enum | 状态 |
-| totalItems | int | 总品项数 |
-| checkedItems | int | 已盘点品项数 |
-| profitItems | int | 盘盈品项数 |
-| lossItems | int | 盘亏品项数 |
-| equalItems | int | 持平品项数 |
-| operatorId | string | 操作员 ID |
-| operatorName | string | 操作员姓名 |
-| startedAt | datetime | 开始时间 |
-| submittedAt | datetime | 提交时间 |
-| approvedAt | datetime | 审核时间 |
-| approvedBy | string | 审核人 |
-
-#### 盘库明细项（StockTakingItem）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| productId | string | 商品 ID |
-| productName | string | 商品名称 |
-| barcode | string | 条码 |
-| systemQty | int | 系统库存数量 |
-| actualQty | int | 实际盘点数量 |
-| diff | int | 差异（actual - system）|
-| status | enum | 状态：`pending`/`checked` |
-
 ### 4.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -426,18 +357,114 @@ API 调用序列：
 
 > **注意**：金额字段单位为分（cent），非元。数量字段为整数。
 
+### 7.1 核心接口
+
 | 页面 | 接口 | 方法 | 说明 |
 |------|------|------|------|
-| 盘库列表 | `/stock-taking/list` | GET | 盘库单列表（支持 status 筛选）⚠️ 注意：有性能问题，后端需优化 |
+| 盘库列表 | `/stock-taking/list` | GET | 盘库单列表（支持 status 筛选）⚠️ 性能待优化 |
 | 新建盘库 | `/warehouse/list-base` | GET | 仓库列表（选择仓库用）|
 | 新建盘库 | `/product-stock-by-code` | GET | 条码查商品 |
-| 新建盘库 | `POST /stock-taking/add` | POST | 创建盘库单 |
-| 盘库详情 | `GET /stock-taking/:id` | GET | 盘库单详情 |
-| 盘库详情 | `POST /stock-taking/:id/submit` | POST | 提交盘库审核 |
+| 新建盘库 | `/stock-taking/add` | POST | 创建盘库单 |
+| 盘库详情 | `/stock-taking/:id` | GET | 盘库单详情 |
+| 盘库详情 | `/stock-taking/:id/submit` | POST | 提交盘库审核 |
+
+### 7.2 盘库操作接口
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/stock-taking/:id/products` | GET | 盘库单内的商品明细列表 |
+| `/stock-taking/end` | POST | 完成盘库（核销并更新库存）|
+| `/stock-taking/restocktaking` | POST | 重新盘库（重置盘点结果）|
+| `/stock-taking-plan/list` | GET | 盘库方案列表（按方案模板创建盘库单时使用）|
+
+> 来源：`api_endpoints.dart` 盘库段。
 
 ---
 
-## 八、待确认事项
+## 八、状态流转
+
+### 8.1 StocktakingState 枚举
+
+> 源码：`stocktaking-types.dart:15`。字段名 `state`。
+
+| 值 | key | 中文 |
+|----|-----|------|
+| 1 | inProgress | 进行中 |
+| 2 | completed | 已完成 |
+
+### 8.2 StocktakingPlanState（盘库计划）
+
+> 源码：`stocktaking-types.dart:34`。
+
+| 值 | key | 中文 |
+|----|-----|------|
+| 1 | available | 可用 |
+| 2 | unavailable | 不可用 |
+
+### 8.3 StocktakingOnDutyStatus（盘库值班）
+
+> 源码：`stocktaking-types.dart:266`。
+
+| key | 中文 |
+|-----|------|
+| pending | 待确认 |
+| in-use | 在用已确认 |
+| complete | 已确认 |
+| refused | 已拒绝 |
+
+### 8.4 状态流转图
+
+```
+[1 进行中]
+    │
+    │  扫码盘点 → 录入实际数量
+    │
+    ↓
+  提交盘库
+    │
+    ↓
+[2 已完成]  ──→ 生成盘盈/盘亏差异 → 库存调整
+```
+
+> ⚠️ 状态触发接口（如提交盘库的具体路径）在 z1-mid 中未集中定义，需后端确认。
+
+---
+
+## 九、模块关联
+
+```
+┌──────────────────────────────────────────────────────┐
+│                   盘库模块关联                        │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│   库存首页 (inventory) ──→ 盘库列表                   │
+│                              │                        │
+│                              ├──"新增盘点"────→ 新建盘库
+│                              │                        │
+│                              └──点击列表项─────→ 盘库详情/操作页
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
+
+### 9.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/inventory` | 点击"盘点管理"卡片 | `/inventory/stocktaking` | `inventory_home_page.dart:26` |
+| `/inventory/stocktaking` | 点击"新增盘点"按钮 | `/inventory/stocktaking/add` | `stocktaking_list_page.dart:62` |
+| `/inventory/stocktaking` | 点击盘点列表项 | `/inventory/stocktaking/:id` | `stocktaking_list_page.dart:170` |
+
+### 9.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `warehouseID` | 新建盘库选择仓库 | `/stock-taking/add` |
+| `stocktakingID` | 盘库列表 | 盘库详情 / 提交盘库 |
+| `state` | 盘库单 | 决定是否可继续扫码盘点 |
+
+---
+
+## 十、待确认事项
 
 1. 盘库提交后的审核流程是在移动端还是后台完成
 2. 盘盈/盘亏的阈值设置（多少以内算正常差异）

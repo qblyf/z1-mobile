@@ -6,6 +6,18 @@
 > **状态**：设计稿
 > **依据**：z1-pwa StoreRetail 模块分析
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：product-types.dart, sku-types.dart, spu-types.dart）。本 PRD 不复制具体字段名/类型。
+
+---
+
+## 〇、页面路径
+
+| 路径 | 名称 | Flutter 实现 |
+|------|------|------------|
+| `/home/retail/product-select` | 商品/服务选购 | `lib/features/retail/presentation/pages/retail_product_page.dart` |
+
+页面参数：`memberId?`（会员ID，可选）、`warehouseId`（仓库ID，必填）。
+
 ---
 
 ## 一、页面结构
@@ -61,15 +73,7 @@
 ### 2.2 左侧分类列表
 
 **数据来源**：
-```typescript
-// 进销存分类
-GET /category/list?type=spu
-Response: { id, name, pid, order }
-
-// 或商城分类
-GET /mall-category/list
-Response: { id, title, pids, weight }
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 **交互**：
 - 点击分类 → 显示该分类下的 SPU 列表
@@ -79,15 +83,7 @@ Response: { id, title, pids, weight }
 ### 2.3 商品网格（SPU 卡片）
 
 **数据来源**：
-```typescript
-// SPU 列表
-GET /product/spu-list?cateId={id}&limit=100
-Response: { id, name, weight }
-
-// 库存
-GET /product/stock-by-spu?spuIds=[id]&warehouseId={warehouseId}
-Response: { spuId, saleStock, lockStock }
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 **卡片布局**：
 ```
@@ -102,16 +98,7 @@ Response: { spuId, saleStock, lockStock }
 ```
 
 **字段**：
-```typescript
-type SPUCard = {
-  id: number;
-  name: string;
-  image?: string;          // 商品主图
-  stock: number;           // 库存（可售）
-  retailPrice: RMBFen;     // 零售价
-  memberPrice?: RMBFen;    // 会员价
-};
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 ### 2.4 SPU → SKU 弹窗
 
@@ -139,30 +126,10 @@ type SPUCard = {
 ```
 
 **数据来源**：
-```typescript
-// SKU 列表
-GET /product/list?spuId={id}
-Response: {
-  id, name, hasSerial,
-  price, costPrice
-}
-
-// SKU 库存
-GET /product/stock-by-sku?skuIds=[id]&warehouseId={warehouseId}
-Response: { skuId, saleStock, lockStock }
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 **字段**：
-```typescript
-type SkuSpec = {
-  id: number;
-  name: string;           // 规格名称（如"20g"）
-  price: RMBFen;          // 零售价
-  memberPrice?: RMBFen;   // 会员价
-  stock: number;          // 可售库存
-  hasSerial: boolean;     // 是否有序列号
-};
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 ---
 
@@ -190,22 +157,7 @@ type SkuSpec = {
 ### 3.2 服务列表项
 
 **数据来源**：
-```typescript
-// 服务分类
-GET /category/list?type=service
-Response: { id, name, pid, order }
-
-// 服务列表
-GET /serve/list?cateId={id}&limit=100
-Response: {
-  id, name, shortName, cent,
-  costCent, isGoods, cateId
-}
-
-// 服务数量
-GET /serve/count?cateId={id}
-Response: number
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 **列表项布局**：
 ```
@@ -216,16 +168,7 @@ Response: number
 ```
 
 **字段**：
-```typescript
-type ServiceItem = {
-  id: number;
-  name: string;
-  shortName: string;
-  price: RMBFen;         // 服务价格
-  isGoods: number;       // 1=需绑定序列号 2=不需绑定
-  categoryName?: string; // 分类名称
-};
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 **交互**：
 - 点击 [+] → 加入购物车
@@ -259,15 +202,7 @@ type ServiceItem = {
 ### 4.2 非标品列表项
 
 **数据来源**：
-```typescript
-// SPU 分类
-GET /category/list?type=spu
-// 再根据系统设置 nonStandardCateSetting 过滤
-
-// 非标品列表
-GET /item/all?cateIds=[id]&saleState=true&status=普通
-Response: { id, uniqueSN, ... }
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 **列表项布局**：
 ```
@@ -280,16 +215,7 @@ Response: { id, uniqueSN, ... }
 ```
 
 **字段**：
-```typescript
-type NonStandardItem = {
-  id: number;
-  uniqueSN: string;       // 唯一序列号
-  spuName: string;       // SPU名称
-  weight?: string;        // 重量
-  price: RMBFen;          // 售价
-  stock: number;          // 库存（通常为1）
-};
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 ---
 
@@ -324,40 +250,7 @@ type NonStandardItem = {
 
 ### 5.2 购物车数据结构
 
-```typescript
-type CartItem = {
-  key: string;              // 唯一标识（随机生成）
-  type: 'goods' | 'service' | 'nonstandard';
-
-  // 商品
-  id?: number;
-  skuId?: number;
-  spuId?: number;
-  name?: string;
-  image?: string;
-  specName?: string;       // 规格名称
-
-  // 服务
-  serviceId?: number;
-
-  // 非标品
-  itemId?: number;
-  uniqueSN?: string;
-
-  // 共用
-  price: RMBFen;           // 单价
-  memberPrice?: RMBFen;    // 会员价
-  quantity: number;        // 数量
-  hasSerial: boolean;      // 是否有序列号
-  stock?: number;          // 库存
-};
-
-type Cart = {
-  items: CartItem[];
-  totalAmount: RMBFen;     // 合计金额
-  totalQuantity: number;    // 合计数量
-};
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 ---
 
@@ -422,21 +315,10 @@ type Cart = {
 | 游客模式 | `GET /serve/detail/mall` | ✅ | 无需认证，游客模式 |
 
 **serve/list 参数**：
-```typescript
-{
-  cateId?: number;       // 分类ID
-  keyWord?: string;      // 关键词搜索
-  states?: number[];     // 状态筛选
-  isGoods?: number;      // 1=需绑定序列号 2=不需绑定
-  limit?: number;
-  offset?: number;
-}
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 **serve/detail 参数**：
-```typescript
-{ ids: number[] }  // 注意是 ids 不是 id
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 ### 7.3 非标品 Tab
 
@@ -488,41 +370,11 @@ type Cart = {
 
 ### 9.1 CartProvider
 
-```dart
-class CartItem {
-  String key;
-  CartItemType type;  // goods, service, nonstandard
-  int id;
-  String name;
-  int price;
-  int quantity;
-  // ...
-}
-
-class CartProvider extends ChangeNotifier {
-  List<CartItem> items = [];
-
-  int get totalAmount => items.fold(0, (sum, item) => sum + item.price * item.quantity);
-  int get totalQuantity => items.fold(0, (sum, item) => sum + item.quantity);
-
-  void addItem(CartItem item);
-  void removeItem(String key);
-  void updateQuantity(String key, int quantity);
-  void clear();
-}
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 ### 9.2 MemberProvider
 
-```dart
-class MemberProvider extends ChangeNotifier {
-  Member? currentMember;
-  SalesMode salesMode;  // retail, wholesale
-
-  void switchMember(Member? member);
-  void switchSalesMode(SalesMode mode);
-}
-```
+> 类型定义见 `product-types.dart, sku-types.dart, spu-types.dart`。
 
 ---
 
@@ -559,4 +411,70 @@ class MemberProvider extends ChangeNotifier {
 
 ---
 
-> 上次更新：2026-05-23（v1.0 初始设计）
+## 十一、状态流转
+
+商品选择页是导航/筛选页，**无业务状态机**。涉及的状态：
+
+| 字段 | 来源 | 说明 |
+|------|------|------|
+| `genre` | Product | `goods`=商品 / `service`=服务（已确认后端不支持，已删除）|
+| `hasSerial` | SKU | `1=否 / 2=是`，序列号商品需进 goods 列表 |
+| `state` / `listingStatus` | SPU/SKU | 上架可售筛选 |
+| `stock` / `lockStock` / `saleStock` | 库存 | 可售库存 = stock - lockStock |
+| Tab 状态 | 页面内部 | 商品 / 服务 / 非标品 |
+
+详细状态流转参考 `product-service-select-prd.md` 第八节。
+
+---
+
+## 十二、异常/边界情况
+
+| 场景 | 处理 | 来源 |
+|------|------|------|
+| 商品列表为空 | 显示"暂无商品" | — |
+| 搜索无结果 | 显示空状态图 | — |
+| 库存接口失败 | 标记为 -1（加载失败） | `product_select_bloc.dart:454-459` |
+| SKU 库存为 0 | 灰底 + "缺货"标签禁选 | `sku_select_modal.dart:270-275` |
+| `hasSerial=2` 商品加购 | 必须进 goods 列表选具体商品 | `sku_select_modal.dart:211-252` |
+| 非标品权限不足（90000） | 提示无权限，隐藏入口 | — |
+| 切换 Tab 时购物车冲突 | `_isUpdatingState` 锁防并发 | `retail_product_page.dart:51-83` |
+| 结算时购物车空 | 弹 Alert："请先添加商品或服务" | `retail_product_page.dart:128-148` |
+| 扫码权限拒绝 | 提示开启相机权限（待实现） | TODO |
+
+---
+
+## 十三、模块关联
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              商品选择页设计文档关联                       │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│   零售开单 ──→ 商品选择页（本文档）                       │
+│                  │                                      │
+│                  ├──Tab 商品──→ 商品三级导航              │
+│                  │                  │                   │
+│                  │                  ↓                   │
+│                  │              SKU 弹窗 → 购物车         │
+│                  │                                      │
+│                  ├──Tab 服务──→ 服务列表 → 购物车          │
+│                  │                                      │
+│                  └──Tab 非标品──→ 非标品列表 → 购物车      │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 13.1 关联 PRD
+
+| 关联 PRD | 关系 |
+|---------|------|
+| `retail-detail-prd.md` | 父级流程（零售开单总流程）|
+| `product-service-select-prd.md` | 同模块的另一版设计（更新的版本）|
+| `category-select-prd.md` | 商品分类 3 级选择子流程 |
+| `service-select-prd.md` | 服务选择子流程 |
+
+> ⚠️ 本文档是 v1.0 早期设计，更详细的实现说明见 `product-service-select-prd.md`。
+
+---
+
+> 上次更新：2026-05-23（v1.0 初始设计），2026-05-28 补充状态/异常/关联章节

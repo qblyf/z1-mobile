@@ -7,6 +7,8 @@
 > **依据**：`z1-mid/src/types/return-refund-application-types.ts` + 后端接口分析
 > **⚠️ 类型文件**：`lib/types/api/return-refund-application-types.dart` **待生成**（需从后端 TS 翻译）
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：order-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -163,48 +165,13 @@
 
 ### 4.1 退货退款申请状态
 
-```dart
-enum ReturnRefundApplicationStatus {
-  applied('applied', '已申请'),    // 待审核
-  audited('audited', '已审核'),    // 已通过
-  canceled('canceled', '已取消'),  // 已拒绝
-  consulting('consulting', '协商中'),
-  finished('finished', '已完成');
-}
-```
+> 类型定义见 `order-types.dart`。
 
 ### 4.2 退货退款申请
 
 > **⚠️ 重要**：以下类型定义参考 `lib/types/api/return-refund-application-types.ts`（唯一真实源）
 
-```dart
-// 类型文件：z1-mid/src/types/return-refund-application-types.ts
-
-class ReturnRefundApplication {
-  final int id;                    // 退货退款申请 ID
-  final String number;             // 退货退款申请单号
-  final String orderNumber;         // 销售订单号
-  final List<MallOrderInfo> info;   // 退货商品/服务详情（MallOrderProductInfo/MallOrderServiceInfo/MallOrderNonStandardInfo）
-  final String reason;              // 退货原因
-  final List<Description> description; // 退货描述
-  final List<String> images;        // 退货图片
-  final String? remarks;           // 备注
-  final String createdBy;           // 创建人（UserIdent）
-  final int createdAt;             // 创建时间
-  final String? updatedBy;         // 更新人（UserIdent）
-  final int? updatedAt;            // 更新时间
-  final ReturnRefundApplicationStatus status; // 状态
-  final int expectedCent;          // 预计退款金额（分）
-  final bool isRefundOnly;         // 是否仅退款
-}
-
-class Description {
-  final String createdBy;         // 发起人（UserIdent）
-  final int createdAt;            // 创建时间
-  final String content;           // 描述内容
-  final bool isCustomer;           // 是否是顾客
-}
-```
+> 类型定义见 `order-types.dart`。
 
 ---
 

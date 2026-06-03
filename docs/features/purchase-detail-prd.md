@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：feature-list.md + api-endpoints.dart
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：purchase-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -83,23 +85,6 @@
 
 - 下拉刷新重新加载列表
 
-### 2.4 字段说明
-
-#### 采购单列表项（PurchaseSummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | int | 采购单 ID |
-| code | string | 采购单号 |
-| supplierName | string | 供应商名称 |
-| state | enum | 状态：`pending`/`partial`/`completed` |
-| totalAmount | int | 采购总金额（分）|
-| createdAt | int | 创建时间戳（秒）|
-| productCount | int | 总品项数 |
-| warehouseId | int | 仓库 ID（预留）|
-| warehouseName | string | 仓库名称（预留）|
-| receivedItems | int | 已入库品项数（预留）|
-
 ### 2.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -163,7 +148,103 @@ API 调用序列：
 
 ---
 
-## 六、待确认事项
+## 六、状态流转
+
+### 6.1 采购入库单状态（PurchaseState）
+
+> 源码：`purchase-types.dart:15`，对照 `z1-mid/src/types/purchase-types.ts:28`。字段名 `state`。
+
+| 值 | key | 中文 |
+|----|-----|------|
+| 1 | normal | 正常（待入库） |
+| 2 | draft | 草稿 |
+| 3 | pending | 待审核 |
+
+### 6.2 采购订单状态（PurchaseOrderStatus）
+
+> 源码：`z1-mid/src/types/purchase-order-types.ts:12`。字段名 `status`。
+
+| 值 | 中文 |
+|----|------|
+| 1 | 草稿 |
+| 2 | 待审核 |
+| 3 | 已拒绝 |
+| 4 | 已审核 |
+| 5 | 已结束 |
+| 6 | 已关闭 |
+| 7 | 已取消 |
+
+### 6.3 状态流转图
+
+```
+采购订单流程：
+[1 草稿] ─DraftToUnaudit─→ [2 待审核]
+                                │
+                                ├─AuditPurchaseOrder──→ [4 已审核]
+                                │                          │
+                                │                          ├─ClosePurchaseOrder→ [6 已关闭]
+                                │                          │
+                                │                          ↓
+                                │                     [5 已结束]
+                                │
+                                └─RejectPurchaseOrder─→ [3 已拒绝]
+
+任意状态 ─CancelPurchaseOrder─→ [7 已取消]
+
+采购入库单流程：
+[2 草稿] → [3 待审核] ─审核通过─→ [1 正常（可入库）]
+                                       │
+                              POST /purchase/into-warehouse
+                                       │
+                                       ↓
+                                  库存增加
+```
+
+> ⚠️ 仅 `state=1`（正常/待入库）的采购单可执行 `/purchase/into-warehouse` 入库。
+
+---
+
+## 七、模块关联
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                  采购模块关联                              │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│   库存首页 (inventory) ──→ 采购单列表                       │
+│                              │                              │
+│                       点击列表项                            │
+│                              ↓                              │
+│                         采购单详情 ──"入库"──→ 入库操作页    │
+│                              │                              │
+│                              │                              │
+│                              ↓                              │
+│                         审批中心（采购审批走                │
+│                         /purchase-order/unaudit-to-audit）│
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+```
+
+### 7.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/inventory` | 点击"采购管理"卡片 | `/inventory/purchase-list` | `inventory_home_page.dart:38` |
+| `/inventory/purchase-list` | 点击采购单列表项 | `/inventory/purchase/:id` | `purchase_list_page.dart:342` |
+| `/inventory/purchase/:id` | 点击"入库"按钮 | `/inventory/purchase-inbound/:id` | `purchase_detail_page.dart:252` |
+| 审批中心 | 采购审批通过 | （后端处理）| 调 `/purchase-order/unaudit-to-audit` |
+
+### 7.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `purchaseID` | 采购列表 | 采购详情 / 入库操作 |
+| `warehouseID` | 当前职员所属仓库 | 入库接口 |
+| `state` | 采购单 | 决定是否可入库 |
+
+---
+
+## 八、待确认事项
 
 1. 采购入库的扫码流程细节
 2. 部分入库的精确数量控制

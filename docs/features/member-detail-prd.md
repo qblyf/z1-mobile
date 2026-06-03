@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：HTML 原型 + feature-list.md + api-spec.md
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：member-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -87,19 +89,6 @@ Tab：会员 Tab
 
 - 从首页 Tab 进来时显示快捷操作
 - 扫码查会员、快捷开单等
-
-### 2.4 字段说明
-
-#### 会员列表项（MemberSummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 会员 ID |
-| name | string | 姓名 |
-| phone | string | 手机号（脱敏显示）|
-| levelName | string | 会员等级名称 |
-| totalExperience | int | 可用积分（分）|
-| lastVisitAt | datetime | 最后访问时间 |
 
 ### 2.5 异常/边界情况
 
@@ -202,40 +191,6 @@ Tab：会员 Tab
 
 ### 3.4 字段说明
 
-#### 会员详情（Member）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 会员 ID |
-| name | string | 姓名 |
-| phone | string | 手机号 |
-| gender | enum | 性别：`male`/`female`/`unknown` |
-| birthday | date | 生日 |
-| levelId | string | 等级 ID |
-| levelName | string | 等级名称 |
-| totalExperience | int | 总积分（分）|
-| availableExperience | int | 可用积分（分）|
-| totalConsumption | decimal | 累计消费（元）|
-| memberCardNo | string | 会员卡号 |
-| tags | string[] | 标签列表 |
-| createdAt | datetime | 注册时间 |
-| lastVisitAt | datetime | 最后访问时间 |
-| status | enum | 状态：`active`/`inactive`/`cancelled` |
-
-#### 积分记录（ExperienceLog）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 记录 ID |
-| memberId | string | 会员 ID |
-| type | enum | 类型：`consume`/`refund`/`adjust`/`expire` |
-| amount | int | 变动积分（分，正负）|
-| balance | int | 变动后余额（分）|
-| orderNumber | string | 关联订单号（消费时）|
-| reason | string | 原因/备注 |
-| operatorId | string | 操作员 ID |
-| createdAt | datetime | 操作时间 |
-
 ### 3.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -322,19 +277,6 @@ Tab：会员 Tab
 - 成功 → 跳转会员详情页 `/member/:memberId`
 - 失败 → 显示错误提示
 
-### 4.4 字段说明
-
-#### 新增会员请求（AddMemberRequest）
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| phone | string | 是 | 手机号（11位数字）|
-| name | string | 否 | 姓名 |
-| gender | enum | 否 | 性别：`male`/`female`/`unknown`，默认 `unknown` |
-| birthday | date | 否 | 生日 |
-| levelId | string | 否 | 等级 ID，默认取最低等级 |
-| initialExperience | int | 否 | 初始积分（分），默认 0 |
-
 ### 4.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -416,29 +358,6 @@ Tab：会员 Tab
 - 下拉刷新加载最新积分记录
 
 ### 5.4 字段说明
-
-#### 积分查询结果
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| memberId | string | 会员 ID |
-| totalExperience | int | 总积分（分）|
-| availableExperience | int | 可用积分（分）|
-| frozenExperience | int | 冻结积分（分）|
-| usedExperience | int | 已用积分（分）|
-| records | List<ExperienceLog> | 积分变动记录 |
-
-#### 积分记录（ExperienceLog）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 记录 ID |
-| type | enum | 类型：`consume`/`refund`/`adjust`/`expire` |
-| amount | int | 变动积分（分，正数=增加，负数=减少）|
-| balance | int | 变动后余额（分）|
-| reason | string | 原因描述 |
-| orderNumber | string | 关联订单号（消费/退款时）|
-| createdAt | datetime | 操作时间 |
 
 ### 5.5 异常/边界情况
 
@@ -540,23 +459,6 @@ Tab：会员 Tab
 
 ### 6.4 字段说明
 
-#### 积分调整请求（AdjustExperienceRequest）
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| memberId | string | 是 | 会员 ID |
-| direction | enum | 是 | `increase`/`decrease` |
-| amount | int | 是 | 调整积分数量（分，正整数）|
-| reason | string | 是 | 调整原因 |
-| remark | string | 否 | 备注 |
-
-#### 响应
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| newBalance | int | 调整后可用积分（分）|
-| changeAmount | int | 本次变动积分（分）|
-
 ### 6.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -611,7 +513,68 @@ API 调用序列：
 
 ---
 
-## 九、待确认事项
+## 九、状态流转
+
+会员模块**无业务状态机**（不像订单/审批）。涉及的会员状态字段：
+
+| 字段 | 含义 | 取值 |
+|------|------|------|
+| `state` | 会员启用/停用 | `1=启用 / 0=停用`（具体值见 `member-types.dart`） |
+| `levelID` | 会员等级 | 关联 `/member-level/detail-or-all` |
+| `experience` | 积分余额 | int，可通过 `/members/experience` 调整 |
+
+> 详细字段定义见 `member-types.dart`。
+
+---
+
+## 十、模块关联
+
+```
+┌──────────────────────────────────────────────────────┐
+│                   会员模块关联                        │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│        ┌──────────────┐                             │
+│        │  会员首页 /member │                          │
+│        └──────┬───────┘                             │
+│               │ 点击列表项                            │
+│               ↓                                      │
+│        ┌──────────────┐    ┌────────────┐          │
+│        │  会员详情     │───→│ 信用评分   │          │
+│        │  /member/:id  │    │ 信用评分编辑│         │
+│        └──────┬───────┘    └────────────┘          │
+│               │                                      │
+│               │ 点击订单                              │
+│               ↓                                      │
+│        订单详情 /order/:orderNumber                  │
+│                                                      │
+│        新增会员 ───创建成功───→ 会员详情              │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
+
+### 10.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/member` | 点击会员列表项 | `/member/:id` | `member_home_page.dart:178` |
+| `/member/add` | 新增会员成功后 | `/member/:id` | `member_add_page.dart:370` |
+| `/member/:id` | 点击"信用评分"按钮 | `/member/:id/creditscore` | `member_detail_page.dart:281` |
+| `/member/:id` | 点击"编辑信用评分" | `/member/:id/creditscore/edit` | `member_detail_page.dart:288` |
+| `/member/:id` | 点击订单列表项 | `/order/:orderNumber` | `member_detail_page.dart:489` |
+
+### 10.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `userIdent`（会员 ID） | 会员首页搜索/列表 | 会员详情查询 |
+| `experience` | 积分查询 | 积分调整页 / 会员卡显示 |
+| `levelID` | 会员详情 | 会员等级展示 / 权益判断 |
+| `mobilePhone` | 会员详情 | 零售开单会员搜索（最近会员） |
+
+---
+
+## 十一、待确认事项
 
 1. 会员等级列表接口（新建会员时需获取等级下拉选项）
 2. 积分抵扣规则（100分=¥1，最高抵扣比例）

@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：feature-list.md + api-endpoints.dart + stocktaking-detail-prd.md
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：task-types.dart, dashboard-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -131,38 +133,6 @@
 
 ### 2.4 字段说明
 
-#### 今日概览（TodaySummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| date | string | 当前日期 |
-| weather | string | 天气（预留）|
-| temperature | string | 温度（预留）|
-| todaySales | int | 今日销售金额（分）|
-| todayOrders | int | 今日订单数 |
-| pendingApprovals | int | 待处理审批数 |
-| pendingTasks | int | 待办任务数 |
-
-#### 待办审批项（ApprovalSummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | int | 审批单 ID |
-| type | enum | 类型：`transfer`/`return`/`price_special` |
-| summary | string | 审批摘要 |
-| applicantName | string | 申请人姓名 |
-| createdAt | int | 申请时间戳（秒）|
-
-#### 今日待办项（TaskSummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | int | 任务 ID |
-| title | string | 任务标题 |
-| completed | bool | 是否已完成 |
-| planTime | string | 计划时间（格式：HH:mm）|
-| priority | enum | 优先级：`high`/`medium`/`low` |
-
 ### 2.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -232,7 +202,60 @@ API 调用序列：
 
 ---
 
-## 五、待确认事项
+## 五、状态流转
+
+工作台是聚合展示页，**自身无状态机**。展示的子模块状态：
+
+| 子模块 | 状态字段 | 说明 |
+|--------|---------|------|
+| 审批待办 | `ApprovalStatus.pending` | 见 approval-types.dart:37-53 |
+| 任务待办 | TaskStatus（待办/进行中/已完成） | 见 task-types.dart |
+| 红点数量 | `/approval/count` | 工作台加载时调用一次，无轮询 |
+
+---
+
+## 六、模块关联
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    工作台模块关联                        │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│            ┌──────────────────┐                        │
+│            │  工作台 /workbench │                        │
+│            └────┬─────────────┘                        │
+│       ┌────────┼─────────┬──────────┬────────┐        │
+│       ↓        ↓         ↓          ↓        ↓        │
+│   零售开单 序列号查询  会员    审批中心   任务列表       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 6.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/workbench` | 点击"零售开单" | `/home/retail/entry` | `workbench_page.dart:157` |
+| `/workbench` | 点击"序列号查询" | `/inventory/serial-search` | `workbench_page.dart:168` |
+| `/workbench` | 点击"会员" | `/member` | `workbench_page.dart:174` |
+| `/workbench` | 点击审批列表项 | `/approval/:id` | `workbench_page.dart:331` |
+| `/workbench` | 点击"审批中心" | `/approval/center` | `workbench_page.dart:337` |
+| `/workbench` | 点击任务列表项 | `/task/:id` | `workbench_page.dart:429` |
+| `/workbench` | 点击"任务列表" | `/task/list` | `workbench_page.dart:435` |
+
+### 6.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `approvalCount` | `/approval/count` | 审批中心入口红点 |
+| `pendingApprovalList` | `/approval/list` | 工作台待审批卡片 |
+| `taskList` | `/task/list` | 工作台任务卡片 |
+
+> ⚠️ Flutter 现状：`workbench_bloc.dart:90-101` 加载时**串行一次性调用**审批 count 和列表接口，无轮询，下拉刷新触发重新加载。
+
+---
+
+## 七、待确认事项
 
 1. 今日概览的聚合接口是否存在（是否需要多个接口聚合）
 2. 天气数据来源（是否需要接入天气 API）

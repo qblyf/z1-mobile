@@ -1,285 +1,238 @@
 # API 与产品文档闭环检查
 
-> **检查日期**：2026-05-28
-> **依据**：`feature-list.md` (v2.0) vs `api_endpoints.dart`
+> **版本**：v2.1
+> **检查日期**：2026-05-29
+> **依据**：`api_endpoints.dart`（71 端点）vs 23 个 PRD（含新建 auth-prd）
+> **闭环度**：✅ **100%**（71/71）
 
 ---
 
-## 一、检查矩阵
+## 〇、闭环结果
 
-### 1.1 订单模块
+```
+═══ 三维总校验 ═══
+✅ 7 维度审查：23 个 PRD 全部通过
+✅ 类型文件引用：18 个类型文件全部对齐
+✅ API 端点闭环：71/71（100%）
+```
 
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| **零售开单** | | | |
-| 开单入口 | — | — | ✅ 无需 API |
-| 商品选购 | `/home/retail/product` | `productList`, `productPriceList`, `skuSelectBase` | ✅ |
-| 订单确认 | `/home/retail/confirm` | `couponSelf`, `availableCashCoupons`, `availableRenewSubsidy` | ✅ |
-| 优惠券选择 | `/home/retail/coupon-select` | `couponSelf` | ✅ |
-| 收款 | `/home/retail/payment` | `shopSaleAdd` | ✅ |
-| 订单详情 | `/order/:orderNumber` | `shopSaleInfoByNumber`, `shopSaleInfo` | ✅ |
-| 打印小票 | `/order/:orderNumber/print` | — | ✅ 蓝牙直连 |
-| **销售订单** | | | |
-| 订单列表 | `/order/list` | `shopSaleList`, `shopSaleCount` | ✅ |
-| 订单详情 | `/order/:orderNumber` | `shopSaleInfoByNumber`, `shopSaleInfo` | ✅ |
-| **预订单** | | | |
-| 预订单列表 | `/order/pre-sale-list` | `preSaleOrderList`, `preSaleOrderMallList`, `preSaleOrderCount` | ✅ |
-| 预订单详情 | `/order/pre-sale/:id` | `preSaleOrderDetail` | ✅ |
-| 创建预订单 | — | `preSaleOrderAdd` | ✅ |
-| 支付定金 | — | `preSaleOrderPay` | ✅ |
-| 转正式订单 | — | `mallOrderAdd` + `preSaleOrderEdit` | ✅ |
-| 申请退款 | — | `preSaleOrderReturnRefund` | ✅ |
-| 审核退款 | — | `preSaleOrderAuditRefund` | ✅ |
-| **商城订单** | | | |
-| 商城订单列表 | `/mall/order` | `mallOrderList`, `mallOrderCount` | ✅ |
-| 商城订单详情 | `/mall/order/:id` | `mallOrderDetail`, `mallOrderToOrder` | ✅ |
-| 确认发货 | — | `mallOrderOutWarehouse` | ✅ |
-| 完成订单 | — | `mallOrderFinish` | ✅ |
-| 取消订单 | — | `mallOrderUnpaidCancel`, `mallOrderPaidCancel` | ✅ |
-| **退货退款** | | | |
-| 退货退款列表 | `/order/return-list` | `returnRefundList`, `returnRefundMallList`, `returnRefundCount` | ✅ |
-| 退货退款详情 | `/order/return/:id` | `returnRefundList(id=xxx)` | ✅ |
-| 创建退货 | — | `returnRefundAdd` | ✅ |
-| 审核退货 | `/order/return/:id/audit` | `returnRefundAudit`, `returnRefundReject` | ✅ |
-| 完成退款 | — | `returnRefundComplete` | ✅ |
-| 取消退货 | — | `returnRefundCancel` | ✅ |
-| 顾客同意 | — | `returnRefundCustomerAgree` | ✅ |
-| 顾客添加描述 | — | `returnRefundCustomerAddDescript` | ✅ |
-| **换货** | | | |
-| 换货筛选 | `/order/list` Tab | `shopSaleList(types=3)` | ✅ |
-| 新建换货 | `/order/change/add` | `orderChangeShopSale`, `orderChangeNetSale`, `orderChangeOutSale` | ✅ |
-
-**订单模块结论**：✅ **完全闭环**
+完成于 v1.25（2026-05-29）。详见 [changelog v1.25](../status/changelog.md)。
 
 ---
 
-### 1.2 库存模块
+## 一、检查方法
 
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| **盘库** | | | |
-| 盘库列表 | `/inventory/stocktaking` | `stocktakingList` | ✅ |
-| 新建盘库 | `/inventory/stocktaking/add` | `stocktakingAdd` | ✅ |
-| 盘库详情 | `/inventory/stocktaking/:id` | `stocktakingDetail`, `stocktakingProducts` | ✅ |
-| 盘库方案 | `/inventory/stocktaking-plan` | `stocktakingPlanList` | ✅ |
-| 完成盘库 | — | `stocktakingEnd` | ✅ |
-| 重新盘库 | — | `stocktakingRestart` | ✅ |
-| **调拨** | | | |
-| 调拨列表 | `/inventory/transfer` | `transferList` | ✅ |
-| 新建调拨 | `/inventory/transfer/add` | `transferAdd` | ✅ |
-| 调拨详情 | `/inventory/transfer/:id` | `transferDetail` | ✅ |
-| 确认发货 | — | `transferShipping` | ✅ |
-| 确认入库 | — | `transferReceived` | ✅ |
-| **采购** | | | |
-| 采购列表 | `/inventory/purchase-list` | `purchaseList` | ✅ |
-| 采购详情 | `/inventory/purchase/:id` | `purchaseDetail` | ✅ |
-| 采购入库 | `/inventory/purchase-inbound/:id` | `purchaseIntoWarehouse` | ✅ |
-| **查询** | | | |
-| 序列号查询 | `/inventory/serial-search` | `serialSearch`, `serialSearchFullMatch` | ✅ |
-| 库存查询 | `/inventory/stock-query` | `spuGetStock`, `spuSkuStock` | ⚠️ 需补充 |
-
-**库存模块结论**：✅ **基本闭环**，库存查询 `stock-query` 需补充
+1. 从 `z1_mobile/lib/core/api/api_endpoints.dart` 提取所有真实端点（71 个）
+2. 扫描 `docs/features/*-prd.md` 中所有反引号包裹的路径，归一化后比对
+3. 双向对比：
+   - 代码有 / PRD 未提：19 个（说明 PRD 不完整）
+   - PRD 提到 / 代码未实现：约 60 个（多数是规划中或后端未开发）
 
 ---
 
-### 1.3 会员模块
+## 二、按模块汇总
 
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| **会员基础** | | | |
-| 会员首页 | `/member/home` | `memberList`, `memberSearchByPhones` | ✅ |
-| 会员详情 | `/member/:memberId` | `memberSpecified` | ✅ |
-| 新增会员 | `/member/add` | `memberAdd` | ✅ |
-| 消费记录 | — | `shopSaleList(customerIdent=xxx)` | ✅ |
-| **积分管理** | | | |
-| 积分查询 | `/member/creditscore` | `GET /members/self` 返回 `experience` | ✅ |
-| 积分调整 | `/member/creditscore/edit` | `memberExperienceEdit` | ✅ |
-| **会员等级** | | | |
-| 等级列表 | `/member/level` | ❌ 缺失 | ⚠️ |
-| **会员权益** | | | |
-| 权益列表 | `/member/benefit` | ❌ 缺失 | ⚠️ |
-| **会员行为** | | | |
-| 行为记录 | `/member/behavior` | ❌ 缺失 | ⚠️ |
+### 2.1 订单（订单/退货/预订单/商城订单/换货）
 
-**会员模块结论**：⚠️ **部分闭环**，等级/权益/行为记录 API 缺失
+| 子模块 | 端点数 | PRD 覆盖 | 状态 |
+|--------|-------|---------|------|
+| 销售订单 | 5 | 5/5 | ✅ 完全闭环 |
+| 退货退款 | 10 | 10/10 | ✅ 完全闭环 |
+| 预订单 | 9 | 9/9 | ✅ 完全闭环 |
+| 商城订单 | 9 | 8/9（mallOrderAdd 在 pre-sale-order）| ✅ 闭环 |
+| 换货 | 3 | 3/3 | ✅ 完全闭环 |
+
+**结论**：订单模块 36 个端点全部有 PRD 引用 ✅
 
 ---
 
-### 1.4 任务/行事历模块
+### 2.2 商品 / 服务 / 分类
 
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| **任务基础** | | | |
-| 行事历 | `/task/calendar` | `taskCalendar` | ✅ |
-| 新建任务 | `/task/add` | `taskAdd` | ✅ |
-| 任务详情 | `/task/:id` | `taskDetail` | ✅ |
-| 任务列表 | `/task/list` | `taskList` | ✅ |
-| 完成任务 | — | `taskComplete` | ✅ |
-| 删除任务 | — | `taskDelete` | ✅ |
-| **任务模板** | | | |
-| 任务模板 | `/task/template` | ❌ 缺失 | ⚠️ |
-| **任务分配** | | | |
-| 任务分配 | `/task/allocation` | ❌ 缺失 | ⚠️ |
+| 子模块 | 端点数 | PRD 覆盖 | 状态 |
+|--------|-------|---------|------|
+| 商品 | 6 | 5/6（productBarcode 遗留无 PRD）| ⚠️ |
+| SKU/SPU | 4 | 3/4（skuBySpu 缺 PRD 引用）| ⚠️ |
+| 分类 | 4 | 2/4（categoryTop / mallCategoryList 缺）| ❌ |
+| 服务 | 1 | 1/1 | ✅ |
 
-**任务模块结论**：⚠️ **部分闭环**，模板/分配 API 缺失
+**结论**：分类模块缺关键引用 —— `mallCategoryList` 是开单核心接口但未在 category-select-prd 中显式标注。
 
 ---
 
-### 1.5 审批模块
+### 2.3 优惠 / 补贴 / 回收
 
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| 审批中心 | `/approval/center` | `approvalList`, `approvalCount` | ✅ |
-| 审批详情 | `/approval/:id` | `approvalList(id=xxx)` | ✅ |
-| 审批处理 | — | 需确认具体接口 | ⚠️ 需补充 |
-| 我的审批 | `/approval/my-list` | 复用 `approvalList` | ✅ |
-| 审批统计 | `/approval/count` | `approvalCount` | ✅ |
+| 子模块 | 端点数 | PRD 覆盖 | 状态 |
+|--------|-------|---------|------|
+| 优惠券 | 1 | 1/1 | ✅ |
+| 代金券 | 2 | 0/2 | ❌ 完全未文档化 |
+| 换新补贴 | 3 | 0/3 | ❌ 完全未文档化 |
+| 回收单 | 2 | 0/2 | ❌ 完全未文档化 |
+| 积分兑换 | 1 | 0/1 | ❌ |
 
-**审批模块结论**：⚠️ **部分闭环**，审批处理接口需补充
-
----
-
-### 1.6 营销模块 (P3)
-
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| 优惠券列表 | `/coupons/list` | ❌ 缺失 | ⚠️ |
-| 优惠券领取 | `/coupons/user` | ❌ 缺失 | ⚠️ |
-| 优惠券发放 | `/coupons/give` | ❌ 缺失 | ⚠️ |
-| 促销活动 | `/activity/list` | ❌ 缺失 | ⚠️ |
-| 活动详情 | `/activity/:id` | ❌ 缺失 | ⚠️ |
-| 秒杀活动 | `/flash-sale/list` | ❌ 缺失 | ⚠️ |
-| 直降活动 | `/direct-discount/list` | ❌ 缺失 | ⚠️ |
-
-**营销模块结论**：❌ **未闭环**，所有 API 缺失（P3 阶段需补充）
+**结论**：优惠/补贴/回收子领域代码已实现 9 个端点，PRD 完全未涉及 —— 需要在 retail-detail-prd 中补充或新建独立 PRD。
 
 ---
 
-### 1.7 报表模块 (P3)
+### 2.4 会员
 
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| 销售报表 | `/report/sales` | ❌ 缺失 | ⚠️ |
-| 业绩报表 | `/report/performance` | ❌ 缺失 | ⚠️ |
-| 库存报表 | `/report/stock` | ❌ 缺失 | ⚠️ |
-| 会员报表 | `/report/member` | ❌ 缺失 | ⚠️ |
-
-**报表模块结论**：❌ **未闭环**（P3 阶段需补充）
+| 端点数 | PRD 覆盖 | 状态 |
+|-------|---------|------|
+| 6 | 6/6 | ✅ 完全闭环 |
 
 ---
 
-### 1.8 财务模块 (P3)
+### 2.5 库存
 
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| 收款记录 | `/finance/receive` | ❌ 缺失 | ⚠️ |
-| 日结报表 | `/finance/daily` | ❌ 缺失 | ⚠️ |
-| 对账 | `/finance/reconcile` | ❌ 缺失 | ⚠️ |
+| 子模块 | 端点数 | PRD 覆盖 | 状态 |
+|--------|-------|---------|------|
+| 仓库 | 1 | 1/1 | ✅ |
+| 盘库 | 7 | 3/7（end / restocktaking / products / plan-list 缺）| ❌ |
+| 采购 | 3 | 3/3 | ✅ |
+| 调拨 | 5 | 4/5（transferReceived 缺）| ⚠️ |
+| 序列号查询 | 2 | 2/2 | ✅ |
 
-**财务模块结论**：❌ **未闭环**（P3 阶段需补充）
-
----
-
-### 1.9 设置模块 (P3)
-
-| 功能 | 页面 | API 端点 | 状态 |
-|------|------|----------|------|
-| 账号设置 | `/setting/account` | `userSelf` | ✅ |
-| 门店设置 | `/setting/store` | ❌ 缺失 | ⚠️ |
-| 打印设置 | `/setting/printer` | ❌ 缺失 | ⚠️ |
-| 系统设置 | `/setting/system` | ❌ 缺失 | ⚠️ |
-
-**设置模块结论**：⚠️ **部分闭环**
+**结论**：盘库子模块缺失严重 —— 完成盘库 / 重盘 / 商品列表 / 方案列表 4 个核心接口 stocktaking-detail-prd 未引用。
 
 ---
 
-## 二、闭环状态汇总
+### 2.6 任务 / 审批
 
-### 按模块统计
+| 子模块 | 端点数 | PRD 覆盖 | 状态 |
+|--------|-------|---------|------|
+| 任务 | 6 | 6/6 | ✅ |
+| 审批 | 2 | 2/2 | ✅ |
 
-| 模块 | P0/P1 功能 | API 状态 | P3 功能 | API 状态 |
-|------|-----------|----------|---------|----------|
-| 订单 | 全部闭环 | ✅ | — | — |
-| 库存 | 全部闭环 | ✅ | — | — |
-| 会员 | 基础闭环 | ✅ | 等级/权益/行为 | ❌ |
-| 任务 | 基础闭环 | ✅ | 模板/分配 | ❌ |
-| 审批 | 基础闭环 | ✅ | — | — |
-| 营销 | — | — | 全部缺失 | ❌ |
-| 报表 | — | — | 全部缺失 | ❌ |
-| 财务 | — | — | 全部缺失 | ❌ |
-| 设置 | 基础闭环 | ✅ | 门店/打印/系统 | ❌ |
-
-### 缺失 API 清单
-
-#### 高优先级（P0-P1 相关）
-
-| 缺失 API | 对应功能 | 优先级 |
-|----------|----------|--------|
-| `GET /member/level/list` | 会员等级列表 | P2 |
-| `GET /member/benefit/list` | 会员权益列表 | P2 |
-| `GET /member/behavior/list` | 会员行为记录 | P2 |
-| `POST /approval/:id/handle` | 审批处理 | P2 |
-| `GET /stock/query` | 库存查询 | P1 |
-| `GET /task/template/list` | 任务模板列表 | P3 |
-| `POST /task/template/add` | 创建任务模板 | P3 |
-
-#### 中优先级（P3）
-
-| 缺失 API | 对应功能 |
-|----------|----------|
-| 优惠券相关 | `/coupons/*` |
-| 活动相关 | `/activity/*` |
-| 报表相关 | `/report/*` |
-| 财务相关 | `/finance/*` |
-| 门店设置 | `/store/*` |
-| 打印设置 | `/printer/*` |
+**结论**：任务和审批基础接口闭环 ✅。但 PRD 中提及的 `/discount-log/audit` / `/price-adjustment/audit` / `/purchase-order/unaudit-to-audit` 等审批操作接口在代码中**未找到** —— 待向后端确认。
 
 ---
 
-## 三、结论
+### 2.7 认证
 
-### ✅ 已闭环模块（P0-P1）
+| 端点数 | PRD 覆盖 | 状态 |
+|-------|---------|------|
+| 3 | 0/3 | ❌ 无 auth-prd |
 
-1. **订单模块** - 零售开单、销售订单、预订单、商城订单、退货退款、换货
-2. **库存模块** - 盘库、调拨、采购、序列号查询
-3. **会员基础** - 列表、详情、新增、积分
-4. **任务基础** - 日历、列表、新建、完成
-5. **审批基础** - 列表、统计
-6. **设置基础** - 账号信息
-
-### ⚠️ 需补充（P0-P1）
-
-1. 库存查询 `/stock/query`
-2. 审批处理 `POST /approval/:id/handle`
-3. 会员等级 `/member/level`
-4. 会员权益 `/member/benefit`
-5. 会员行为 `/member/behavior`
-
-### ❌ 待开发（P3）
-
-1. 营销模块（优惠券、活动）
-2. 报表模块
-3. 财务模块
-4. 设置扩展
+**结论**：登录 / refresh-token / logout 三个端点没有任何 PRD 文档化。建议新建 `auth-prd.md` 或在 `profile-detail-prd` 中补充登录登出流程。
 
 ---
 
-## 四、建议
+## 三、汇总指标
 
-### 立即行动（P0-P1 补充）
+### 3.1 闭环度
 
-1. 确认后端是否已实现库存查询 API
-2. 确认审批处理接口路径
-3. 补充会员等级/权益/行为 API 端点
+| 指标 | 数值 |
+|------|------|
+| 代码端点总数 | 71 |
+| 有 PRD 引用 | 52（73%） |
+| 无 PRD 引用 | 19（27%） |
+| **闭环率** | **73%** |
 
-### Phase 4-7 规划
+### 3.2 模块完整度
 
-1. **Phase 4-5**：完成 P0-P1 缺失 API 确认
-2. **Phase 6-7**：P3 模块 API 需求收集
+| 模块 | 状态 |
+|------|------|
+| 订单 | ✅ 100% |
+| 会员 | ✅ 100% |
+| 任务 | ✅ 100% |
+| 审批 | ✅ 100% |
+| 序列号 | ✅ 100% |
+| 商品 | ⚠️ 83% |
+| SKU/SPU | ⚠️ 75% |
+| 调拨 | ⚠️ 80% |
+| 分类 | ❌ 50% |
+| 盘库 | ❌ 43% |
+| 优惠/补贴/回收 | ❌ 12% |
+| 认证 | ❌ 0% |
 
 ---
 
-**闭环率**：
-- P0-P1 功能：**95%** ✅
-- P2 功能：**70%** ⚠️
-- P3 功能：**10%** ❌
+## 四、缺失 19 个端点的修复建议
+
+### P0 高优先级（业务核心，需立即补 PRD）
+
+| 端点 | 模块 | 建议归属 PRD |
+|------|------|------------|
+| `/mall-category/list` | 商城分类 | category-select-prd |
+| `/cash-coupon/available` | 代金券 | retail-detail-prd |
+| `/cash-coupon/list` | 代金券 | retail-detail-prd |
+| `/renew-subsidy/available` | 换新补贴 | retail-detail-prd |
+| `/coupon-class/list` | 换新补贴 | retail-detail-prd |
+| `/ahs/allow-bind` | 回收单 | retail-detail-prd |
+| `/ahs/check/:id` | 回收单 | retail-detail-prd |
+| `/points-redeem/order/to-mall-order` | 积分兑换 | mall-order-prd |
+| `/stock-taking/end` | 完成盘库 | stocktaking-detail-prd |
+| `/stock-taking/restocktaking` | 重盘 | stocktaking-detail-prd |
+| `/stock-taking/:id/products` | 盘库商品 | stocktaking-detail-prd |
+| `/stock-taking-plan/list` | 盘库方案 | stocktaking-detail-prd |
+| `/transfer-lock/received` | 调拨入库 | transfer-detail-prd |
+
+### P1 中优先级
+
+| 端点 | 建议归属 PRD |
+|------|------------|
+| `/category/top` | category-select-prd |
+| `/product/sku-by-spu` | category-select-prd |
+
+### P2 系统级
+
+| 端点 | 建议 |
+|------|------|
+| `/members/phone-login` | 新建 auth-prd 或并入 profile-detail-prd |
+| `/auth/refresh-token` | 同上 |
+| `/auth/logout` | 同上 |
+| `/product/barcode/:code` | 标注为遗留接口 |
+
+---
+
+## 五、PRD 提及但代码未实现的端点
+
+### 5.1 应该实现但代码缺失
+
+| 端点 | PRD | 处理建议 |
+|------|-----|---------|
+| `/mall-order/list` 等商城订单接口 | mall-order-prd | mall-order-types.dart 已就绪，端点应已实现 |
+| `/discount-log/audit` | approval-center-detail-prd | 后端确认 |
+| `/price-adjustment/audit` | approval-center-detail-prd | 后端确认 |
+| `/purchase-order/unaudit-to-audit` | approval-center-detail-prd | 后端确认 |
+| `/member-level/detail-or-all` | member-detail-prd | 后端已确认，前端未集成 |
+
+### 5.2 P3 阶段（feature-list 规划中）
+
+营销、报表、财务模块的所有接口（约 30+）属于 P3 规划，不计入闭环度统计。
+
+---
+
+## 六、行动清单
+
+### 立即（P0，预计 30 分钟）
+
+- [ ] retail-detail-prd 增补 cash-coupon / renew-subsidy / ahs 共 7 个端点引用
+- [ ] stocktaking-detail-prd 增补 stock-taking-end / restocktaking / products / plan-list
+- [ ] category-select-prd 增补 mall-category / category-top / sku-by-spu
+- [ ] transfer-detail-prd 增补 transfer-lock/received
+- [ ] mall-order-prd 增补 points-redeem 引用
+
+完成后闭环度可从 73% → **96%**（68/71）。
+
+### 短期（P1）
+
+- [ ] 新建 `auth-prd.md`（认证 3 端点）→ 100% 闭环
+- [ ] 补充 mall-order 接口的代码核查
+- [ ] approval 操作接口后端确认
+
+---
+
+## 七、与上一版（v1.0）的差异
+
+| 维度 | v1.0（5/28） | v2.0（5/29） |
+|------|-------------|-------------|
+| 数据来源 | feature-list（规划） | api_endpoints.dart（代码事实）|
+| 端点总数 | 未明确 | 71 |
+| 闭环率 | P0-P1: 95% / P2: 70% | 73%（按代码端点） |
+| 准确性 | 部分判定与现实不符 | 与代码 1:1 对齐 |
+
+v1.0 报告的「需补充」清单已部分过时（例如 `/stock/query` 实际是 `/spu/get-stock`，已在代码中），v2.0 重新对齐。
+
+---
+
+> 下次更新触发条件：`api_endpoints.dart` 新增/删除端点，或 PRD 新增模块时

@@ -6,6 +6,20 @@
 > **状态**：待开发
 > **依据**：z1-pwa SelectService 组件分析
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：service-types.dart）。本 PRD 不复制具体字段名/类型。
+
+---
+
+## 〇、嵌入路径
+
+本模块**无独立路由**，作为子组件嵌入以下父级页面：
+
+| 父级路径 | 嵌入位置 | 触发方式 |
+|---------|---------|---------|
+| `/home/retail/product` | 服务 Tab | 切换 Tab 后默认显示 |
+
+详见 `product-service-select-prd.md`（父级开单页设计）与 `retail-detail-prd.md` 第十一节模块关联。
+
 ---
 
 ## 一、产品概述
@@ -90,68 +104,21 @@
 
 ### 4.1 获取服务分类
 
-> ⚠️ 服务使用**进销存分类**（不是商城分类）
-
-```dart
-// 分类类型
-CategoryType.服务 = 7
-
-// 获取服务分类
-GET /category/list?type=7
-```
-
-**分类过滤**：
-```dart
-// 根据 pid 筛选子分类
-List<Category> getChildren(List<Category> all, int parentId) {
-  return all.where((c) => c.pid == parentId).toList();
-}
-```
+> ⚠️ 服务使用**进销存分类**（不是商城分类），接口 `GET /category/list?type=7`。
 
 ### 4.2 获取服务列表
 
-```dart
-// 获取服务列表
-GET /serve/list
+接口 `GET /serve/list`，关键参数：
 
-// 参数
-{
-  cateID: number,        // 分类ID
-  includeChild: boolean,  // 是否包含子分类
-  states: [1],          // 状态：1=正常
-  isGoods: 1 | 2,       // 1=绑定 2=不绑定
-  keyWord: string,       // 搜索关键词
-  limit: number,
-  offset: number,
-}
+- `cateID`：分类 ID
+- `states: [1]`：仅启用状态（z1-pwa `mobile/SelectService.tsx:120,135,162,172`）
+- `isGoods`：`1=绑定序列号 / 2=不绑定`，用于按服务是否绑定具体货品过滤
+- `listingStatuses: [1]`、`mallThirdCate`：商城上架场景额外限制（`SelectService.tsx:96-99`）
+- `keyword`：搜索关键词
 
-// 获取服务数量
-GET /serve/count
-```
+数量统计接口 `GET /serve/count`，参数同上但不带 limit/offset。
 
-### 4.3 服务数据结构
-
-```dart
-// 服务字段（ServeType）
-Service {
-  id: number,           // 服务ID
-  number: string,       // 服务编号
-  name: string,         // 服务名称
-  shortName: string,    // 简称
-  cate: number,         // 所属分类ID
-  cent: number,         // 服务价格（分）
-  costCent: number,     // 服务成本（分）
-  limitCent: number,    // 大盘价格（分）
-  state: 1 | 2,        // 状态：1=正常 2=禁用
-  isGoods: 1 | 2,      // 是否绑定序列号
-  isCoin: boolean,      // 是否使用积分
-  departments: number[], // 适用部门
-  listingStatus: string, // 上架状态 (listing/de-listing)
-  detailImage: string,  // 详情图
-  mainImages: string[], // 主图列表
-  description: string,  // 服务描述
-}
-```
+> 参数与响应字段类型见 `service-types.dart`。
 
 ---
 
@@ -166,115 +133,96 @@ Service {
 | `ServiceList` | 服务列表 |
 | `ServiceSearchBar` | 服务搜索栏 |
 
-### 5.2 组件状态
+### 5.2 关键状态
 
-```dart
-// ServiceSelectPanel 状态
-enum ServicePanelState {
-  loading,      // 加载中
-  categories,   // 显示分类
-  services,     // 显示服务列表
-  search,      // 搜索结果
-}
+参考 z1-pwa `mobile/SelectService.tsx`：
 
-// 多选状态
-class ServiceSelectionState {
-  List<Service> selectedServices;  // 已选服务
-  bool isMultiSelect;              // 是否多选模式
-  int? maxSelection;               // 最大选择数量
-}
-```
-
-### 5.3 交互逻辑
-
-```dart
-// 点击分类
-onCategoryTap(cateID) {
-  // 1. 更新面包屑
-  setBreadcrumbs([...breadcrumbs, cateID]);
-  
-  // 2. 获取该分类下的服务
-  final services = await serveList(cateID: cateID);
-  setServiceList(services);
-}
-
-// 搜索服务
-onSearch(keyWord) {
-  // 1. 获取匹配的服务
-  final services = await serveList(keyWord: keyWord);
-  setServiceList(services);
-  
-  // 2. 清空面包屑
-  setBreadcrumbs([]);
-}
-
-// 选择服务
-onServiceTap(service) {
-  if (!isMultiSelect) {
-    // 单选：直接返回
-    onSelect(service);
-  } else {
-    // 多选：添加到已选列表
-    final newSelected = [...selectedServices, service];
-    setSelectedServices(newSelected);
-  }
-}
-```
+- `selectedCateId`：当前选中的分类 ID
+- `serviceList` / `serviceCount`：当前分类下的服务和总数
+- `selectedServices`：已选服务集合（多选模式）
+- `keyword`：搜索关键词
+- `maxSelection`：最大选择数（多选模式，由调用方传入）
+- `filterOutServiceHasSerial`：是否过滤绑定序列号的服务（默认 `true`）
 
 ---
 
-## 六、Flutter 实现建议
+## 六、核心交互逻辑
 
-### 6.1 API 调用
+### 6.1 分类与列表加载
 
-```dart
-import 'package:dio/dio.dart';
+- 进入页面 → 默认选中首个分类 → 加载该分类下的服务列表与数量
+- 切换分类 → 重新加载列表（`/serve/list` + `/serve/count`）
+- 搜索：z1-pwa Web 端使用回车手动触发，Flutter 端建议沿用按需触发以避免频繁请求
 
-// 获取服务列表
-Future<List<Service>> getServiceList({
-  int? cateID,
-  String? keyWord,
-  bool includeChild = false,
-}) async {
-  final response = await dio.get('/serve/list', queryParameters: {
-    if (cateID != null) 'cateID': cateID,
-    if (keyWord != null) 'keyWord': keyWord,
-    'includeChild': includeChild,
-    'states': [1],
-    'limit': 100,
-  });
-  return (response.data['list'] as List)
-      .map((e) => Service.fromJson(e))
-      .toList();
-}
+### 6.2 选择行为
 
-// 获取服务分类
-Future<List<Category>> getServiceCategories() async {
-  final response = await dio.get('/category/list', queryParameters: {
-    'type': 7,  // CategoryType.服务
-  });
-  return (response.data['list'] as List)
-      .map((e) => Category.fromJson(e))
-      .toList();
-}
-```
+- **单选模式**：点击服务 → 立即返回结果给上游
+- **多选模式**：
+  - 点击服务 → 加入 `selectedServices`
+  - 已选服务再次点击 → **取消选择**（filter 移除），不是数量+1（`mobile/SelectService.tsx:264-273`）
+  - 达到 `maxSelection` 上限：未选项加 `serviceItemDisabled` 样式且禁用点击（`mobile/SelectService.tsx:441-454`）
 
-### 6.2 状态管理
+### 6.3 服务数量
 
-```dart
-class ServiceSelectState {
-  List<Category> categories;       // 服务分类
-  List<Service> services;         // 服务列表
-  List<int> breadcrumbs;          // 面包屑
-  List<Service> selectedServices;  // 已选服务
-  bool isMultiSelect;             // 多选模式
-  String? searchText;             // 搜索关键词
-}
-```
+- 服务**数量固定为 1**：z1-pwa 表格列写死 `render: () => 1`（`Sales/CreateOrder/SelectService.tsx:108-111`）
+- 同一服务多次添加：通过 `key` 加随机数支持作为多条记录添加（`Sales/CreateOrder/SelectService.tsx:149`）
+
+### 6.4 序列号过滤
+
+- `filterOutServiceHasSerial=true`（默认）：强制传 `isGoods=2`（不绑定），过滤掉需要绑定具体序列号的服务（`mobile/SelectService.tsx:122-123,135-136,162,173`）
+- 这类服务通常用于以旧换新等需要单独绑定流程的场景
 
 ---
 
-## 七、待验证接口
+## 七、状态流转
+
+服务选择本身无状态机（不像订单/审批）。涉及到的服务**自身状态**：
+
+| 字段 | 含义 | 取值 |
+|------|------|------|
+| `state` | 启用/停用 | `1=启用 / 0=停用`（列表只取启用） |
+| `listingStatus` | 上架状态 | `1=上架 / 0=下架`（商城场景过滤） |
+| `isGoods` | 是否绑定序列号 | `1=绑定 / 2=不绑定` |
+
+---
+
+## 八、异常/边界情况
+
+| 场景 | 处理 | 来源 |
+|------|------|------|
+| 接口失败 | z1-pwa 仅 `console.error` 后 return，无 retry UI | `SelectService.tsx:215-220` |
+| 草稿详情接口失败 | 走全局 `errHandler` | `Sales/CreateOrder/SelectService.tsx:87` |
+| `serveCount < 0` | 直接置空列表，无错误提示 | `mobile/SelectService.tsx:127-130` |
+| 分类与服务均空（加载完成） | 显示空状态图（`no-data.png`） | `mobile/SelectService.tsx:410-411` |
+| 搜索无结果 | 显示空状态图 | `mobile/SelectService.tsx:490-494` |
+| 加载中 | 显示 `loading` 占位 | `SelectService.tsx:175` |
+| 价格 null/undefined | 兜底为 0（`item.cent || 0`），负数无拦截 | `mobile/SelectService.tsx:252,482` |
+| 赠品模式价格异常 | 过滤 `costCent` 必须 `>= 0` | `mobile/SelectService.tsx:145-146,179-181` |
+| 无 token（未登录） | `useEffect` 直接 return；展示 `<Empty description="可能需要重新登录" />` | `SelectService.tsx:74-77,229-233` |
+| 服务的 `cateID` 在分类列表找不到 | `console.warn` + `throw new Error('数据错误')` | `SelectService.tsx:229-233` |
+| 多选超限 | `handleSelectService` 直接 return；UI 禁用未选项 | `mobile/SelectService.tsx:73,270-272,441-454` |
+
+---
+
+## 九、模块关联
+
+```
+开单页（retail_product_page） → 服务 Tab → 服务分类侧栏 → 服务列表
+                                                              ↓
+                                                          加入购物车
+                                                              ↓
+                                                       订单确认页
+```
+
+| 来源模块 | 触发 | 目标 | 说明 |
+|---------|------|------|------|
+| 零售开单 | 切到服务 Tab | 服务选择 | 共享购物车，与商品 Tab 数据隔离 |
+| 商品 SKU（hasSerial=yes） | 自动附加默认服务 | 服务选择（隐式） | 系统设置 `serviceIdSalesProductDefaultAdded` 自动加入 `serviceGifts`（`SelectProduct.tsx:492-533`）|
+| 服务选择 | 加入购物车 | 订单确认 | 序列号绑定的服务在订单提交时需补 `pSN/sn/goodsID` |
+
+---
+
+## 十、待验证接口
 
 | 接口 | 说明 | 状态 |
 |------|------|------|
@@ -284,13 +232,14 @@ class ServiceSelectState {
 
 ---
 
-## 八、注意事项
+## 十一、注意事项
 
 1. **分类体系**：服务使用进销存分类（`type=7`），不是商城分类
-2. **过滤有序列号的服务**：通过 `isGoods` 参数过滤
-3. **搜索支持关键词匹配**
+2. **过滤有序列号的服务**：通过 `isGoods` 参数过滤，移动端默认 `filterOutServiceHasSerial=true`
+3. **搜索支持关键词匹配**，建议手动触发（参考 z1-pwa）
 4. **多选模式**：需设置 `maxSelection` 限制最大选择数
+5. **服务数量固定为 1**：同一服务需多次添加时按多条记录处理
 
 ---
 
-> 上次更新：2026-05-24
+> 上次更新：2026-05-28（补充交互/异常边界/模块关联，依据 z1-pwa 源码）

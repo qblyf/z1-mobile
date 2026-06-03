@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：feature-list.md + api-endpoints.dart + stocktaking-detail-prd.md
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：task-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -320,43 +322,50 @@
 
 ## 六、字段说明
 
-### 6.1 任务（Task）
+> 字段类型见 `task-types.dart`。
 
-| 字段 | 类型 | 说明 |
+### 6.1 TaskStatus 枚举（实事）
+
+> 源码：`task-types.dart:34-48`。字段名 `status`。
+
+| key | 中文 |
+|-----|------|
+| valid | 启用 |
+| invalid | 停用 |
+
+> ⚠️ **重要**：`TaskStatus` 只表示任务模板的启用/停用，**不是工作流状态**（待办/已完成）。任务"是否完成"通过单独的接口 `/task/:id/complete` 触发。
+
+### 6.2 其他枚举
+
+| 枚举 | 用途 | 源码 |
 |------|------|------|
-| id | int | 任务 ID |
-| title | string | 任务标题 |
-| content | string | 任务内容 |
-| startTime | int | 开始时间戳（秒）|
-| endTime | int | 结束时间戳（秒，可选）|
-| priority | enum | 优先级：`low`/`medium`/`high` |
-| remindAt | int | 提醒时间戳（秒，可选）|
-| status | enum | 状态：`pending`/`completed`/`expired` |
-| memberId | int | 关联会员 ID（可选）|
-| memberName | string | 关联会员姓名（可选）|
-| memberPhone | string | 关联会员手机号（可选）|
-| createdAt | int | 创建时间戳（秒）|
-| updatedAt | int | 更新时间戳（秒）|
+| `RepeatCycle` | 重复周期 | `task-types.dart:12` |
+| `AllowCheckType` | 验收方式（部门负责人/上级/指定/无验收） | `task-types.dart:54` |
+| `ResponsibleType` | 责任人类型 | `task-types.dart:76` |
+| `TaskTemplateCate` | 任务模板分类 | `task-types.dart:96` |
 
-### 6.2 新建任务请求（AddTaskRequest）
+### 6.3 任务实例状态流转
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| title | string | 任务标题（必填）|
-| content | string | 任务内容（可选）|
-| startTime | int | 开始时间戳（秒，必填）|
-| endTime | int | 结束时间戳（秒，可选）|
-| priority | string | 优先级（默认 medium）|
-| remindAt | int | 提醒时间戳（秒，可选）|
-| memberId | int | 关联会员 ID（可选）|
+```
+[任务实例创建]
+    │
+    │  (按 RepeatCycle 自动生成实例)
+    │
+    ↓
+[待办]  ──执行人点击"完成"──→  [已完成]
+    │
+    │  (过期未完成)
+    │
+    ↓
+[已过期] ──→ 列表中显示红色标签
 
-### 6.3 行事历事件（CalendarEvent）
+[已完成] ──(AllowCheckType ≠ noCheck)──→ [待验收]
+                                            │
+                                            ↓
+                                        [已验收] / [验收驳回]
+```
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| date | string | 日期（格式：YYYY-MM-DD）|
-| tasks | array | 当日任务列表 |
-| hasEvent | bool | 是否有任务 |
+> ⚠️ 上述实例状态流转在 task-types.dart 中**无对应枚举字段**，是基于产品语义推断。任务实例的完成状态由前端通过比对 `completedAt` 等字段判断（具体字段需后端确认）。
 
 ---
 
@@ -373,22 +382,56 @@
 
 ---
 
-## 八、跳转关系
+## 八、模块关联
 
-| 来源 | 触发 | 目标 |
-|------|------|------|
-| TabBar | 点击"任务" | /task/home |
-| /task/home | 点击 Tab"列表" | /task/list |
-| /task/home | 点击日期 | 刷新当日任务列表 |
-| /task/home | 点击"+" | /task/add |
-| /task/home | 点击任务项 | /task/:id |
-| /task/list | 点击任务项 | /task/:id |
-| /task/list | 点击"+" | /task/add |
-| /task/:id | 点击"编辑" | /task/:id/edit |
-| /task/:id | 点击"标记完成" | 刷新当前页 |
-| /task/:id | 点击顶部返回 | /task/home 或 /task/list |
-| /task/add | 提交成功 | /task/:id |
-| /task/add | 点击顶部返回 | /task/home |
+```
+┌─────────────────────────────────────────────────────────┐
+│                    任务模块关联                          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│       首页 ─"任务"卡片─→ /task (任务首页)                │
+│                            │                            │
+│       工作台 ─任务卡片─→ /task/:id (任务详情)           │
+│                                                         │
+│       /task ──Tab"列表"──→ /task/list                   │
+│                                                         │
+│       /task                                             │
+│         ├──"+"新建──→ /task/add                         │
+│         ├──点击任务──→ /task/:id                         │
+│         └──点击日期──→ 刷新当日列表（同页）              │
+│                                                         │
+│       /task/:id                                         │
+│         ├──"编辑"──→ /task/:id/edit                      │
+│         ├──"完成"──→ POST /task/:id/complete + 刷新     │
+│         └──"删除"──→ DELETE + 返回列表                  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 8.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/home` | 点击"任务"卡片 | `/task` | `home_page.dart:297` |
+| `/workbench` | 点击任务列表项 | `/task/:id` | `workbench_page.dart:429` |
+| `/workbench` | 点击"任务列表" | `/task/list` | `workbench_page.dart:435` |
+| `/task` | 点击 Tab"列表" | `/task/list` | 待 Flutter 实现 |
+| `/task` | 点击"+" | `/task/add` | 待 Flutter 实现 |
+| `/task` | 点击任务项 | `/task/:id` | 待 Flutter 实现 |
+| `/task/list` | 点击任务项 | `/task/:id` | 待 Flutter 实现 |
+| `/task/:id` | 点击"编辑" | `/task/:id/edit` | 待 Flutter 实现 |
+| `/task/:id` | 点击"标记完成" | 同页刷新 | 待 Flutter 实现 |
+| `/task/add` | 提交成功 | `/task/:id` | 待 Flutter 实现 |
+
+> ⚠️ Flutter 当前任务模块的页面跳转代码尚未实现（profile/task 在调研中报告"跳转较少"），上表为产品规划。
+
+### 8.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `taskID` | 任务列表 / 工作台 | 任务详情 / 完成接口 |
+| `responsibleID` | 任务详情 | 责任人筛选 |
+| `repeatCycle` | 新建任务 | 实例自动生成（后端）|
 
 ---
 

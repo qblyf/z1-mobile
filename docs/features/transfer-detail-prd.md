@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：feature-list.md + api-endpoints.dart
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：transfer-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -88,23 +90,6 @@
 
 - 下拉刷新重新加载列表
 
-### 2.4 字段说明
-
-#### 调拨单列表项（TransferSummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | int | 调拨单 ID |
-| code | string | 调拨单号 |
-| fromWarehouseID | int | 源仓库 ID |
-| fromWarehouseName | string | 源仓库名称 |
-| toWarehouseID | int | 目标仓库 ID |
-| toWarehouseName | string | 目标仓库名称 |
-| state | enum | 状态：`pending`/`shipping`/`completed` |
-| productCount | int | 总品项数 |
-| createdAt | int | 创建时间戳（秒）|
-| createdBy | int | 创建人 ID |
-
 ### 2.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -168,10 +153,83 @@ API 调用序列：
 | 新建调拨 | `/warehouse/list-base` | GET | 仓库列表（选择仓库用，**过滤条件**：可通过 `state=1` 过滤禁用仓库，仅返回启用状态的仓库）|
 | 新建调拨 | `/transfer/add` | POST | 创建调拨单 [urlKey: /transfer/add, POST, 参数：outWarehouseID, inWarehouseID, products[], type] **注意**：请求体中商品字段为 `products` 而非 `goodsInfo` |
 | 新建调拨 | `/transfer-lock/shipping` | POST | 确认发货 [urlKey: /transfer-lock/shipping, POST, 参数：transferID, inWarehouseID] **注意**：`inWarehouseID` 为目标仓库 ID，发货时必传 |
+| 调拨详情 | `/transfer/detail` | GET | 调拨单详情（参数：id） |
+| 入库确认 | `/transfer-lock/received` | POST | 调入仓收到货后确认入库（参数：transferID）|
 
 ---
 
-## 六、待确认事项
+## 六、状态流转
+
+### 6.1 TransferState 枚举
+
+> 源码：`transfer-types.dart:35`。字段名 `status`。
+
+| 值 | key | 中文 |
+|----|-----|------|
+| 1 | pending | 待审核 |
+| 2 | draft | 草稿 |
+| 5 | approved | 已审核 |
+| 9 | terminated | 已终止 |
+| 10 | pendingConfirm | 待确认 |
+| 11 | confirmed | 已确认 |
+| 12 | shipped | 已发货 |
+
+### 6.2 状态流转图
+
+```
+[2 草稿] ──提交审核──→ [1 待审核]
+                          │
+                          ├─审核通过─→ [5 已审核] ──发货─→ [12 已发货]
+                          │                                  │
+                          │                              入库方确认
+                          │                                  │
+                          │                                  ↓
+                          │                             [11 已确认]
+                          │
+                          └─审核拒绝─→ [9 已终止]
+
+[10 待确认] —— 仓位调拨场景中目标仓库收货前的中间态
+```
+
+> ⚠️ 调拨状态触发接口在 z1-mid 源码中未集中定义，部分推断自字段值（如 `/transfer-lock/shipping` 触发状态 12）。完整流转需后端确认。
+
+---
+
+## 七、模块关联
+
+```
+┌────────────────────────────────────────────────────────┐
+│                   调拨模块关联                          │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│   库存首页 (inventory) ──→ 调拨单列表                   │
+│                              │                          │
+│                              ├──"新增调拨"按钮──→ 新建调拨页
+│                              │                          │
+│                              └──点击列表项───────→ 调拨详情
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+### 7.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/inventory` | 点击"调拨管理"卡片 | `/inventory/transfer` | `inventory_home_page.dart:32` |
+| `/inventory/transfer` | 点击"新增调拨"按钮 | `/inventory/transfer/add` | `transfer_list_page.dart:65` |
+| `/inventory/transfer` | 点击调拨单列表项 | `/inventory/transfer/:id` | `transfer_list_page.dart:201` |
+
+### 7.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `outWarehouseID` / `inWarehouseID` | 新建调拨页 | `/transfer/add` 接口 |
+| `transferID` | 调拨详情 | 发货确认 / 入库确认 |
+| `state` | 调拨单 | 决定当前可执行的操作（提交/发货/确认） |
+
+---
+
+## 八、待确认事项
 
 1. 调拨单的审核流程（是否需要审批）
 2. 调拨出库的扫码流程细节

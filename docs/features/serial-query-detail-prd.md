@@ -8,6 +8,8 @@
 > - z1-deno: `src/components/goods.ts:771` - `searchSerial`
 > - z1-mid: `model/z1/goods.ts:112` - `getGoodsBySerial`
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：serial-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、概述
@@ -133,54 +135,6 @@ Tab：无（独立页面，不在 TabBar 内）
 
 ### 3.4 字段说明
 
-#### 序列号模糊搜索请求
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| serial | string | 序列号（URL query 参数，必填） |
-| state | string | 商品状态筛选（可选） |
-
-#### 序列号精确匹配请求
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| serials | string[] | 序列号列表（body 参数，必填） |
-| goodsState | string | 商品状态筛选（可选） |
-| itemState | string | 物品状态筛选（可选） |
-
-#### 序列号查询响应（SerialSearchResult）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| goods | object | 商品信息 |
-| goods.id | int | 商品 ID |
-| goods.name | string | 商品名称 |
-| goods.sku | string | SKU |
-| goods.barcode | string | 条码 |
-| goods.weight | string | 重量（如"30g"）|
-| goods.category | string | 商品分类 |
-| currentWarehouse | object | 当前仓库信息 |
-| currentWarehouse.id | int | 仓库 ID |
-| currentWarehouse.name | string | 仓库名称 |
-| currentQuantity | int | 当前库存数量 |
-| status | enum | 状态：`in_stock`/`sold`/`transferred` |
-| traceList | array | 进出库记录列表 |
-
-#### 进出库记录（TraceRecord）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | int | 记录 ID |
-| time | int | 操作时间戳（秒）|
-| type | enum | 类型：`inbound`/`outbound`/`transfer_in`/`transfer_out` |
-| sourceNo | string | 来源单号（采购单/调拨单/销售单）|
-| targetNo | string | 去向单号 |
-| warehouseId | int | 仓库 ID |
-| warehouseName | string | 仓库名称 |
-| operatorId | int | 操作员 ID |
-| operatorName | string | 操作员姓名 |
-| remark | string | 备注（可选）|
-
 ### 3.5 异常/边界情况
 
 | 场景 | 处理 |
@@ -225,7 +179,90 @@ API 调用序列：
 
 ---
 
-## 六、待确认事项
+## 六、状态流转
+
+序列号本身是物品的唯一标识，**无业务状态机**。涉及的状态：
+
+### 6.1 GoodsStatus 枚举
+
+> 源码：`serial-types.dart:12`。
+
+| key | 中文 |
+|-----|------|
+| in_stock | 在库 |
+| sold | 已售 |
+| transferred | 已调拨 |
+
+### 6.2 TraceType（进出库记录类型）
+
+> 源码：`serial-types.dart:33`。
+
+| key | 中文 |
+|-----|------|
+| inbound | 入库 |
+| outbound | 出库 |
+| transfer_in | 调拨入库 |
+| transfer_out | 调拨出库 |
+
+### 6.3 物品生命周期
+
+```
+[采购入库] ──→ [in_stock 在库]
+                    │
+                    ├──销售出库──→ [sold 已售]
+                    │
+                    ├──调拨出库──→ [transferred 已调拨]
+                    │                  │
+                    │             调拨入库（目标仓库）
+                    │                  │
+                    │                  ↓
+                    │             [in_stock 在库]（在新仓库）
+                    │
+                    └──盘库异常──→ 库存调整
+```
+
+> 状态变化由各业务接口触发：采购入库 / 销售出库 / 调拨出入库 / 盘库调整。
+
+---
+
+## 七、模块关联
+
+```
+┌──────────────────────────────────────────────────────┐
+│                  序列号查询模块关联                    │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│   库存首页 ─"序列号查询"─→ /inventory/serial-search   │
+│   工作台    ─"序列号查询"─→ /inventory/serial-search   │
+│                                  │                    │
+│                                  ↓                    │
+│                          序列号查询结果页              │
+│                                  │                    │
+│                                  ├──→ 关联订单详情     │
+│                                  └──→ 关联进出库记录   │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
+
+### 7.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/inventory` | 点击"序列号查询" | `/inventory/serial-search` | `inventory_home_page.dart:44` |
+| `/workbench` | 点击"序列号查询" | `/inventory/serial-search` | `workbench_page.dart:168` |
+| 查询结果页 | 点击关联订单号 | 订单详情（待确认） | — |
+
+### 7.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| 序列号（pSN/sn） | 用户输入/扫码 | 查询接口 |
+| `goodsID` / `itemID` | 查询结果 | 订单关联 / 进出库记录 |
+| `status` | 查询结果 | 显示当前状态标签 |
+
+---
+
+## 八、待确认事项
 
 1. 序列号格式规范（是否支持多种格式）
 2. 进出库记录的时间范围限制（最近多久的记录）

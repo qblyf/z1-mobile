@@ -7,6 +7,8 @@
 > **依据**：`z1-mid/src/types/pre-sale-order-types.ts` + 后端接口分析
 > **⚠️ 类型文件**：`lib/types/api/pre-sale-order-types.dart` **待生成**（需从后端 TS 翻译）
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：order-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -183,68 +185,13 @@ POST /pre-sale-order/edit     → { id, mallOrderNumber, toOrderAt }
 
 ### 4.1 预订单状态
 
-```dart
-enum PreSaleOrderStatus {
-  unpaid('unpaid', '待支付'),         // 未支付定金
-  paid('paid', '已支付'),           // 已支付定金
-  completed('completed', '已完成'),   // 已转正式订单
-  applyRefund('apply-refund', '申请退款'), // 申请退款中
-  refunded('refunded', '已退款'),    // 已退款
-  canceled('canceled', '已取消');     // 已取消
-
-  final String value;
-  final String label;
-  const PreSaleOrderStatus(this.value, this.label);
-
-  static PreSaleOrderStatus fromValue(String value) {
-    return PreSaleOrderStatus.values.firstWhere(
-      (e) => e.value == value,
-      orElse: () => PreSaleOrderStatus.unpaid,
-    );
-  }
-}
-```
+> 类型定义见 `order-types.dart`。
 
 ### 4.2 预订单
 
-> **⚠️ 重要**：以下类型定义参考 `lib/types/api/pre-sale-order-types.ts`（唯一真实源）
+> **⚠️ 重要**：以下类型定义参考 `lib/types/api/pre-sale-order-types.dart`（待生成，唯一真实源）
 
-```dart
-// 类型文件：z1-mid/src/types/pre-sale-order-types.ts
-
-class PreSaleOrder {
-  final int id;                        // 预订单 ID
-  final String number;                 // 预订单号
-  final String customer;                // 预订人（UserIdent）
-  final int? department;               // 预订部门
-  final int activity;                  // 预售活动 ID
-  final int activityProduct;           // 预售活动商品 ID
-  final int amount;                    // 预定金额（分）
-  final int expandAmount;              // 膨胀金额（分）
-  final int? preSaleProduct;           // 预订的商品 SKU ID
-  final List<int> products;            // 捆绑商品 SKU ID 列表
-  final List<int> services;             // 捆绑服务 ID 列表
-  final String? mallOrderNumber;       // 关联的商城订单号
-  final PreSaleOrderStatus status;     // 状态
-  final PreSaleOrderPayment? payment;  // 支付信息
-  final String? remarks;               // 备注
-  final int? payAt;                    // 支付时间
-  final int? toOrderAt;                // 转订单时间
-  final int createdAt;                 // 创建时间
-  final String createdBy;              // 创建人
-  final int updatedAt;                 // 更新时间
-  final String updatedBy;               // 更新人
-  final String? refundReason;          // 退款原因
-  final String? sharer;                // 分享人
-  final String? emplRemarks;            // 职员备注
-  final bool? isLockSku;              // 是否锁货
-}
-
-class PreSaleOrderPayment {
-  final String platform;              // 'wx'
-  final String content;                // 支付凭证内容
-}
-```
+> 类型定义见 `order-types.dart`。
 
 ---
 

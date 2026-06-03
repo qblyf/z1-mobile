@@ -6,6 +6,8 @@
 > **状态**：初稿
 > **依据**：feature-list.md + api-endpoints.dart + stocktaking-detail-prd.md
 
+> **⚠️ 类型唯一真实源**：API 字段定义以 `lib/types/api/` 为准（相关：stock-types.dart, stocktaking-types.dart）。本 PRD 不复制具体字段名/类型。
+
 ---
 
 ## 一、页面路径总览
@@ -101,33 +103,6 @@
 - 点击可跳转到对应详情页
 
 ### 2.4 字段说明
-
-#### 库存概览（InventorySummary）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| totalItems | int | 总品项数 |
-| inStock | int | 在库数量 |
-| outStock | int | 出库数量（含销售、调拨等）|
-| warningCount | int | 库存预警数量 |
-
-#### 功能入口统计（ModuleStats）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| stocktakingPending | int | 待盘库数量 |
-| transferPending | int | 待发货调拨数量 |
-| purchasePending | int | 待入库采购数量 |
-
-#### 最近操作记录（RecentOperation）
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | int | 操作记录 ID |
-| type | enum | 类型：`stocktaking`/`transfer`/`purchase` |
-| code | string | 单号 |
-| time | int | 操作时间戳（秒）|
-| status | string | 状态描述 |
 
 ### 2.5 异常/边界情况
 
@@ -233,7 +208,53 @@ API 调用序列：
 
 ---
 
-## 六、待确认事项
+## 六、状态流转
+
+库存首页是聚合入口，**自身无状态机**。涉及的子模块状态：
+
+| 子模块 | 状态字段 | 说明 |
+|--------|---------|------|
+| 盘库 | `StocktakingState`（1 进行中 / 2 已完成） | 见 stocktaking-detail-prd.md |
+| 调拨 | `TransferState`（1/2/5/9/10/11/12） | 见 transfer-detail-prd.md |
+| 采购 | `PurchaseState`（1/2/3） + `PurchaseOrderStatus`（1-7） | 见 purchase-detail-prd.md |
+
+---
+
+## 七、模块关联
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                    库存模块关联                            │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│            ┌──────────────────┐                           │
+│            │  库存首页 /inventory │                          │
+│            └─┬────┬────┬────┬─┘                           │
+│              ↓    ↓    ↓    ↓                             │
+│         盘库  调拨 采购 序列号查询                          │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+```
+
+### 7.1 模块跳转
+
+| 来源 | 触发 | 目标 | 来源代码 |
+|------|------|------|---------|
+| `/inventory` | 点击"盘点管理"卡片 | `/inventory/stocktaking` | `inventory_home_page.dart:26` |
+| `/inventory` | 点击"调拨管理"卡片 | `/inventory/transfer` | `inventory_home_page.dart:32` |
+| `/inventory` | 点击"采购管理"卡片 | `/inventory/purchase-list` | `inventory_home_page.dart:38` |
+| `/inventory` | 点击"序列号查询" | `/inventory/serial-search` | `inventory_home_page.dart:44` |
+
+### 7.2 数据共享
+
+| 数据 | 来源 | 消费者 |
+|------|------|--------|
+| `warehouseID` | 当前职员所属仓库 | 所有子模块默认仓库参数 |
+| 各子模块统计数 | 子模块 list 接口（或聚合接口） | 库存首页卡片角标 |
+
+---
+
+## 八、待确认事项
 
 1. 库存概览接口（`/inventory/summary`）是否存在
 2. 最近操作记录接口（`/inventory/recent`）是否存在
