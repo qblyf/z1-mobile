@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../injection.dart';
 import '../../data/models/member_model.dart';
 import '../bloc/member_home_bloc.dart';
@@ -47,8 +46,6 @@ class _MemberHomePageContentState extends State<_MemberHomePageContent> {
             Expanded(
               child: BlocBuilder<MemberHomeBloc, MemberHomeState>(
                 builder: (context, state) {
-                  print('[UI] state = ${state.runtimeType}, members=${state is MemberHomeLoaded ? state.members.length : "N/A"}');
-                  try {
                   if (state is MemberHomeLoading) {
                     return const Center(child: CupertinoActivityIndicator());
                   }
@@ -66,10 +63,6 @@ class _MemberHomePageContentState extends State<_MemberHomePageContent> {
                   }
 
                   return const SizedBox.shrink();
-                  } catch(e, st) {
-                    print('[UI] render error: $e\n$st');
-                    return Text('Error: $e');
-                  }
                 },
               ),
             ),

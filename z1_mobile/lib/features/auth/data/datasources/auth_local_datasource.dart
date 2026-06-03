@@ -1,7 +1,16 @@
 import '../../../../core/services/token_service.dart';
 import '../../domain/entities/user.dart';
 
-/// 本地数据源接口
+/// 本地数据源接口（占位，未接入 DI）
+///
+/// ⚠️ 当前没有任何调用方：
+/// - Token 由 `TokenService` 直接持有，无需经过此层
+/// - 用户信息持久化业务尚未启动（profile 页只展示登录时返回的 user 字段）
+///
+/// 保留这个文件是为 Clean Architecture 留好插槽。真正接入时：
+/// 1. `saveUser` / `getUser` / `clearUser` 用 `SharedPreferences` + `jsonEncode(User)` 实现
+/// 2. 在 `injection.dart` 注册 `AuthLocalDataSourceImpl`
+/// 3. 让 `AuthRepository` 调用此层，而非直接调 `TokenService`
 abstract class AuthLocalDataSource {
   /// 保存 Token
   Future<void> saveTokens({
@@ -40,7 +49,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     required String accessToken,
     required String refreshToken,
   }) async {
-    tokenService.saveTokens(accessToken: accessToken, refreshToken: refreshToken);
+    await tokenService.saveTokens(accessToken: accessToken, refreshToken: refreshToken);
   }
 
   @override
@@ -55,7 +64,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> clearTokens() async {
-    tokenService.clearTokens();
+    await tokenService.clearTokens();
   }
 
   @override
@@ -65,17 +74,17 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> saveUser(User user) async {
-    // TODO: 实现用户信息存储
+    // TODO(用户信息持久化): 占位实现。未来用 `SharedPreferences.setString('user', jsonEncode(user.toJson()))`
   }
 
   @override
   Future<User?> getUser() async {
-    // TODO: 实现用户信息获取
+    // TODO(用户信息持久化): 占位实现。未来读 `SharedPreferences.getString('user')` 并 jsonDecode 为 User
     return null;
   }
 
   @override
   Future<void> clearUser() async {
-    // TODO: 实现用户信息清除
+    // TODO(用户信息持久化): 占位实现。未来 `SharedPreferences.remove('user')`
   }
 }

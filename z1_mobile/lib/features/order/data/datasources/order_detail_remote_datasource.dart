@@ -52,7 +52,8 @@ class OrderDetailRemoteDataSourceImpl implements OrderDetailRemoteDataSource {
   Future<Result<OrderModel>> _fetchMemberName(OrderModel order) async {
     try {
       final memberResp = await apiClient.get<Map<String, dynamic>>(
-        ApiEndpoints.memberSpecified(order.customerIdent!),
+        ApiEndpoints.memberSpecifiedPath,
+        queryParameters: {'userIdents': order.customerIdent!.toString()},
         parser: (data) => data,
       );
 

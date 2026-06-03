@@ -1,7 +1,19 @@
 import 'package:equatable/equatable.dart';
 
-/// 订单状态枚举（按后端 int 值映射）
-/// 1=已发货已付款, 2=已发货未付款, 3=未发货未付款, 4=未发货已付款, 5=取消
+/// 订单状态枚举（展示层）
+///
+/// 展示层把协议层 5 个状态压缩为 UI 的 3 个状态：
+///
+/// | 后端 status (int) | 含义       | 展示层枚举            |
+/// |-------------------|-----------|----------------------|
+/// | 1                 | 已发货已付款 | OrderStatus.completed |
+/// | 2                 | 已发货未付款 | OrderStatus.pending   |
+/// | 3                 | 未发货未付款 | OrderStatus.pending   |
+/// | 4                 | 未发货已付款 | OrderStatus.pending   |
+/// | 5                 | 取消        | OrderStatus.refunded  |
+///
+/// 协议层枚举见 `lib/types/api/order-types.dart` 中的 `OrderStatus`。
+/// 此处压缩是 UI 决策（仅展示 完成/进行中/退款），勿在不了解时还原。
 enum OrderStatus {
   pending('pending', '待处理'),
   completed('completed', '已完成'),

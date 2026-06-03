@@ -156,7 +156,7 @@ class _QuickActionsSection extends StatelessWidget {
               color: const Color(0xFFFF6B35),
               onTap: () => context.go('/home/retail/entry'),
             ),
-            _QuickActionItem(
+            const _QuickActionItem(
               icon: CupertinoIcons.barcode_viewfinder,
               label: '扫码',
               color: CupertinoColors.activeGreen,

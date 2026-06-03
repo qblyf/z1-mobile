@@ -83,7 +83,7 @@ class CouponModel extends Equatable {
     if (type == CouponType.fixed) {
       return '¥${discountValueYuan.toStringAsFixed(2)}';
     } else {
-      return '${discountValue}%';
+      return '$discountValue%';
     }
   }
 

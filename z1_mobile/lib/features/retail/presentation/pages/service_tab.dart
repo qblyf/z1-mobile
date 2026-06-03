@@ -125,7 +125,8 @@ class _ServiceTabState extends State<ServiceTab> {
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
-              // TODO: Camera scan functionality
+              // TODO(扫码): 接入 mobile_scanner 包，扫到的条码写入搜索框并触发 ServiceSearchChanged
+              // 同步实现：product_tab.dart 的同名按钮
             },
             child: Container(
               width: 36,

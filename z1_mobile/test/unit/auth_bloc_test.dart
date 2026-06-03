@@ -2,9 +2,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:z1_mobile/core/api/result.dart';
-import 'package:z1_mobile/core/errors/exceptions.dart';
-import 'package:z1_mobile/core/services/token_service.dart';
-import 'package:z1_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:z1_mobile/features/auth/data/models/user_model.dart';
 import 'package:z1_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 
@@ -42,7 +39,7 @@ void main() {
       mobilePhone: '13800138000',
     );
 
-    final testLoginResponse = LoginResponse(
+    const testLoginResponse = LoginResponse(
       accessToken: 'test_access_token',
       refreshToken: 'test_refresh_token',
       user: testUser,
@@ -69,7 +66,7 @@ void main() {
         '登录成功时应发出 AuthAuthenticated 状态',
         setUp: () {
           when(() => mockAuthRemoteDataSource.login(any())).thenAnswer(
-            (_) async => Success(testLoginResponse),
+            (_) async => const Success(testLoginResponse),
           );
           when(() => mockTokenService.saveTokens(
                 accessToken: any(named: 'accessToken'),
@@ -84,7 +81,7 @@ void main() {
         expect: () => [
           const AuthLoading(),
           isA<AuthAuthenticated>().having(
-            (state) => state.user?.mobilePhone,
+            (state) => state.user.mobilePhone,
             'user phone',
             '13800138000',
           ),
@@ -101,7 +98,7 @@ void main() {
         '登录失败时应发出 AuthError 状态',
         setUp: () {
           when(() => mockAuthRemoteDataSource.login(any())).thenAnswer(
-            (_) async => Failure(ApiFailure(
+            (_) async => const Failure(ApiFailure(
               type: ApiErrorType.validationError,
               message: '用户名或密码错误',
             )),

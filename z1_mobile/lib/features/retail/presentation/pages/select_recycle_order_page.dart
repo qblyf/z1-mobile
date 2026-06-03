@@ -240,9 +240,9 @@ class _RecycleOrderCard extends StatelessWidget {
             Container(
               width: 90,
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
-                borderRadius: const BorderRadius.only(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(11),
                   bottomLeft: Radius.circular(11),
                 ),
@@ -338,8 +338,8 @@ class _RecycleOrderCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
               child: Icon(
                 CupertinoIcons.chevron_right,
                 color: CupertinoColors.systemGrey3,

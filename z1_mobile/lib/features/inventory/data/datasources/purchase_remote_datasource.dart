@@ -88,7 +88,7 @@ class PurchaseRemoteDataSourceImpl implements PurchaseRemoteDataSource {
       parser: (data) => data,
     );
 
-    return response.map((data) => null);
+    return response.map((data) {});
   }
 
   @override

@@ -66,7 +66,7 @@ class TestAuthRepository implements AuthRepository {
 
   @override
   Future<bool> isAuthenticated() async {
-    return await localDataSource.isAuthenticated();
+    return localDataSource.isAuthenticated();
   }
 
   @override
@@ -132,17 +132,17 @@ void main() {
     const testAccessToken = 'test_access_token';
     const testRefreshToken = 'test_refresh_token';
 
-    final testLoginResponse = LoginResponse(
+    const testLoginResponse = LoginResponse(
       accessToken: testAccessToken,
       refreshToken: testRefreshToken,
       expiresIn: 3600,
-      user: const AuthUser(userIdent: 1, realName: '测试用户', mobilePhone: testPhone),
+      user: AuthUser(userIdent: 1, realName: '测试用户', mobilePhone: testPhone),
     );
 
     test('登录成功返回 AuthSuccess', () async {
       // arrange
       when(() => mockRemoteDataSource.login(any())).thenAnswer(
-        (_) async => Success(testLoginResponse),
+        (_) async => const Success(testLoginResponse),
       );
       when(() => mockLocalDataSource.saveTokens(
             accessToken: any(named: 'accessToken'),
@@ -172,7 +172,7 @@ void main() {
     test('登录失败返回错误', () async {
       // arrange
       when(() => mockRemoteDataSource.login(any())).thenAnswer(
-        (_) async => Failure(ApiFailure(
+        (_) async => const Failure(ApiFailure(
           type: ApiErrorType.unauthorized,
           message: '用户名或密码错误',
         )),
@@ -207,7 +207,7 @@ void main() {
     test('登出失败返回错误', () async {
       // arrange
       when(() => mockRemoteDataSource.logout()).thenAnswer(
-        (_) async => Failure(ApiFailure(
+        (_) async => const Failure(ApiFailure(
           type: ApiErrorType.serverError,
           message: '服务器错误',
         )),
@@ -257,7 +257,7 @@ void main() {
         email: 'test@example.com',
       );
       when(() => mockRemoteDataSource.getUserInfo()).thenAnswer(
-        (_) async => Success(testUserModel),
+        (_) async => const Success(testUserModel),
       );
 
       // act
@@ -278,7 +278,7 @@ void main() {
     test('获取用户信息失败', () async {
       // arrange
       when(() => mockRemoteDataSource.getUserInfo()).thenAnswer(
-        (_) async => Failure(ApiFailure(
+        (_) async => const Failure(ApiFailure(
           type: ApiErrorType.unauthorized,
           message: '未登录',
         )),

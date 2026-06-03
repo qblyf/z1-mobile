@@ -1,7 +1,10 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
 
 import '../constants/app_constants.dart';
 import '../constants/api_constants.dart';
+import 'api_endpoints.dart';
 import '../services/token_service.dart';
 
 /// Token 拦截器 - 自动处理 Token 刷新
@@ -20,7 +23,6 @@ class TokenInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     // 从 TokenService 获取 Token
     final accessToken = tokenService.getAccessToken();
-    final refreshToken = tokenService.getRefreshToken();
 
     if (accessToken != null) {
       options.headers['Authorization'] = 'Bearer $accessToken';
@@ -54,7 +56,7 @@ class TokenInterceptor extends Interceptor {
           }
         } catch (_) {
           // 刷新失败，清除 Token
-          tokenService.clearTokens();
+          await tokenService.clearTokens();
         }
       }
 
@@ -70,7 +72,7 @@ class TokenInterceptor extends Interceptor {
   Future<Map<String, dynamic>?> _refreshToken(String refreshToken) async {
     try {
       final response = await dio.post(
-        '${ApiConstants.apiPrefix}${ApiConstants.refreshToken}',
+        '${ApiConstants.apiPrefix}${ApiEndpoints.refreshToken}',
         data: {'refresh_token': refreshToken},
         options: Options(headers: {'Authorization': ''}),
       );
@@ -86,11 +88,12 @@ class LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (AppConstants.isDebug) {
-      print('[API Request] ${options.method} ${options.uri}');
-      print('Headers: ${options.headers}');
-      if (options.data != null) {
-        print('Body: ${options.data}');
-      }
+      developer.log(
+        '[API Request] ${options.method} ${options.uri}\n'
+        'Headers: ${options.headers}'
+        '${options.data != null ? '\nBody: ${options.data}' : ''}',
+        name: 'api',
+      );
     }
     handler.next(options);
   }
@@ -98,8 +101,11 @@ class LoggingInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (AppConstants.isDebug) {
-      print('[API Response] ${response.statusCode} ${response.requestOptions.uri}');
-      print('Data: ${response.data}');
+      developer.log(
+        '[API Response] ${response.statusCode} ${response.requestOptions.uri}\n'
+        'Data: ${response.data}',
+        name: 'api',
+      );
     }
     handler.next(response);
   }
@@ -107,8 +113,12 @@ class LoggingInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (AppConstants.isDebug) {
-      print('[API Error] ${err.type} ${err.requestOptions.uri}');
-      print('Message: ${err.message}');
+      developer.log(
+        '[API Error] ${err.type} ${err.requestOptions.uri}\n'
+        'Message: ${err.message}',
+        name: 'api',
+        error: err,
+      );
     }
     handler.next(err);
   }

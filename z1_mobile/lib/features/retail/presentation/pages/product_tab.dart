@@ -137,7 +137,8 @@ class _ProductTabState extends State<ProductTab> {
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
-              // TODO: Camera scan functionality
+              // TODO(扫码): 接入 mobile_scanner 包，扫到的条码写入搜索框并触发 ProductSelectSearchChanged
+              // 同步实现：service_tab.dart 的同名按钮
             },
             child: Container(
               width: 36,
@@ -218,7 +219,7 @@ class _ProductTabState extends State<ProductTab> {
   }
 
   Widget _buildSpuGrid(BuildContext context, ProductSelectLoaded state) {
-    final displaySpus = state.currentSpus;
+    final displaySpus = state.displaySpus;
 
     if (state.isLoadingSpus) {
       return const Center(child: CupertinoActivityIndicator());
@@ -290,8 +291,8 @@ class _ProductTabState extends State<ProductTab> {
             context.read<ProductSelectBloc>().add(ProductSelectSkuAdded(sku: sku));
           },
           onSelectGoods: (spuId) {
-            // TODO: 引导到 goods 列表页面
-            // 这里可以导航到专门的 goods 选择页面
+            // TODO(序列号商品选择页): hasSerial=2 时跳转到独立 goods 选择页（按 SPU 列出可选 serial 编号 → 加入购物车）
+            // 依赖：1) 新路由 /home/retail/goods-select?spuId=xxx  2) GoodsSelectPage  3) /serial/list-by-spu API
             debugPrint('SPU $spuId 需要选择具体商品（hasSerial=2）');
           },
         ),

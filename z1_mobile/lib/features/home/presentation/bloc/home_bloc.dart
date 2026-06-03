@@ -95,8 +95,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final stats = HomeStats.fromOrders(orders);
     final recentOrders = orders.take(3).toList();
 
-    // TODO: 从登录状态或本地存储获取当前用户信息
-    // 暂时使用默认用户信息，等登录成功后传递
+    // TODO(用户信息持久化): 当前显示硬编码占位用户。等 AuthBloc 提供已登录 user 后：
+    // 1) HomeBloc 构造函数注入 AuthBloc 或 user provider
+    // 2) 这里读取 AuthAuthenticated.user 并传给 HomeLoaded
+    // 3) 删除 defaultUser 兜底
     const defaultUser = AuthUser(
       userIdent: 999999999,
       mobilePhone: '',

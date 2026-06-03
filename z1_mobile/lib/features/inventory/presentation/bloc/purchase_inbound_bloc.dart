@@ -217,7 +217,7 @@ class PurchaseInboundBloc extends Bloc<PurchaseInboundEvent, PurchaseInboundStat
     final currentState = state;
     if (currentState is! PurchaseInboundReady) return;
     if (currentState.selectedWarehouse == null) {
-      emit(PurchaseInboundError('请选择仓库'));
+      emit(const PurchaseInboundError('请选择仓库'));
       emit(currentState);
       return;
     }

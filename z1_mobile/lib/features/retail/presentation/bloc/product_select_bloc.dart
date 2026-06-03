@@ -156,6 +156,17 @@ class ProductSelectLoaded extends ProductSelectState {
 
   int? get currentCategoryId => navigationStack.isNotEmpty ? navigationStack.last : null;
 
+  /// 按 searchKeyword 过滤后的 SPU 列表（大小写不敏感子串匹配 spuName/brand/series）
+  List<SpuModel> get displaySpus {
+    final keyword = searchKeyword.trim().toLowerCase();
+    if (keyword.isEmpty) return currentSpus;
+    return currentSpus.where((spu) {
+      return spu.spuName.toLowerCase().contains(keyword) ||
+          (spu.brand ?? '').toLowerCase().contains(keyword) ||
+          (spu.series ?? '').toLowerCase().contains(keyword);
+    }).toList();
+  }
+
   ProductSelectLoaded copyWith({
     List<MallCategoryModel>? allCategories,
     Map<int, List<MallCategoryModel>>? categoryChildrenMap,

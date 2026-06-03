@@ -68,7 +68,7 @@ class OrderListRemoteDataSourceImpl implements OrderListRemoteDataSource {
   Future<Result<List<OrderModel>>> getOrderList(
       OrderListParams params) async {
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.shopSaleList,
+      ApiEndpoints.shopSaleList(),
       queryParameters: params.toQueryParams(),
       parser: (data) => data,
     );

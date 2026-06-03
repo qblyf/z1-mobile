@@ -99,7 +99,7 @@ class StocktakingListBloc extends Bloc<StocktakingListEvent, StocktakingListStat
   ) async {
     emit(const StocktakingListLoading());
 
-    final params = const StocktakingListParams(page: 1, pageSize: 20);
+    const params = StocktakingListParams(page: 1, pageSize: 20);
     final result = await _dataSource.getStocktakingList(params);
 
     if (result.isFailure) {
@@ -156,7 +156,7 @@ class StocktakingListBloc extends Bloc<StocktakingListEvent, StocktakingListStat
     StocktakingListRefreshRequested event,
     Emitter<StocktakingListState> emit,
   ) async {
-    final params = const StocktakingListParams(page: 1, pageSize: 20);
+    const params = StocktakingListParams(page: 1, pageSize: 20);
     final result = await _dataSource.getStocktakingList(params);
 
     if (result.isFailure) {

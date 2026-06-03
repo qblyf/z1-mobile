@@ -121,12 +121,19 @@ class ApiEndpoints {
       '/members/list?keyword=$keyword&page=$page&pageSize=$pageSize';
   /// 会员详情（GET）
   /// 后端路径：/member/specified（单数 member，不是复数 members）
-  static String memberSpecified(int memberId) => '/member/specified?userIdents=$memberId';
+  /// 调用方式：`apiClient.get(memberSpecifiedPath, queryParameters: {'userIdents': id})`
+  static const String memberSpecifiedPath = '/member/specified';
   /// 新增会员
   static const String memberAdd = '/members/add';
   /// 积分查询：直接用 GET /members/self 返回的 experience 字段
   /// POST /members/experience 是积分调整接口
   static const String memberExperienceEdit = '/members/experience';
+  /// 积分查询（GET，含历史明细）
+  /// query: userIdents
+  static const String memberCreditscore = '/members/creditscore';
+  /// 积分调整（POST）
+  /// body: { userIdents, adjustValue, reason }
+  static const String memberCreditscoreAdjust = '/members/creditscore/adjust';
 
   // ===== 商品 =====
   /// 商品列表

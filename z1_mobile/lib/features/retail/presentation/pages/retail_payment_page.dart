@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/api/api_endpoints.dart';
 import '../../../../injection.dart';
 import '../../data/models/retail_order_model.dart';
 
@@ -98,7 +99,7 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
     try {
       final dio = getIt<Dio>();
       final response = await dio.post(
-        '/order/sale-shop-add',
+        ApiEndpoints.shopSaleAdd,
         data: {
           'warehouseID': _order.warehouseID,
           'customerIdent': _order.customerIdent ?? 0,
@@ -148,7 +149,7 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
           context: context,
           builder: (ctx) => CupertinoAlertDialog(
             title: const Text('创建订单失败'),
-            content: Text('${e}'),
+            content: Text('$e'),
             actions: [
               CupertinoDialogAction(
                 child: const Text('确定'),
@@ -331,11 +332,10 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
                                 const SizedBox(width: 8),
                                 CupertinoButton(
                                   padding: EdgeInsets.zero,
-                                  minSize: 24,
-                                  child: const Icon(CupertinoIcons.xmark_circle_fill, color: CupertinoColors.systemGrey),
                                   onPressed: () {
                                     setState(() => _selectedPayments.remove(entry.key));
-                                  },
+                                  }, minimumSize: const Size(24, 24),
+                                  child: const Icon(CupertinoIcons.xmark_circle_fill, color: CupertinoColors.systemGrey),
                                 ),
                               ],
                             ),

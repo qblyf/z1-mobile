@@ -1,26 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-enum OrderStatus {
-  pending('pending', '待处理'),
-  completed('completed', '已完成'),
-  refunded('refunded', '已退款');
-
-  final String value;
-  final String label;
-  const OrderStatus(this.value, this.label);
-
-  static OrderStatus fromString(String? status) {
-    switch (status) {
-      case 'completed':
-        return OrderStatus.completed;
-      case 'refunded':
-        return OrderStatus.refunded;
-      case 'pending':
-      default:
-        return OrderStatus.pending;
-    }
-  }
-}
+// OrderStatus 由订单领域模型统一定义，此处复用避免重复
+import '../../../order/data/models/order_model.dart' show OrderStatus;
+export '../../../order/data/models/order_model.dart' show OrderStatus;
 
 class MemberOrderModel extends Equatable {
   final String orderNumber;
@@ -42,8 +24,16 @@ class MemberOrderModel extends Equatable {
         createdAt: json['createdAt'] as int? ?? 0,
         customerName: json['customerName'] as String? ?? '',
         finalAmount: json['finalAmount'] as int? ?? 0,
-        status: json['status'] as String? ?? 'pending',
+        // 后端 status 可能是 int（1-5）或 String（pending/completed/refunded）
+        // 统一在解析期归一为协议层 String 值（OrderStatus.value），避免运行时 cast 崩溃
+        status: _parseStatus(json['status']),
       );
+
+  static String _parseStatus(dynamic raw) {
+    if (raw is int) return OrderStatus.fromValue(raw).value;
+    if (raw is String) return OrderStatus.fromString(raw).value;
+    return OrderStatus.pending.value;
+  }
 
   double get finalAmountYuan => finalAmount / 100;
 

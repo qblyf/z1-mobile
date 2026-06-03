@@ -115,8 +115,7 @@ class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
       } else {
         emit(MemberHomeLoaded(members: members));
       }
-    } catch(e, st) {
-      print('[BLoC] load error: $e\n$st');
+    } catch (e) {
       emit(MemberHomeError(e.toString()));
     }
   }
@@ -139,22 +138,18 @@ class MemberHomeBloc extends Bloc<MemberHomeEvent, MemberHomeState> {
     try {
       final result = await _dataSource.searchByPhone(event.keyword);
 
-      print('[BLoC] search result: isFailure=${result.isFailure}, value=${result.value?.length}');
-
       if (result.isFailure) {
         emit(MemberHomeEmpty(searchKeyword: event.keyword));
         return;
       }
 
       final members = result.value!;
-      print('[BLoC] emitting MemberHomeLoaded with ${members.length} members');
       emit(MemberHomeLoaded(
         members: members,
         isSearchResult: true,
         searchKeyword: event.keyword,
       ));
-    } catch(e, st) {
-      print('[BLoC] search error: $e\n$st');
+    } catch (e) {
       emit(MemberHomeError(e.toString()));
     }
   }

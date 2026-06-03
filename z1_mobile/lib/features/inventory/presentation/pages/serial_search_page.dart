@@ -224,7 +224,7 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -233,16 +233,16 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
             size: 64,
             color: CupertinoColors.systemGrey3,
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+          Text(
             '扫码或输入序列号',
             style: TextStyle(
               fontSize: 16,
               color: CupertinoColors.secondaryLabel,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             '通过扫描或输入商品序列号、条码\n查询商品信息和库存记录',
             style: TextStyle(
               fontSize: 13,

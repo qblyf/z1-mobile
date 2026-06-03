@@ -144,7 +144,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                   backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
                   child: Text(
                     member.name.isNotEmpty ? member.name[0] : '?',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 24,
@@ -174,7 +174,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                             ),
                             child: Text(
                               member.levelName,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: 12,
                               ),
@@ -185,7 +185,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         member.phone,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.grey600,
                           fontSize: 14,
                         ),
@@ -196,14 +196,14 @@ class _MemberDetailPageContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Divider(color: AppTheme.grey200),
+            const Divider(color: AppTheme.grey200),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '注册于 ${member.createdAtFormatted}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppTheme.grey500,
                     fontSize: 12,
                   ),
@@ -224,7 +224,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                     ),
                     child: Text(
                       tag,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppTheme.grey700,
                         fontSize: 12,
                       ),
@@ -257,7 +257,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${member.availableExperienceYuan.toStringAsFixed(0)}',
+                  member.availableExperienceYuan.toStringAsFixed(0),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 28,
@@ -268,7 +268,7 @@ class _MemberDetailPageContent extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               '可抵 ¥${member.availableExperienceYuan.toStringAsFixed(2)}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppTheme.grey500,
                 fontSize: 12,
               ),
@@ -346,7 +346,7 @@ class _MemberDetailPageContent extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppTheme.grey700,
               fontSize: 12,
             ),
@@ -402,7 +402,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                           fontSize: 18,
                         ),
                       ),
-                      Text(
+                      const Text(
                         '今日',
                         style: TextStyle(
                           color: AppTheme.grey500,
@@ -423,7 +423,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                           fontSize: 18,
                         ),
                       ),
-                      Text(
+                      const Text(
                         '本周',
                         style: TextStyle(
                           color: AppTheme.grey500,
@@ -465,9 +465,9 @@ class _MemberDetailPageContent extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         if (orders.isEmpty)
-          Card(
+          const Card(
             child: Padding(
-              padding: const EdgeInsets.all(32),
+              padding: EdgeInsets.all(32),
               child: Center(
                 child: Text(
                   '暂无消费记录',
@@ -483,6 +483,8 @@ class _MemberDetailPageContent extends StatelessWidget {
   }
 
   Widget _buildOrderItem(BuildContext context, MemberOrderModel order) {
+    final isCompleted = order.statusEnum == OrderStatus.completed;
+    final statusColor = isCompleted ? AppTheme.successColor : AppTheme.warningColor;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -505,7 +507,7 @@ class _MemberDetailPageContent extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       order.createdAtFormatted,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppTheme.grey500,
                         fontSize: 12,
                       ),
@@ -527,17 +529,13 @@ class _MemberDetailPageContent extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: order.statusEnum == OrderStatus.completed
-                          ? AppTheme.successColor.withOpacity(0.1)
-                          : AppTheme.warningColor.withOpacity(0.1),
+                      color: statusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       order.statusLabel,
                       style: TextStyle(
-                        color: order.statusEnum == OrderStatus.completed
-                            ? AppTheme.successColor
-                            : AppTheme.warningColor,
+                        color: statusColor,
                         fontSize: 12,
                       ),
                     ),

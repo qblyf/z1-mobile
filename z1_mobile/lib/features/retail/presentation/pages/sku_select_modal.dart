@@ -194,8 +194,8 @@ class _SkuSelectModalState extends State<SkuSelectModal> {
                             Text(_error!, style: const TextStyle(color: CupertinoColors.destructiveRed)),
                             const SizedBox(height: 12),
                             CupertinoButton(
-                              child: const Text('重试'),
                               onPressed: _loadData,
+                              child: const Text('重试'),
                             ),
                           ],
                         ),
@@ -490,10 +490,10 @@ class _QuantitySelector extends StatelessWidget {
         children: [
           CupertinoButton(
             padding: const EdgeInsets.all(8),
-            child: const Icon(CupertinoIcons.minus, size: 18),
             onPressed: quantity > 1
                 ? () => onChanged(quantity - 1)
                 : null,
+            child: const Icon(CupertinoIcons.minus, size: 18),
           ),
           SizedBox(
             width: 50,
@@ -513,10 +513,10 @@ class _QuantitySelector extends StatelessWidget {
           ),
           CupertinoButton(
             padding: const EdgeInsets.all(8),
-            child: const Icon(CupertinoIcons.plus, size: 18),
             onPressed: quantity < maxQuantity
                 ? () => onChanged(quantity + 1)
                 : null,
+            child: const Icon(CupertinoIcons.plus, size: 18),
           ),
         ],
       ),

@@ -7,6 +7,9 @@ analyzer:
     - "**/*.inject.summary"
   errors:
     invalid_annotation_target: ignore
+    # 协议层 `lib/types/api/*-types.dart` 照搬 z1-mid 后端 TypeScript 文件名（kebab-case），
+    # 业务代码自然遵循 snake_case 不会触发——全局忽略不会丢真信号。
+    file_names: ignore
 
 linter:
   rules:

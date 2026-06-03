@@ -18,17 +18,13 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
   @override
   Future<Result<List<MemberModel>>> searchByPhone(String keyword) async {
     final result = await _apiClient.get<Map<String, dynamic>>(
-      '/members/list-phones',
+      ApiEndpoints.memberSearchByPhones,
       queryParameters: {'phones': keyword},
       parser: (data) => data,
     );
 
-    // Debug
-    print('[MemberDS] keyword=$keyword, result.isFailure=${result.isFailure}, value=${result.value}');
-
     return result.map((data) {
       final list = data['res'] as List<dynamic>? ?? [];
-      print('[MemberDS] parsed ${list.length} members');
       return list.map((e) => MemberModel.fromJson(e as Map<String, dynamic>)).toList();
     });
   }
@@ -36,7 +32,7 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
   @override
   Future<Result<MemberModel>> getMemberDetail(int memberId) async {
     return _apiClient.get<MemberModel>(
-      '/member/specified',  // 注意：后端是 member（单数），不是 members（复数）
+      ApiEndpoints.memberSpecifiedPath,
       queryParameters: {'userIdents': memberId.toString()},
       parser: (data) {
         final list = data['list'] as List<dynamic>? ?? [];
@@ -51,7 +47,7 @@ class MemberRemoteDataSourceImpl implements MemberRemoteDataSource {
   @override
   Future<Result<List<MemberOrderModel>>> getMemberOrders(int memberId, {int page = 1, int pageSize = 20}) async {
     return _apiClient.get<List<MemberOrderModel>>(
-      ApiEndpoints.shopSaleList,
+      ApiEndpoints.shopSaleList(),
       queryParameters: {
         'userIdents': memberId.toString(),
         'page': page.toString(),

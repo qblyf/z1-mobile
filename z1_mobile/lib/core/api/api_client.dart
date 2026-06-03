@@ -22,7 +22,10 @@ class ApiInterceptor extends Interceptor {
     }
 
     // 添加 Use-Permissions header（用于权限验证）
-    // TODO: 从配置获取 permission token
+    // TODO(权限令牌): 后端要求请求头 `Use-Permissions` 携带 permission token，
+    // 当前未实现，所有"按权限过滤数据"的接口会拿到默认/最小权限集。
+    // 接入步骤：1) 登录响应中提取 permission token  2) 存入 TokenService.getPermissionToken
+    //          3) 此处读取并设置到 options.headers['Use-Permissions']
 
     handler.next(options);
   }

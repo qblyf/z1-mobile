@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/api/result.dart';
 import '../../../../core/services/token_service.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/models/user_model.dart';
@@ -94,7 +93,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     final isLoggedIn = _tokenService.isLoggedIn();
     if (isLoggedIn) {
-      // TODO: 从本地存储获取用户信息
+      // TODO(用户信息持久化): 当前即使本地有 token 也 emit Unauthenticated，等价于"无法自动登录"。
+      // 接入 AuthLocalDataSource.getUser 后改为：getUser() ?? 调 /user/self 拉取 → emit AuthAuthenticated(user)
+      // 失败兜底再 emit AuthUnauthenticated
       emit(const AuthUnauthenticated());
     } else {
       emit(const AuthUnauthenticated());

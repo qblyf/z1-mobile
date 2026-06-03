@@ -153,14 +153,14 @@ class _SelectRenewSubsidyViewState extends State<_SelectRenewSubsidyView> {
                     ),
                   Expanded(
                     child: subsidies.isEmpty
-                        ? Center(
+                        ? const Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(CupertinoIcons.gift,
+                                Icon(CupertinoIcons.gift,
                                     size: 48, color: CupertinoColors.systemGrey),
-                                const SizedBox(height: 12),
-                                const Text(
+                                SizedBox(height: 12),
+                                Text(
                                   '该分类暂无可用补贴',
                                   style: TextStyle(
                                     color: CupertinoColors.secondaryLabel,
@@ -242,8 +242,7 @@ class _SelectRenewSubsidyViewState extends State<_SelectRenewSubsidyView> {
 
   Widget _buildBottomBar(BuildContext context, RenewSubsidyClassLoaded state) {
     final subsidies = state.subsidies;
-    final selectedCount = 0; // 简化版，暂不支持多选
-    final totalDiscount = 0;
+    // 简化版，暂不支持多选 —— 选数 / 优惠合计计算在接入多选后再补
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -394,9 +393,9 @@ class _RenewSubsidyCard extends StatelessWidget {
             Container(
               width: 90,
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
-                borderRadius: const BorderRadius.only(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(11),
                   bottomLeft: Radius.circular(11),
                 ),
@@ -476,8 +475,8 @@ class _RenewSubsidyCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
               child: Icon(
                 CupertinoIcons.chevron_right,
                 color: CupertinoColors.systemGrey3,

@@ -17,7 +17,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<Result<List<OrderModel>>> getOrderList() async {
     final response = await apiClient.get<Map<String, dynamic>>(
-      ApiEndpoints.shopSaleList,
+      ApiEndpoints.shopSaleList(),
       parser: (data) => data,
     );
 

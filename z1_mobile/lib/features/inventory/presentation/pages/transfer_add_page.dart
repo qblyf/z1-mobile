@@ -128,7 +128,7 @@ class _TransferAddPageState extends State<TransferAddPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _SectionTitle(title: '调出仓库'),
+                const _SectionTitle(title: '调出仓库'),
                 const SizedBox(height: 8),
                 _WarehouseSelector(
                   warehouses: warehouses,
@@ -137,7 +137,7 @@ class _TransferAddPageState extends State<TransferAddPage> {
                   onSelected: (w) => _bloc.add(TransferAddOutWarehouseSelected(w)),
                 ),
                 const SizedBox(height: 20),
-                _SectionTitle(title: '调入仓库'),
+                const _SectionTitle(title: '调入仓库'),
                 const SizedBox(height: 8),
                 _WarehouseSelector(
                   warehouses: warehouses,
@@ -147,7 +147,7 @@ class _TransferAddPageState extends State<TransferAddPage> {
                   excludedWarehouseId: outWarehouse?.id,
                 ),
                 const SizedBox(height: 20),
-                _SectionTitle(title: '调拨商品'),
+                const _SectionTitle(title: '调拨商品'),
                 const SizedBox(height: 8),
                 _ProductSelector(
                   products: products,
@@ -453,13 +453,12 @@ class _ProductItemCard extends StatelessWidget {
             children: [
               CupertinoButton(
                 padding: EdgeInsets.zero,
-                minSize: 28,
-                child: const Icon(CupertinoIcons.minus_circle, size: 22),
                 onPressed: () {
                   if (product.count > 1) {
                     onCountChanged(product.count - 1);
                   }
-                },
+                }, minimumSize: const Size(28, 28),
+                child: const Icon(CupertinoIcons.minus_circle, size: 22),
               ),
               Text(
                 '${product.count}',
@@ -467,17 +466,15 @@ class _ProductItemCard extends StatelessWidget {
               ),
               CupertinoButton(
                 padding: EdgeInsets.zero,
-                minSize: 28,
+                onPressed: () => onCountChanged(product.count + 1), minimumSize: const Size(28, 28),
                 child: const Icon(CupertinoIcons.plus_circle, size: 22),
-                onPressed: () => onCountChanged(product.count + 1),
               ),
             ],
           ),
           CupertinoButton(
             padding: EdgeInsets.zero,
-            minSize: 28,
+            onPressed: onRemove, minimumSize: const Size(28, 28),
             child: const Icon(CupertinoIcons.trash, color: CupertinoColors.destructiveRed, size: 20),
-            onPressed: onRemove,
           ),
         ],
       ),
