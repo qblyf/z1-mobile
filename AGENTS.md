@@ -128,18 +128,42 @@
 
 ## 汇报规则（必须遵守）
 
-**每次开发完成后，必须通过 mavis communication send 告知项目经理（session ID: mvs_edb5225cc4284c29bb93eb2244ec6f66）。**
+**每次开发完成后，必须通过 `mavis communication send` 告知项目经理。**
+
+> ⚠️ session ID 会随 agent rotation 变化，**不要写死**。以 `mavis communication peers` 实时输出为准。
+
+**查询当前可用 session**：
+```bash
+mavis communication peers | jq '.sessions[] | select(.status == "finished" or .status == "started") | {title, sessionId, agentName}'
+```
+
+通常每个角色只有一个 "main" session（status=finished/idle 是可路由状态）。
+
+**汇报给项目经理**：
+```bash
+mavis communication send \
+  --to <项目经理 sessionId> \
+  --command prompt \
+  --content "..."
+```
+
+> 项目经理本身的 session ID 也可能变化，PM 启动新 session 时会主动告知当前 ID，或通过 `mavis communication peers` 查询 `agentName=agent-ca844031e7db` 的 status=started session。
 
 ---
 
 ## 分工规则
 
-| 工作类型 | 执行人 | Session ID |
-|---------|-------|------------|
-| 代码改动 | flutter开发 | mvs_3a6e069df73f4e72bdda851544213e13 |
-| 测试执行 | flutter测试 | mvs_c8927294e7aa49478ebaa425f4ae34e1 |
-| 文档编写 | 文档助手 | mvs_d07499453c1844b99e6cff61536246b9 |
-| 调度协调 | 项目经理 | mvs_edb5225cc4284c29bb93eb2244ec6f66 |
+| 工作类型 | 执行人 | Agent Name | Session 查询 |
+|---------|-------|-----------|-------------|
+| 代码改动 | flutter开发 | `agent-2e1123841946` | `mavis communication peers` 取 title="main" |
+| 测试执行 | flutter测试 | `agent-c29355ba65db` | `mavis communication peers` 取 title="main" |
+| 文档编写 | 文档助手 | `agent-b16e31f79989` | `mavis communication peers` 取 title="main" |
+| 调度协调 | 项目经理 | `agent-ca844031e7db` | `mavis communication peers` 取 title="main" |
+
+> **历史 session ID 仅供参考**（已 aborted/finished 的不能接收消息）：
+> - flutter开发（aborted 2026-06-03 前）：mvs_3a6e069df73f4e72bdda851544213e13
+> - flutter测试（aborted 2026-06-03 前）：mvs_c8927294e7aa49478ebaa425f4ae34e1
+> - 文档助手（aborted 2026-06-03 前）：mvs_d07499453c1844b99e6cff61536246b9
 
 ---
 
