@@ -55,10 +55,6 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
     return 0;
   }
 
-  double _getActualPayYuan() {
-    return _productsTotalYuan - _getCoinDiscountYuan() - _couponDiscountYuan;
-  }
-
   void _goToPayment() {
     final coinState = context.read<CoinDiscountBloc>().state;
     final decreaseCoins = coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
