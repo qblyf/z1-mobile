@@ -63,8 +63,14 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
     final coinState = context.read<CoinDiscountBloc>().state;
     final decreaseCoins = coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
 
+    // 把已选优惠券（CouponModel）转换为接口需要的 CouponItem 列表
+    final couponItems = _selectedCoupons
+        .map((c) => CouponItem(couponId: c.couponId, amount: c.discountValue))
+        .toList();
+
     final order = _order.copyWith(
       decreaseCoins: decreaseCoins,
+      coupons: couponItems,
       remarks: _remarksController.text.trim(),
     );
     context.push('/home/retail/payment', extra: order);
@@ -253,14 +259,14 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                     decoration: const BoxDecoration(
                                       border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
                                     ),
-                                    child: Row(
+                                    child: const Row(
                                       children: [
-                                        const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
-                                        const SizedBox(width: 8),
-                                        const Expanded(child: Text('积分抵扣')),
+                                        Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
+                                        SizedBox(width: 8),
+                                        Expanded(child: Text('积分抵扣')),
                                         Text(
                                           '加载失败',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: CupertinoColors.destructiveRed,
                                             fontSize: 12,
                                           ),
@@ -365,7 +371,7 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                               ],
                             ),
                           ),
-                        Divider(height: 24),
+                        const Divider(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -462,7 +468,7 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                 },
                 children: List.generate(
                   (availableCoins ~/ 100) + 1,
-                  (index) => Center(child: Text('${index * 100} 积分 (可抵扣 ¥${index})')),
+                  (index) => Center(child: Text('${index * 100} 积分 (可抵扣 ¥$index)')),
                 ),
               ),
             ),
