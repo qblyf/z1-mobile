@@ -20,10 +20,6 @@ class _RetailProductPageState extends State<RetailProductPage> {
   late RetailOrder _order;
   int _selectedTabIndex = 0;
   final List<CartItem> _cartItems = [];
-  
-  /// 状态更新锁：防止并发 setState 导致状态不一致
-  /// 健壮可扩展设计：使用锁机制确保状态更新的原子性
-  bool _isUpdatingState = false;
 
   @override
   void initState() {
@@ -39,89 +35,32 @@ class _RetailProductPageState extends State<RetailProductPage> {
 
   double get _cartTotalYuan => _cartItems.fold(0, (sum, item) => sum + item.subtotal) / 100;
 
-  /// 商品购物车变更回调
-  ///
-  /// 健壮可扩展设计：
-  /// - 状态锁机制：防止并发更新导致的状态竞争
-  /// - 异常捕获：空安全检查，确保数据类型正确
-  /// - 时序保证：等待前一状态更新完成后再处理新事件
-  /// - 性能优化：批量更新减少重建次数
+  /// 商品购物车变更回调：用商品页最新选择整体替换购物车里的商品项，保留服务项。
   void _onGoodsCartChanged(List<CartSkuItem> items) {
-    // 状态更新锁：等待前一更新完成（防止快速连续触发）
-    if (_isUpdatingState) {
-      return;
-    }
-    _isUpdatingState = true;
-
-    try {
-      // 边界检查：确保 Widget 未卸载
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        // 保留服务类型购物车项（时序保证：服务项不受商品变更影响）
-        final serviceItems = _cartItems.where((i) => i.type == CartItemType.service).toList();
-        
-        // 健壮转换：过滤无效数据
-        final validGoodsItems = items
-            .map((item) => CartItem.fromGoodsSku(item.sku, quantity: item.quantity))
-            .toList();
-        
-        _cartItems
-          ..clear()
-          ..addAll([...serviceItems, ...validGoodsItems]);
-      });
-    } catch (e) {
-      // 异常处理：记录错误但不影响UI显示
-      debugPrint('商品购物车状态更新异常: $e');
-    } finally {
-      // 确保状态锁在下一帧重置（允许后续更新）
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _isUpdatingState = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      final serviceItems =
+          _cartItems.where((i) => i.type == CartItemType.service).toList();
+      final goodsItems = items
+          .map((item) => CartItem.fromGoodsSku(item.sku, quantity: item.quantity))
+          .toList();
+      _cartItems
+        ..clear()
+        ..addAll([...serviceItems, ...goodsItems]);
+    });
   }
 
-  /// 服务购物车变更回调
-  ///
-  /// 健壮可扩展设计：
-  /// - 状态锁机制：防止并发更新导致的状态竞争
-  /// - 异常捕获：空安全检查，确保数据类型正确
-  /// - 时序保证：等待前一状态更新完成后再处理新事件
+  /// 服务购物车变更回调：用服务页最新选择整体替换购物车里的服务项，保留商品项。
   void _onServiceCartChanged(List<CartItem> items) {
-    // 状态更新锁：防止快速连续触发
-    if (_isUpdatingState) {
-      return;
-    }
-    _isUpdatingState = true;
-
-    try {
-      // 边界检查：确保 Widget 未卸载
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        // 保留商品类型购物车项（时序保证：商品项不受服务变更影响）
-        final goodsItems = _cartItems.where((i) => i.type == CartItemType.goods).toList();
-        
-        // 健壮转换：过滤无效数据
-        final validServiceItems = items.where((item) => item.name.isNotEmpty).toList();
-        
-        _cartItems
-          ..clear()
-          ..addAll([...goodsItems, ...validServiceItems]);
-      });
-    } catch (e) {
-      // 异常处理：记录错误但不影响UI显示
-      debugPrint('服务购物车状态更新异常: $e');
-    } finally {
-      // 确保状态锁在下一帧重置
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _isUpdatingState = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      final goodsItems =
+          _cartItems.where((i) => i.type == CartItemType.goods).toList();
+      final serviceItems = items.where((item) => item.name.isNotEmpty).toList();
+      _cartItems
+        ..clear()
+        ..addAll([...goodsItems, ...serviceItems]);
+    });
   }
 
   void _goToConfirm() {
