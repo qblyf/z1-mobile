@@ -1,5 +1,42 @@
 # 变更日志
 
+## v1.33（2026-06-06）
+
+### 跑通零售销售全流程（实物 + 服务 + 混合单），修订单列表读取 bug
+
+**背景**：以「重新跑通整个销售流程」为目标，用超管账号 + 真实仓库 63 对后端实跑，发现前端有 6 个缺口阻断端到端下单，且订单列表读取链路、服务商品流程各有 bug。全部修复并真实下单验证。
+
+**真实下单验证 5 类场景（全部 `code=10000`）**：
+
+| 场景 | 内容 | 单号 |
+|------|------|------|
+| A 实物现金 | 钢化膜×1 ¥3.5 现金 | 202606062328134882 |
+| B 实物组合支付 | 皮套+钢化膜×2 ¥57，现金¥30+微信¥27 | 202606062328143707 |
+| C 实物微信 | 皮套×1 ¥168 微信 | 202606062328147440 |
+| D 纯服务 | 维修费 ¥1 现金 | 202606062348297727 |
+| E 实物+服务混合 | 钢化膜¥3.5 + 维修费¥1 微信 | 202606062348295728 |
+
+**销售流程修复（6 缺口）**：
+
+- 购物车回写订单 + 绑定会员校验（后端拒绝 `customerIdent=0`，缺会员返回 40003）
+- `sale-shop-add` 补 `Use-Permissions: all` 头；修正完成页路由 `/home/retail/complete`
+- **服务项按 `type=2` + `serviceID` 提交**（服务用 type=1 报 70413 要序列号，缺 serviceID 报 40003）；`ProductItem` 加 `serviceID` 字段，`_goToConfirm` 按 `CartItemType` 区分
+- `warehouseID`/`sellerIdent` 暂硬编码超管账号（仓库 63 / userIdent 999999999），TODO 待登录态注入（缺口 4）
+- `/product-price/list` 响应读 `list` 字段（原读 `data` 取不到）
+- 登录页凭据改 `dart-define` 注入，`.env.test` 加入 `.gitignore`
+
+**订单列表读取 bug（3 处）**：
+
+- parser 读顶层 `res`（`ApiClient.get` 不解包 res，订单数组直接在 res 里，原读 `data['data']` 恒空）
+- 分页参数改 `offset`/`limit`、时间过滤改 `minCreatedAt`（后端不认 `page`/`pageSize`/`startTime`，会被忽略返回全量 100）
+- 展示应收优先 `discountAmount`（响应无 `finalAmount`，`orderAmount` 是商品原价）
+
+**文档回写**：retail-detail-prd §9.3「真实响应已知差异」新增 5 张差异表（请求参数 + 响应结构）。
+
+**遗留债务**：warehouseID/sellerIdent 待登录态注入；`retail_product_page._isUpdatingState` 过度设计状态锁（会丢更新）待清理；后端订单列表恒升序、新单排后（仅展示体验问题，已确认不修）。
+
+---
+
 ## v1.32（2026-06-03）
 
 ### mall_order 详情页加操作入口（完成/取消），破坏性接口保留人工空跑

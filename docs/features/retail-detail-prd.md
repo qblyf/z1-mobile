@@ -775,6 +775,46 @@ API 调用序列：
 
 > ✅ 所有接口已验证可用
 
+### 9.3 真实响应已知差异（2026-06-06 空跑验证）
+
+用超管账号 + 真实仓库 63 对后端实跑下单/列表，发现与本 PRD 推断的若干差异，已回写代码。
+
+**A. `/order/sale-shop-add` 请求参数差异**
+
+| 字段 | PRD/直觉假设 | 实际后端要求 | 说明 |
+|------|-------------|-------------|------|
+| `customerIdent` | 可为 0（散客） | **拒绝 0**，必须绑定会员 | 缺会员返回 `40003` |
+| `productInfos[].type` | 默认 1 | 实物=1，**服务=2** | 服务用 1 会被当实物，报 `70413 强制序列号` |
+| `productInfos[].serviceID` | 未提及 | **服务项（type=2）必传**，与 productID 同值 | 缺失返回 `40003` |
+| 鉴权头 | Bearer token | 下单须额外带 `Use-Permissions: all` | 否则权限不足 |
+
+**B. `/order/sale-shop-add` 响应结构**
+
+成功响应 `orderNumber` 在**顶层**（非 `res` 内）：
+
+```json
+{ "code": 10000, "orderNumber": "202606062348295728" }
+```
+
+**C. `/order/shop-sale-list`（订单列表）请求参数差异**
+
+| 维度 | PRD/直觉假设 | 实际后端要求 |
+|------|-------------|-------------|
+| 分页 | `page` / `pageSize` | **`offset` / `limit`**（page/pageSize/size 被忽略，恒返回 100） |
+| 时间过滤 | `startTime` | **`minCreatedAt`**（startTime 不生效） |
+| 排序 | 可传 `order=desc` | **不支持排序参数**，恒按 createdAt 升序 |
+
+**D. `/order/shop-sale-list` 响应结构**
+
+- 订单数组直接在**顶层 `res`**（无 `data` / `list` 包装），`ApiClient.get` 不解包 res
+- **无 `finalAmount` 字段**：实际成交额是 `discountAmount`，`orderAmount` 是商品原价（记账式收款两者分开记），展示应收应取 `discountAmount`
+
+**E. `/product-price/list` 响应结构**
+
+- 价格数组在 `list` 字段（非 `data`）
+
+> 已真实下单验证 5 类场景：实物现金 / 实物微信 / 实物组合支付 / 纯服务 / 实物+服务混合，全部 `code=10000`。
+
 ---
 
 ## 十、状态流转
