@@ -102,7 +102,10 @@ class OrderModel extends Equatable {
         orderAmount: json['orderAmount'] as int? ?? 0,
         discountAmount: json['discountAmount'] as int? ?? 0,
         revenueAmount: json['revenueAmount'] as int?,
+        // 响应无 finalAmount 字段；记账式收款下实际成交额是 discountAmount，
+        // orderAmount 是商品原价。展示应收优先 discountAmount，最后兜底 orderAmount。
         finalAmount: json['finalAmount'] as int? ??
+            json['discountAmount'] as int? ??
             json['orderAmount'] as int? ??
             0,
         status: json['status'] as int? ?? 3,

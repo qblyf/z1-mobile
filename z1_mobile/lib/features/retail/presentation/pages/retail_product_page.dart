@@ -129,7 +129,31 @@ class _RetailProductPageState extends State<RetailProductPage> {
       _showError('请先添加商品或服务');
       return;
     }
-    context.push('/home/retail/confirm', extra: _order);
+    // 后端 sale-shop-add 拒绝 customerIdent=0，必须先绑定会员
+    if (_order.customerIdent == null || _order.customerIdent == 0) {
+      _showError('请先返回上一步绑定会员后再结算');
+      return;
+    }
+
+    final products = _cartItems.map((item) {
+      // 服务项后端要求 type=2 且必传 serviceID；实物项 type=1。
+      final isService = item.type == CartItemType.service;
+      return ProductItem(
+        productID: item.id,
+        productName: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        discountPrice: item.price,
+        totalDiscountPrice: item.subtotal,
+        type: isService ? 2 : 1,
+        serviceID: isService ? item.id : null,
+      );
+    }).toList();
+
+    context.push(
+      '/home/retail/confirm',
+      extra: _order.copyWith(products: products),
+    );
   }
 
   void _showError(String message) {

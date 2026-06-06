@@ -100,6 +100,7 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
       final dio = getIt<Dio>();
       final response = await dio.post(
         ApiEndpoints.shopSaleAdd,
+        options: Options(headers: {'Use-Permissions': 'all'}),
         data: {
           'warehouseID': _order.warehouseID,
           'customerIdent': _order.customerIdent ?? 0,
@@ -114,6 +115,8 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
               'quantity': p.quantity,
               'type': p.type,
               'isGift': p.isGift ? 1 : 0,
+              // 服务项（type=2）后端必须收到 serviceID，否则返回 40003
+              if (p.serviceID != null) 'serviceID': p.serviceID,
             };
           }).toList(),
           'payMode': _selectedPayments.entries.map((e) => {
@@ -141,7 +144,7 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
       );
 
       if (mounted) {
-        context.pushReplacement('/order/retail/complete', extra: completedOrder);
+        context.pushReplacement('/home/retail/complete', extra: completedOrder);
       }
     } catch (e) {
       if (mounted) {

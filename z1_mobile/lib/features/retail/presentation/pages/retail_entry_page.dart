@@ -84,10 +84,14 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
   }
 
   void _startOrder() {
+    // TODO(缺口4): warehouseID/sellerIdent 暂硬编码为当前超管账号(技术部仓库63)
+    // 待登录态注入用户信息后改为动态读取
     final order = RetailOrder(
       salesType: _selectedType,
       customerIdent: _boundMember?.ident,
       customerName: _boundMember?.realName,
+      warehouseID: 63,
+      sellerIdent: 999999999,
     );
 
     context.push('/home/retail/product', extra: order);

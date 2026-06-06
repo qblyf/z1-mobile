@@ -230,7 +230,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     );
 
     return response.map((data) {
-      final list = data['data'] as List<dynamic>? ?? [];
+      final list = data['list'] as List<dynamic>? ?? [];
       return list.map((json) => ProductPriceModel.fromJson(json as Map<String, dynamic>)).toList();
     });
   }

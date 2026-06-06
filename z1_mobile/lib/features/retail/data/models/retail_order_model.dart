@@ -36,8 +36,10 @@ class ProductItem extends Equatable {
   final int quantity;
   final int discountPrice; // 单品折扣后价格（分）
   final int totalDiscountPrice; // 该商品总价（分）
-  final int type; // 1=普通商品
+  final int type; // 1=普通商品，2=服务（服务还须传 serviceID）
   final bool isGift; // 是否赠品
+  /// 服务项标识（type=2 时必传，后端拒绝缺 serviceID 的服务单）
+  final int? serviceID;
 
   const ProductItem({
     required this.productID,
@@ -48,6 +50,7 @@ class ProductItem extends Equatable {
     this.totalDiscountPrice = 0,
     this.type = 1,
     this.isGift = false,
+    this.serviceID,
   });
 
   /// 单价（元）
@@ -71,11 +74,12 @@ class ProductItem extends Equatable {
       totalDiscountPrice: totalDiscountPrice ?? this.totalDiscountPrice,
       type: type,
       isGift: isGift ?? this.isGift,
+      serviceID: serviceID,
     );
   }
 
   @override
-  List<Object?> get props => [productID, quantity, discountPrice, isGift];
+  List<Object?> get props => [productID, quantity, discountPrice, isGift, serviceID];
 }
 
 /// 代金券项（对应后端 AddOrderCoupon）

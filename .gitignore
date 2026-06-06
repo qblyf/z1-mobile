@@ -8,3 +8,7 @@
 
 # Agent 工作区数据（按约定走 mcp__agent-memory__memory 工具读写，不入 git）
 memory/JOURNAL.jsonl
+
+# 测试凭据（明文，绝不入 git）
+.env.test
+**/.env.test

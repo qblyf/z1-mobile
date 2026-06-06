@@ -11,8 +11,14 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _phoneController = TextEditingController(text: '99999999999');
-  final _passwordController = TextEditingController(text: 'ncxSEpbZ\$20m\$W6O');
+  // 测试凭据通过 --dart-define=TEST_PHONE=xxx --dart-define=TEST_PWD=xxx 注入，
+  // 不写进源码、不入 git；未注入时为空，正常手动输入。
+  final _phoneController = TextEditingController(
+    text: const String.fromEnvironment('TEST_PHONE'),
+  );
+  final _passwordController = TextEditingController(
+    text: const String.fromEnvironment('TEST_PWD'),
+  );
   bool _rememberMe = false;
   bool _isObscure = true;
 
