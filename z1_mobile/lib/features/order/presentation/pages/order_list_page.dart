@@ -23,9 +23,7 @@ class _OrderListPageState extends State<OrderListPage> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _bloc = OrderListBloc(
-      dataSource: OrderListRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<OrderListBloc>();
     _bloc.add(const OrderListLoadRequested());
   }
 
@@ -88,14 +86,16 @@ class _OrderListPageState extends State<OrderListPage> {
                             const SizedBox(height: 16),
                             CupertinoButton(
                               child: const Text('重试'),
-                              onPressed: () => _bloc.add(const OrderListRefreshRequested()),
+                              onPressed: () =>
+                                  _bloc.add(const OrderListRefreshRequested()),
                             ),
                           ],
                         ),
                       );
                     }
 
-                    if (state is OrderListLoaded || state is OrderListLoadingMore) {
+                    if (state is OrderListLoaded ||
+                        state is OrderListLoadingMore) {
                       final orders = state is OrderListLoaded
                           ? state.orders
                           : (state as OrderListLoadingMore).orders;
@@ -105,7 +105,8 @@ class _OrderListPageState extends State<OrderListPage> {
                         return const Center(
                           child: Text(
                             '暂无订单',
-                            style: TextStyle(color: CupertinoColors.secondaryLabel),
+                            style: TextStyle(
+                                color: CupertinoColors.secondaryLabel),
                           ),
                         );
                       }
@@ -116,7 +117,8 @@ class _OrderListPageState extends State<OrderListPage> {
                           CupertinoSliverRefreshControl(
                             onRefresh: () async {
                               _bloc.add(const OrderListRefreshRequested());
-                              await Future.delayed(const Duration(milliseconds: 500));
+                              await Future.delayed(
+                                  const Duration(milliseconds: 500));
                             },
                           ),
                           SliverPadding(
@@ -129,7 +131,8 @@ class _OrderListPageState extends State<OrderListPage> {
                                         ? const Padding(
                                             padding: EdgeInsets.all(16),
                                             child: Center(
-                                              child: CupertinoActivityIndicator(),
+                                              child:
+                                                  CupertinoActivityIndicator(),
                                             ),
                                           )
                                         : const SizedBox.shrink();
@@ -139,7 +142,8 @@ class _OrderListPageState extends State<OrderListPage> {
                                     child: _OrderCard(order: orders[index]),
                                   );
                                 },
-                                childCount: orders.length + (isLoadingMore ? 1 : 0),
+                                childCount:
+                                    orders.length + (isLoadingMore ? 1 : 0),
                               ),
                             ),
                           ),
@@ -163,7 +167,9 @@ class _OrderListPageState extends State<OrderListPage> {
       builder: (context, state) {
         final selectedRange = state is OrderListLoaded
             ? state.dateRange
-            : (state is OrderListLoadingMore ? state.dateRange : DateRange.today);
+            : (state is OrderListLoadingMore
+                ? state.dateRange
+                : DateRange.today);
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -172,25 +178,29 @@ class _OrderListPageState extends State<OrderListPage> {
               _FilterTab(
                 label: '今日',
                 isSelected: selectedRange == DateRange.today,
-                onTap: () => _bloc.add(const OrderListDateRangeChanged(DateRange.today)),
+                onTap: () =>
+                    _bloc.add(const OrderListDateRangeChanged(DateRange.today)),
               ),
               const SizedBox(width: 12),
               _FilterTab(
                 label: '本周',
                 isSelected: selectedRange == DateRange.week,
-                onTap: () => _bloc.add(const OrderListDateRangeChanged(DateRange.week)),
+                onTap: () =>
+                    _bloc.add(const OrderListDateRangeChanged(DateRange.week)),
               ),
               const SizedBox(width: 12),
               _FilterTab(
                 label: '本月',
                 isSelected: selectedRange == DateRange.month,
-                onTap: () => _bloc.add(const OrderListDateRangeChanged(DateRange.month)),
+                onTap: () =>
+                    _bloc.add(const OrderListDateRangeChanged(DateRange.month)),
               ),
               const SizedBox(width: 12),
               _FilterTab(
                 label: '全部',
                 isSelected: selectedRange == DateRange.all,
-                onTap: () => _bloc.add(const OrderListDateRangeChanged(DateRange.all)),
+                onTap: () =>
+                    _bloc.add(const OrderListDateRangeChanged(DateRange.all)),
               ),
             ],
           ),
@@ -218,10 +228,13 @@ class _FilterTab extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? CupertinoColors.activeBlue : CupertinoColors.white,
+          color:
+              isSelected ? CupertinoColors.activeBlue : CupertinoColors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? CupertinoColors.activeBlue : CupertinoColors.separator,
+            color: isSelected
+                ? CupertinoColors.activeBlue
+                : CupertinoColors.separator,
           ),
         ),
         child: Text(
@@ -273,7 +286,8 @@ class _OrderCard extends StatelessWidget {
                 children: [
                   Text(
                     order.orderNumber,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -299,7 +313,8 @@ class _OrderCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: order.statusEnum == OrderStatus.completed
                         ? const Color(0xFFDCFCE7)

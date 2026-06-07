@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/stocktaking_remote_datasource.dart';
 import '../../data/models/stocktaking_model.dart';
 import '../bloc/stocktaking_list_bloc.dart';
 
@@ -23,9 +22,7 @@ class _StocktakingListPageState extends State<StocktakingListPage> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _bloc = StocktakingListBloc(
-      dataSource: StocktakingRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<StocktakingListBloc>();
     _bloc.add(const StocktakingListLoadRequested());
   }
 
@@ -89,14 +86,16 @@ class _StocktakingListPageState extends State<StocktakingListPage> {
                       const SizedBox(height: 16),
                       CupertinoButton(
                         child: const Text('重试'),
-                        onPressed: () => _bloc.add(const StocktakingListRefreshRequested()),
+                        onPressed: () =>
+                            _bloc.add(const StocktakingListRefreshRequested()),
                       ),
                     ],
                   ),
                 );
               }
 
-              if (state is StocktakingListLoaded || state is StocktakingListLoadingMore) {
+              if (state is StocktakingListLoaded ||
+                  state is StocktakingListLoadingMore) {
                 final items = state is StocktakingListLoaded
                     ? state.items
                     : (state as StocktakingListLoadingMore).items;
@@ -183,7 +182,8 @@ class _StocktakingCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item.code ?? '盘库单#${item.id}',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 15),
                   ),
                 ),
                 _StateBadge(state: item.state),
@@ -192,7 +192,8 @@ class _StocktakingCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(CupertinoIcons.building_2_fill, size: 14, color: CupertinoColors.secondaryLabel),
+                const Icon(CupertinoIcons.building_2_fill,
+                    size: 14, color: CupertinoColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Text(
                   item.warehouseName ?? '仓库${item.warehouseID}',
@@ -206,10 +207,12 @@ class _StocktakingCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(CupertinoIcons.clock, size: 14, color: CupertinoColors.secondaryLabel),
+                const Icon(CupertinoIcons.clock,
+                    size: 14, color: CupertinoColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Text(
-                  dateFormat.format(DateTime.fromMillisecondsSinceEpoch(item.createdAt * 1000)),
+                  dateFormat.format(DateTime.fromMillisecondsSinceEpoch(
+                      item.createdAt * 1000)),
                   style: const TextStyle(
                     color: CupertinoColors.secondaryLabel,
                     fontSize: 12,

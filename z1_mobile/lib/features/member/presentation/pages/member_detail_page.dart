@@ -112,7 +112,9 @@ class _MemberDetailPageContent extends StatelessWidget {
   Widget _buildContent(BuildContext context, MemberDetailLoaded state) {
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<MemberDetailBloc>().add(const MemberDetailRefreshRequested());
+        context
+            .read<MemberDetailBloc>()
+            .add(const MemberDetailRefreshRequested());
       },
       child: ListView(
         padding: const EdgeInsets.all(16),
@@ -141,7 +143,7 @@ class _MemberDetailPageContent extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 32,
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                   child: Text(
                     member.name.isNotEmpty ? member.name[0] : '?',
                     style: const TextStyle(
@@ -167,9 +169,11 @@ class _MemberDetailPageContent extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -217,7 +221,8 @@ class _MemberDetailPageContent extends StatelessWidget {
                 runSpacing: 4,
                 children: member.tags.map((tag) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppTheme.grey100,
                       borderRadius: BorderRadius.circular(4),
@@ -278,14 +283,16 @@ class _MemberDetailPageContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => context.push('/member/$memberId/creditscore'),
+                    onPressed: () =>
+                        context.push('/member/$memberId/creditscore'),
                     child: const Text('积分查询'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => context.push('/member/$memberId/creditscore/edit'),
+                    onPressed: () =>
+                        context.push('/member/$memberId/creditscore/edit'),
                     child: const Text('积分调整'),
                   ),
                 ),
@@ -335,7 +342,7 @@ class _MemberDetailPageContent extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -356,11 +363,15 @@ class _MemberDetailPageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildConsumptionSummary(BuildContext context, List<MemberOrderModel> orders) {
+  Widget _buildConsumptionSummary(
+      BuildContext context, List<MemberOrderModel> orders) {
     if (orders.isEmpty) return const SizedBox.shrink();
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final todayStart = DateTime(now).copyWith(hour: 0, minute: 0, second: 0).millisecondsSinceEpoch ~/ 1000;
+    final todayStart = DateTime(now)
+            .copyWith(hour: 0, minute: 0, second: 0)
+            .millisecondsSinceEpoch ~/
+        1000;
     final weekStart = todayStart - (86400 * 7);
 
     int todayAmount = 0;
@@ -484,7 +495,8 @@ class _MemberDetailPageContent extends StatelessWidget {
 
   Widget _buildOrderItem(BuildContext context, MemberOrderModel order) {
     final isCompleted = order.statusEnum == OrderStatus.completed;
-    final statusColor = isCompleted ? AppTheme.successColor : AppTheme.warningColor;
+    final statusColor =
+        isCompleted ? AppTheme.successColor : AppTheme.warningColor;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -527,9 +539,10 @@ class _MemberDetailPageContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

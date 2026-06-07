@@ -188,8 +188,7 @@ class _TodaySummarySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final dateStr =
-        '${now.month}月${now.day}日 周${_weekdayName(now.weekday)}';
+    final dateStr = '${now.month}月${now.day}日 周${_weekdayName(now.weekday)}';
     return Container(
       decoration: BoxDecoration(
         color: CupertinoColors.white,
@@ -214,7 +213,8 @@ class _TodaySummarySection extends StatelessWidget {
               Expanded(
                 child: _SummaryItem(
                   label: '今日销售',
-                  value: '¥${(stats.todayStat.todaySales / 100).toStringAsFixed(2)}',
+                  value:
+                      '¥${(stats.todayStat.todaySales / 100).toStringAsFixed(2)}',
                   color: const Color(0xFFFF6B35),
                 ),
               ),
@@ -261,7 +261,8 @@ class _TodaySummarySection extends StatelessWidget {
 class _PendingApprovalsSection extends StatelessWidget {
   final List<WorkbenchApprovalItem> approvals;
   final int count;
-  const _PendingApprovalsSection({required this.approvals, required this.count});
+  const _PendingApprovalsSection(
+      {required this.approvals, required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -608,8 +609,6 @@ class _ApprovalItem extends StatelessWidget {
   final String icon;
   final String title;
   final String subtitle;
-  final String? tag;
-  final String? tagColor;
   final String? timeText;
   final bool showBorder;
   final VoidCallback? onTap;
@@ -618,8 +617,6 @@ class _ApprovalItem extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
-    this.tag,
-    this.tagColor,
     this.timeText,
     this.showBorder = true,
     this.onTap,
@@ -634,8 +631,8 @@ class _ApprovalItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: showBorder
               ? const Border(
-                  bottom: BorderSide(
-                      color: CupertinoColors.separator, width: 0.5),
+                  bottom:
+                      BorderSide(color: CupertinoColors.separator, width: 0.5),
                 )
               : null,
         ),
@@ -689,7 +686,6 @@ class _TaskItem extends StatelessWidget {
   final String subtitle;
   final String? tag;
   final Color? tagColor;
-  final String? timeText;
   final bool showBorder;
   final VoidCallback? onTap;
 
@@ -699,7 +695,6 @@ class _TaskItem extends StatelessWidget {
     required this.subtitle,
     this.tag,
     this.tagColor,
-    this.timeText,
     this.showBorder = true,
     this.onTap,
   });
@@ -713,8 +708,8 @@ class _TaskItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: showBorder
               ? const Border(
-                  bottom: BorderSide(
-                      color: CupertinoColors.separator, width: 0.5),
+                  bottom:
+                      BorderSide(color: CupertinoColors.separator, width: 0.5),
                 )
               : null,
         ),
@@ -790,8 +785,8 @@ class _NotificationItem extends StatelessWidget {
       decoration: BoxDecoration(
         border: showBorder
             ? const Border(
-                bottom: BorderSide(
-                    color: CupertinoColors.separator, width: 0.5),
+                bottom:
+                    BorderSide(color: CupertinoColors.separator, width: 0.5),
               )
             : null,
       ),

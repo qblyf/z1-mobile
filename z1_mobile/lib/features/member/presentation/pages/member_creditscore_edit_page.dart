@@ -12,7 +12,8 @@ class MemberCreditscoreEditPage extends StatefulWidget {
   const MemberCreditscoreEditPage({super.key, required this.memberId});
 
   @override
-  State<MemberCreditscoreEditPage> createState() => _MemberCreditscoreEditPageState();
+  State<MemberCreditscoreEditPage> createState() =>
+      _MemberCreditscoreEditPageState();
 }
 
 class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
@@ -126,7 +127,9 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('调整类型', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const Text('调整类型',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -136,10 +139,14 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: _isIncrease ? AppTheme.successColor.withOpacity(0.1) : AppTheme.grey100,
+                              color: _isIncrease
+                                  ? AppTheme.successColor.withValues(alpha: 0.1)
+                                  : AppTheme.grey100,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: _isIncrease ? AppTheme.successColor : AppTheme.grey300,
+                                color: _isIncrease
+                                    ? AppTheme.successColor
+                                    : AppTheme.grey300,
                                 width: _isIncrease ? 2 : 1,
                               ),
                             ),
@@ -148,15 +155,21 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
                               children: [
                                 Icon(
                                   CupertinoIcons.add,
-                                  color: _isIncrease ? AppTheme.successColor : AppTheme.grey600,
+                                  color: _isIncrease
+                                      ? AppTheme.successColor
+                                      : AppTheme.grey600,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '增加积分',
                                   style: TextStyle(
-                                    color: _isIncrease ? AppTheme.successColor : AppTheme.grey600,
-                                    fontWeight: _isIncrease ? FontWeight.w600 : FontWeight.normal,
+                                    color: _isIncrease
+                                        ? AppTheme.successColor
+                                        : AppTheme.grey600,
+                                    fontWeight: _isIncrease
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ],
@@ -171,10 +184,14 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: !_isIncrease ? AppTheme.errorColor.withOpacity(0.1) : AppTheme.grey100,
+                              color: !_isIncrease
+                                  ? AppTheme.errorColor.withValues(alpha: 0.1)
+                                  : AppTheme.grey100,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: !_isIncrease ? AppTheme.errorColor : AppTheme.grey300,
+                                color: !_isIncrease
+                                    ? AppTheme.errorColor
+                                    : AppTheme.grey300,
                                 width: !_isIncrease ? 2 : 1,
                               ),
                             ),
@@ -183,15 +200,21 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
                               children: [
                                 Icon(
                                   CupertinoIcons.minus,
-                                  color: !_isIncrease ? AppTheme.errorColor : AppTheme.grey600,
+                                  color: !_isIncrease
+                                      ? AppTheme.errorColor
+                                      : AppTheme.grey600,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '减少积分',
                                   style: TextStyle(
-                                    color: !_isIncrease ? AppTheme.errorColor : AppTheme.grey600,
-                                    fontWeight: !_isIncrease ? FontWeight.w600 : FontWeight.normal,
+                                    color: !_isIncrease
+                                        ? AppTheme.errorColor
+                                        : AppTheme.grey600,
+                                    fontWeight: !_isIncrease
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ],
@@ -214,7 +237,9 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('调整积分值', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const Text('调整积分值',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                   const SizedBox(height: 12),
                   CupertinoTextField(
                     controller: _creditController,
@@ -244,7 +269,9 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('调整原因', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const Text('调整原因',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                   const SizedBox(height: 12),
                   CupertinoTextField(
                     controller: _reasonController,
@@ -264,15 +291,17 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withOpacity(0.1),
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(CupertinoIcons.exclamationmark_circle, color: AppTheme.errorColor, size: 20),
+                    const Icon(CupertinoIcons.exclamationmark_circle,
+                        color: AppTheme.errorColor, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(_errorMessage!, style: const TextStyle(color: AppTheme.errorColor)),
+                      child: Text(_errorMessage!,
+                          style: const TextStyle(color: AppTheme.errorColor)),
                     ),
                   ],
                 ),
@@ -284,7 +313,8 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
               child: CupertinoButton.filled(
                 onPressed: _isSubmitting ? null : _submit,
                 child: _isSubmitting
-                    ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                    ? const CupertinoActivityIndicator(
+                        color: CupertinoColors.white)
                     : const Text('确认调整'),
               ),
             ),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -87,7 +88,10 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'retail/confirm',
               builder: (context, state) {
-                final order = state.extra as RetailOrder;
+                final order = state.extra;
+                if (order is! RetailOrder) {
+                  return const _MissingRetailOrderPage();
+                }
                 return BlocProvider(
                   create: (_) => getIt<CoinDiscountBloc>(),
                   child: RetailConfirmPage(order: order),
@@ -98,7 +102,10 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'retail/payment',
               builder: (context, state) {
-                final order = state.extra as RetailOrder;
+                final order = state.extra;
+                if (order is! RetailOrder) {
+                  return const _MissingRetailOrderPage();
+                }
                 return RetailPaymentPage(order: order);
               },
             ),
@@ -106,7 +113,10 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'retail/complete',
               builder: (context, state) {
-                final order = state.extra as RetailOrder;
+                final order = state.extra;
+                if (order is! RetailOrder) {
+                  return const _MissingRetailOrderPage();
+                }
                 return RetailCompletePage(order: order);
               },
             ),
@@ -179,7 +189,8 @@ final appRouter = GoRouter(
               path: ':memberId/creditscore',
               name: 'memberCreditscore',
               builder: (context, state) {
-                final memberId = int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
+                final memberId =
+                    int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
                 return MemberCreditscorePage(memberId: memberId);
               },
             ),
@@ -187,14 +198,16 @@ final appRouter = GoRouter(
               path: ':memberId/creditscore/edit',
               name: 'memberCreditscoreEdit',
               builder: (context, state) {
-                final memberId = int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
+                final memberId =
+                    int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
                 return MemberCreditscoreEditPage(memberId: memberId);
               },
             ),
             GoRoute(
               path: ':memberId',
               builder: (context, state) {
-                final memberId = int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
+                final memberId =
+                    int.tryParse(state.pathParameters['memberId'] ?? '') ?? 0;
                 return MemberDetailPage(memberId: memberId);
               },
             ),
@@ -204,7 +217,8 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/workbench',
           builder: (context, state) => BlocProvider(
-            create: (_) => getIt<WorkbenchBloc>()..add(const WorkbenchLoadRequested()),
+            create: (_) =>
+                getIt<WorkbenchBloc>()..add(const WorkbenchLoadRequested()),
             child: const WorkbenchPage(),
           ),
         ),
@@ -231,7 +245,8 @@ final appRouter = GoRouter(
                   path: ':id',
                   name: 'stocktakingDetail',
                   builder: (context, state) {
-                    final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                    final id =
+                        int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
                     return StocktakingDetailPage(id: id);
                   },
                 ),
@@ -250,7 +265,8 @@ final appRouter = GoRouter(
                   path: ':id',
                   name: 'transferDetail',
                   builder: (context, state) {
-                    final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                    final id =
+                        int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
                     return TransferDetailPage(id: id);
                   },
                 ),
@@ -291,3 +307,32 @@ final appRouter = GoRouter(
     ),
   ],
 );
+
+class _MissingRetailOrderPage extends StatelessWidget {
+  const _MissingRetailOrderPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(middle: Text('零售开单')),
+      child: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('当前开单信息已失效，请重新开单。'),
+                const SizedBox(height: 16),
+                CupertinoButton.filled(
+                  onPressed: () => context.go('/home/retail/entry'),
+                  child: const Text('重新开单'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

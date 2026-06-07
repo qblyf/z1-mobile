@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/order_detail_remote_datasource.dart';
 import '../../data/models/order_model.dart';
 import '../../data/models/order_product_model.dart';
 import '../bloc/order_detail_bloc.dart';
@@ -21,9 +20,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = OrderDetailBloc(
-      dataSource: OrderDetailRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<OrderDetailBloc>();
     _bloc.add(OrderDetailLoadRequested(widget.orderNumber));
   }
 
@@ -118,7 +115,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: order.statusEnum == OrderStatus.completed
                       ? const Color(0xFFDCFCE7)
@@ -175,7 +173,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     );
   }
 
-  Widget _buildProductList(List<OrderProductModel> products, NumberFormat currencyFormat) {
+  Widget _buildProductList(
+      List<OrderProductModel> products, NumberFormat currencyFormat) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -190,7 +189,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
           const SizedBox(height: 12),
-          ...products.map((product) => _ProductItem(product: product, currencyFormat: currencyFormat)),
+          ...products.map((product) =>
+              _ProductItem(product: product, currencyFormat: currencyFormat)),
         ],
       ),
     );

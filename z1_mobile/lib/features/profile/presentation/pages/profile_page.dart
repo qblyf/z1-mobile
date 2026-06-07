@@ -86,7 +86,8 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE0EDFF),
                         borderRadius: BorderRadius.circular(4),
@@ -293,7 +294,8 @@ class ProfilePage extends StatelessWidget {
             decoration: const BoxDecoration(
               color: Color(0xFFFFF9E6),
               border: Border(
-                bottom: BorderSide(color: CupertinoColors.separator, width: 0.5),
+                bottom:
+                    BorderSide(color: CupertinoColors.separator, width: 0.5),
               ),
             ),
             child: Row(
@@ -322,7 +324,8 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       Text(
                         '我的排名',
-                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500, fontSize: 13),
                       ),
                       Text(
                         '销售额 ¥285,600',
@@ -357,8 +360,17 @@ class ProfilePage extends StatelessWidget {
               ],
             ),
           ),
-          const _RankingItem(rank: '1', name: '王小红', amount: '¥352,800', tag: '本月销冠', tagColor: Color(0xFFFFB020)),
-          const _RankingItem(rank: '2', name: '张伟', amount: '¥318,500', subtitle: '差距 ¥33,000'),
+          const _RankingItem(
+              rank: '1',
+              name: '王小红',
+              amount: '¥352,800',
+              tag: '本月销冠',
+              tagColor: Color(0xFFFFB020)),
+          const _RankingItem(
+              rank: '2',
+              name: '张伟',
+              amount: '¥318,500',
+              subtitle: '差距 ¥33,000'),
           const _RankingItem(
             rank: '3',
             name: '李明',
@@ -406,7 +418,8 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: CupertinoColors.destructiveRed,
                     borderRadius: BorderRadius.circular(8),
@@ -514,7 +527,7 @@ class _IncomeItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -523,7 +536,7 @@ class _IncomeItem extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
@@ -534,10 +547,13 @@ class _IncomeItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 13)),
                 Text(
                   subtitle,
-                  style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 11),
+                  style: const TextStyle(
+                      color: CupertinoColors.secondaryLabel, fontSize: 11),
                 ),
               ],
             ),
@@ -555,7 +571,8 @@ class _IncomeItem extends StatelessWidget {
               ),
               Text(
                 '占比 $percent',
-                style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 10),
+                style: const TextStyle(
+                    color: CupertinoColors.secondaryLabel, fontSize: 10),
               ),
             ],
           ),
@@ -594,7 +611,8 @@ class _RankingItem extends StatelessWidget {
         color: highlight ? const Color(0xFFFFF9E6) : null,
         border: showBorder
             ? const Border(
-                bottom: BorderSide(color: CupertinoColors.separator, width: 0.5),
+                bottom:
+                    BorderSide(color: CupertinoColors.separator, width: 0.5),
               )
             : null,
       ),
@@ -630,12 +648,14 @@ class _RankingItem extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w500, fontSize: 13),
                     ),
                     if (highlight)
                       Container(
                         margin: const EdgeInsets.only(left: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
                           color: CupertinoColors.activeBlue,
                           borderRadius: BorderRadius.circular(4),
@@ -654,7 +674,8 @@ class _RankingItem extends StatelessWidget {
                 if (subtitle != null)
                   Text(
                     subtitle!,
-                    style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 10),
+                    style: const TextStyle(
+                        color: CupertinoColors.secondaryLabel, fontSize: 10),
                   ),
               ],
             ),
@@ -665,7 +686,9 @@ class _RankingItem extends StatelessWidget {
               Text(
                 amount,
                 style: TextStyle(
-                  color: highlight ? const Color(0xFF86EFAC) : CupertinoColors.label,
+                  color: highlight
+                      ? const Color(0xFF86EFAC)
+                      : CupertinoColors.label,
                   fontWeight: FontWeight.w500,
                   fontSize: 13,
                 ),
@@ -673,14 +696,18 @@ class _RankingItem extends StatelessWidget {
               if (tag != null)
                 Container(
                   margin: const EdgeInsets.only(top: 2),
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   decoration: BoxDecoration(
-                    color: tagColor?.withOpacity(0.1),
+                    color: tagColor?.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     tag!,
-                    style: TextStyle(color: tagColor, fontSize: 9, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        color: tagColor,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500),
                   ),
                 ),
             ],
@@ -717,7 +744,8 @@ class _MenuItem extends StatelessWidget {
       decoration: BoxDecoration(
         border: showBorder
             ? const Border(
-                bottom: BorderSide(color: CupertinoColors.separator, width: 0.5),
+                bottom:
+                    BorderSide(color: CupertinoColors.separator, width: 0.5),
               )
             : null,
       ),
@@ -738,11 +766,14 @@ class _MenuItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 14)),
                 if (subtitle != null)
                   Text(
                     subtitle!,
-                    style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 11),
+                    style: const TextStyle(
+                        color: CupertinoColors.secondaryLabel, fontSize: 11),
                   ),
               ],
             ),
@@ -751,18 +782,20 @@ class _MenuItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: tagColor?.withOpacity(0.1),
+                color: tagColor?.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 tag!,
-                style: TextStyle(color: tagColor, fontSize: 10, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                    color: tagColor, fontSize: 10, fontWeight: FontWeight.w500),
               ),
             ),
           if (trailing != null)
             Text(
               trailing!,
-              style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 11),
+              style: const TextStyle(
+                  color: CupertinoColors.secondaryLabel, fontSize: 11),
             ),
           const SizedBox(width: 8),
           const Icon(

@@ -30,9 +30,8 @@ class _MallOrderDetailPageState extends State<MallOrderDetailPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = MallOrderDetailBloc(
-      dataSource: MallOrderRemoteDataSourceImpl(apiClient: getIt()),
-    )..add(MallOrderDetailLoadRequested(widget.number));
+    _bloc = getIt<MallOrderDetailBloc>()
+      ..add(MallOrderDetailLoadRequested(widget.number));
   }
 
   @override
@@ -524,7 +523,7 @@ class _ActionBarState extends State<_ActionBar> {
     if (!confirmed || !mounted) return;
 
     setState(() => _busy = true);
-    final ds = MallOrderRemoteDataSourceImpl(apiClient: getIt());
+    final ds = getIt<MallOrderRemoteDataSource>();
     final result = await ds.finishMallOrder(widget.detail.summary.number);
     if (!mounted) return;
     setState(() => _busy = false);
@@ -536,8 +535,8 @@ class _ActionBarState extends State<_ActionBar> {
     await _showAlert('已完成', '订单已标记为完成');
     if (!mounted) return;
     context.read<MallOrderDetailBloc>().add(
-      const MallOrderDetailRefreshRequested(),
-    );
+          const MallOrderDetailRefreshRequested(),
+        );
   }
 
   Future<void> _confirmCancel() async {
@@ -549,7 +548,7 @@ class _ActionBarState extends State<_ActionBar> {
     if (!confirmed || !mounted) return;
 
     setState(() => _busy = true);
-    final ds = MallOrderRemoteDataSourceImpl(apiClient: getIt());
+    final ds = getIt<MallOrderRemoteDataSource>();
     final result = await ds.cancelUnpaidOrder(widget.detail.summary.number);
     if (!mounted) return;
     setState(() => _busy = false);
@@ -561,8 +560,8 @@ class _ActionBarState extends State<_ActionBar> {
     await _showAlert('已取消', '订单已取消');
     if (!mounted) return;
     context.read<MallOrderDetailBloc>().add(
-      const MallOrderDetailRefreshRequested(),
-    );
+          const MallOrderDetailRefreshRequested(),
+        );
   }
 
   Future<bool> _showConfirm({

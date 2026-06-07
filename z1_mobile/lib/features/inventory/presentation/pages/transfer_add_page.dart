@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/transfer_remote_datasource.dart';
 import '../../data/models/transfer_model.dart';
 import '../../data/models/stocktaking_model.dart';
 import '../bloc/transfer_add_bloc.dart';
@@ -20,9 +19,7 @@ class _TransferAddPageState extends State<TransferAddPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = TransferAddBloc(
-      dataSource: TransferRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<TransferAddBloc>();
     _bloc.add(const TransferAddLoadWarehousesRequested());
   }
 
@@ -85,11 +82,13 @@ class _TransferAddPageState extends State<TransferAddPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(state.message, style: const TextStyle(color: CupertinoColors.destructiveRed)),
+            Text(state.message,
+                style: const TextStyle(color: CupertinoColors.destructiveRed)),
             const SizedBox(height: 16),
             CupertinoButton(
               child: const Text('重试'),
-              onPressed: () => _bloc.add(const TransferAddLoadWarehousesRequested()),
+              onPressed: () =>
+                  _bloc.add(const TransferAddLoadWarehousesRequested()),
             ),
           ],
         ),
@@ -134,7 +133,8 @@ class _TransferAddPageState extends State<TransferAddPage> {
                   warehouses: warehouses,
                   selectedWarehouse: outWarehouse,
                   placeholder: '请选择调出仓库',
-                  onSelected: (w) => _bloc.add(TransferAddOutWarehouseSelected(w)),
+                  onSelected: (w) =>
+                      _bloc.add(TransferAddOutWarehouseSelected(w)),
                 ),
                 const SizedBox(height: 20),
                 const _SectionTitle(title: '调入仓库'),
@@ -143,7 +143,8 @@ class _TransferAddPageState extends State<TransferAddPage> {
                   warehouses: warehouses,
                   selectedWarehouse: inWarehouse,
                   placeholder: '请选择调入仓库',
-                  onSelected: (w) => _bloc.add(TransferAddInWarehouseSelected(w)),
+                  onSelected: (w) =>
+                      _bloc.add(TransferAddInWarehouseSelected(w)),
                   excludedWarehouseId: outWarehouse?.id,
                 ),
                 const SizedBox(height: 20),
@@ -152,9 +153,11 @@ class _TransferAddPageState extends State<TransferAddPage> {
                 _ProductSelector(
                   products: products,
                   onAdd: _showAddProductDialog,
-                  onRemove: (productID) => _bloc.add(TransferAddProductRemoved(productID)),
-                  onCountChanged: (productID, count) =>
-                      _bloc.add(TransferAddProductCountChanged(productID: productID, count: count)),
+                  onRemove: (productID) =>
+                      _bloc.add(TransferAddProductRemoved(productID)),
+                  onCountChanged: (productID, count) => _bloc.add(
+                      TransferAddProductCountChanged(
+                          productID: productID, count: count)),
                 ),
               ],
             ),
@@ -171,14 +174,18 @@ class _TransferAddPageState extends State<TransferAddPage> {
             child: CupertinoButton(
               color: CupertinoColors.activeBlue,
               borderRadius: BorderRadius.circular(12),
-              onPressed: _canSubmit(outWarehouse, inWarehouse, products) && !isSubmitting
+              onPressed: _canSubmit(outWarehouse, inWarehouse, products) &&
+                      !isSubmitting
                   ? () => _bloc.add(const TransferAddSubmitted())
                   : null,
               child: isSubmitting
-                  ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                  ? const CupertinoActivityIndicator(
+                      color: CupertinoColors.white)
                   : const Text(
                       '创建调拨单',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: CupertinoColors.white),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: CupertinoColors.white),
                     ),
             ),
           ),
@@ -187,8 +194,12 @@ class _TransferAddPageState extends State<TransferAddPage> {
     );
   }
 
-  bool _canSubmit(WarehouseModel? out, WarehouseModel? inWarehouse, List<TransferGoodsItem> products) {
-    return out != null && inWarehouse != null && products.isNotEmpty && out.id != inWarehouse.id;
+  bool _canSubmit(WarehouseModel? out, WarehouseModel? inWarehouse,
+      List<TransferGoodsItem> products) {
+    return out != null &&
+        inWarehouse != null &&
+        products.isNotEmpty &&
+        out.id != inWarehouse.id;
   }
 
   void _showAddProductDialog() {
@@ -226,7 +237,10 @@ class _TransferAddPageState extends State<TransferAddPage> {
             onPressed: () {
               final productId = int.tryParse(productIdController.text);
               final count = int.tryParse(countController.text);
-              if (productId != null && productId > 0 && count != null && count > 0) {
+              if (productId != null &&
+                  productId > 0 &&
+                  count != null &&
+                  count > 0) {
                 Navigator.pop(ctx);
                 _bloc.add(TransferAddProductSelected(
                   TransferGoodsItem(productID: productId, count: count),
@@ -294,10 +308,13 @@ class _WarehouseSelector extends StatelessWidget {
             Text(
               selectedWarehouse?.name ?? placeholder,
               style: TextStyle(
-                color: selectedWarehouse != null ? CupertinoColors.label : CupertinoColors.tertiaryLabel,
+                color: selectedWarehouse != null
+                    ? CupertinoColors.label
+                    : CupertinoColors.tertiaryLabel,
               ),
             ),
-            const Icon(CupertinoIcons.chevron_down, color: CupertinoColors.secondaryLabel, size: 18),
+            const Icon(CupertinoIcons.chevron_down,
+                color: CupertinoColors.secondaryLabel, size: 18),
           ],
         ),
       ),
@@ -309,7 +326,8 @@ class _WarehouseSelector extends StatelessWidget {
 
     int selectedIndex = 0;
     if (selectedWarehouse != null) {
-      selectedIndex = warehouses.indexWhere((w) => w.id == selectedWarehouse!.id);
+      selectedIndex =
+          warehouses.indexWhere((w) => w.id == selectedWarehouse!.id);
       if (selectedIndex < 0) selectedIndex = 0;
     }
 
@@ -345,9 +363,11 @@ class _WarehouseSelector extends StatelessWidget {
             Expanded(
               child: CupertinoPicker(
                 itemExtent: 40,
-                scrollController: FixedExtentScrollController(initialItem: selectedIndex),
+                scrollController:
+                    FixedExtentScrollController(initialItem: selectedIndex),
                 onSelectedItemChanged: (index) => selectedIndex = index,
-                children: warehouses.map((w) => Center(child: Text(w.name))).toList(),
+                children:
+                    warehouses.map((w) => Center(child: Text(w.name))).toList(),
               ),
             ),
           ],
@@ -378,7 +398,8 @@ class _ProductSelector extends StatelessWidget {
           ...products.map((product) => _ProductItemCard(
                 product: product,
                 onRemove: () => onRemove(product.productID),
-                onCountChanged: (count) => onCountChanged(product.productID, count),
+                onCountChanged: (count) =>
+                    onCountChanged(product.productID, count),
               )),
           const SizedBox(height: 12),
         ],
@@ -389,16 +410,20 @@ class _ProductSelector extends StatelessWidget {
             decoration: BoxDecoration(
               color: CupertinoColors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: CupertinoColors.separator, style: BorderStyle.solid),
+              border: Border.all(
+                  color: CupertinoColors.separator, style: BorderStyle.solid),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(CupertinoIcons.plus_circle, color: CupertinoColors.activeBlue, size: 18),
+                Icon(CupertinoIcons.plus_circle,
+                    color: CupertinoColors.activeBlue, size: 18),
                 SizedBox(width: 8),
                 Text(
                   '添加商品',
-                  style: TextStyle(color: CupertinoColors.activeBlue, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      color: CupertinoColors.activeBlue,
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -437,13 +462,15 @@ class _ProductItemCard extends StatelessWidget {
               children: [
                 Text(
                   '商品ID: ${product.productID}',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 if (product.productName != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     product.productName!,
-                    style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 12),
+                    style: const TextStyle(
+                        color: CupertinoColors.secondaryLabel, fontSize: 12),
                   ),
                 ],
               ],
@@ -457,24 +484,29 @@ class _ProductItemCard extends StatelessWidget {
                   if (product.count > 1) {
                     onCountChanged(product.count - 1);
                   }
-                }, minimumSize: const Size(28, 28),
+                },
+                minimumSize: const Size(28, 28),
                 child: const Icon(CupertinoIcons.minus_circle, size: 22),
               ),
               Text(
                 '${product.count}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               CupertinoButton(
                 padding: EdgeInsets.zero,
-                onPressed: () => onCountChanged(product.count + 1), minimumSize: const Size(28, 28),
+                onPressed: () => onCountChanged(product.count + 1),
+                minimumSize: const Size(28, 28),
                 child: const Icon(CupertinoIcons.plus_circle, size: 22),
               ),
             ],
           ),
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: onRemove, minimumSize: const Size(28, 28),
-            child: const Icon(CupertinoIcons.trash, color: CupertinoColors.destructiveRed, size: 20),
+            onPressed: onRemove,
+            minimumSize: const Size(28, 28),
+            child: const Icon(CupertinoIcons.trash,
+                color: CupertinoColors.destructiveRed, size: 20),
           ),
         ],
       ),

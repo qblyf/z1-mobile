@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/purchase_remote_datasource.dart';
 import '../../data/models/purchase_model.dart';
 import '../bloc/purchase_detail_bloc.dart';
 
@@ -22,9 +21,7 @@ class _PurchaseDetailPageState extends State<PurchaseDetailPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = PurchaseDetailBloc(
-      dataSource: PurchaseRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<PurchaseDetailBloc>();
     _bloc.add(PurchaseDetailLoadRequested(widget.id));
   }
 
@@ -81,7 +78,8 @@ class _PurchaseDetailPageState extends State<PurchaseDetailPage> {
             const SizedBox(height: 16),
             CupertinoButton(
               child: const Text('重试'),
-              onPressed: () => _bloc.add(PurchaseDetailLoadRequested(widget.id)),
+              onPressed: () =>
+                  _bloc.add(PurchaseDetailLoadRequested(widget.id)),
             ),
           ],
         ),
@@ -135,10 +133,12 @@ class _PurchaseDetailPageState extends State<PurchaseDetailPage> {
                             icon: CupertinoIcons.clock,
                             label: '创建时间',
                             value: dateFormat.format(
-                              DateTime.fromMillisecondsSinceEpoch(purchase.createdAt * 1000),
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  purchase.createdAt * 1000),
                             ),
                           ),
-                          if (purchase.remarks != null && purchase.remarks!.isNotEmpty) ...[
+                          if (purchase.remarks != null &&
+                              purchase.remarks!.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             _InfoRow(
                               icon: CupertinoIcons.doc_text,
@@ -211,7 +211,8 @@ class _PurchaseDetailPageState extends State<PurchaseDetailPage> {
                       child: Center(
                         child: Text(
                           '暂无商品',
-                          style: TextStyle(color: CupertinoColors.secondaryLabel),
+                          style:
+                              TextStyle(color: CupertinoColors.secondaryLabel),
                         ),
                       ),
                     ),
@@ -249,7 +250,8 @@ class _PurchaseDetailPageState extends State<PurchaseDetailPage> {
                   child: CupertinoButton(
                     color: CupertinoColors.activeBlue,
                     borderRadius: BorderRadius.circular(12),
-                    onPressed: () => context.push('/inventory/purchase-inbound/${widget.id}'),
+                    onPressed: () => context
+                        .push('/inventory/purchase-inbound/${widget.id}'),
                     child: const Text(
                       '采购入库',
                       style: TextStyle(

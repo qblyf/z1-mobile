@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../injection.dart';
-import '../../data/datasources/mall_order_remote_datasource.dart';
 import '../../data/models/mall_order_model.dart';
 import '../../../../types/api/mall-order-types.dart';
 import '../bloc/mall_order_list_bloc.dart';
@@ -26,9 +25,7 @@ class _MallOrderListPageState extends State<MallOrderListPage> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
-    _bloc = MallOrderListBloc(
-      dataSource: MallOrderRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<MallOrderListBloc>();
     _bloc.add(const MallOrderListLoadRequested());
   }
 
@@ -187,7 +184,8 @@ class _FilterTab extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? CupertinoColors.activeBlue : CupertinoColors.white,
+          color:
+              isSelected ? CupertinoColors.activeBlue : CupertinoColors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
@@ -200,8 +198,7 @@ class _FilterTab extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color:
-                isSelected ? CupertinoColors.white : CupertinoColors.label,
+            color: isSelected ? CupertinoColors.white : CupertinoColors.label,
           ),
         ),
       ),

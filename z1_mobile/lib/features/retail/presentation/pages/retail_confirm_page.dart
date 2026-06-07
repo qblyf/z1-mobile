@@ -31,9 +31,9 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
     if (_order.customerIdent != null) {
       final orderAmount = (_order.productsTotalYuan * 100).toInt();
       context.read<CoinDiscountBloc>().add(CoinDiscountLoadRequested(
-        customerIdent: _order.customerIdent!,
-        orderAmount: orderAmount,
-      ));
+            customerIdent: _order.customerIdent!,
+            orderAmount: orderAmount,
+          ));
     }
   }
 
@@ -47,17 +47,10 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
 
   double get _couponDiscountYuan => _couponDiscount / 100;
 
-  double _getCoinDiscountYuan() {
-    final state = context.read<CoinDiscountBloc>().state;
-    if (state is CoinDiscountLoaded) {
-      return state.discountAmount / 100;
-    }
-    return 0;
-  }
-
   void _goToPayment() {
     final coinState = context.read<CoinDiscountBloc>().state;
-    final decreaseCoins = coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
+    final decreaseCoins =
+        coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
 
     // 把已选优惠券（CouponModel）转换为接口需要的 CouponItem 列表
     final couponItems = _selectedCoupons
@@ -103,21 +96,21 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(CupertinoIcons.person_fill, color: CupertinoColors.activeGreen),
+                            const Icon(CupertinoIcons.person_fill,
+                                color: CupertinoColors.activeGreen),
                             const SizedBox(width: 8),
                             Text(_order.customerName!),
                             if (_order.customerIdent != null)
                               Text(
                                 ' (ID: ${_order.customerIdent})',
-                                style: const TextStyle(color: CupertinoColors.secondaryLabel),
+                                style: const TextStyle(
+                                    color: CupertinoColors.secondaryLabel),
                               ),
                           ],
                         ),
                       ),
                     ),
-
                   const SizedBox(height: 16),
-
                   _buildSection(
                     title: '商品清单',
                     child: Container(
@@ -133,7 +126,9 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               border: index < _order.products.length - 1
-                                  ? const Border(bottom: BorderSide(color: CupertinoColors.separator))
+                                  ? const Border(
+                                      bottom: BorderSide(
+                                          color: CupertinoColors.separator))
                                   : null,
                             ),
                             child: Row(
@@ -146,25 +141,33 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   alignment: Alignment.center,
-                                  child: const Icon(CupertinoIcons.cube_box, color: CupertinoColors.systemGrey),
+                                  child: const Icon(CupertinoIcons.cube_box,
+                                      color: CupertinoColors.systemGrey),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(product.productName, style: const TextStyle(fontWeight: FontWeight.w500)),
+                                      Text(product.productName,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500)),
                                       const SizedBox(height: 2),
                                       Text(
                                         'x${product.quantity}',
-                                        style: const TextStyle(color: CupertinoColors.secondaryLabel, fontSize: 12),
+                                        style: const TextStyle(
+                                            color:
+                                                CupertinoColors.secondaryLabel,
+                                            fontSize: 12),
                                       ),
                                     ],
                                   ),
                                 ),
                                 Text(
                                   currencyFormat.format(product.totalPriceYuan),
-                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),
@@ -173,9 +176,7 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   _buildSection(
                     title: '优惠抵扣',
                     child: Container(
@@ -192,11 +193,15 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                   return Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: const BoxDecoration(
-                                      border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+                                      border: Border(
+                                          bottom: BorderSide(
+                                              color:
+                                                  CupertinoColors.separator)),
                                     ),
                                     child: const Row(
                                       children: [
-                                        Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
+                                        Icon(CupertinoIcons.star_fill,
+                                            color: Color(0xFFFFB300)),
                                         SizedBox(width: 8),
                                         Text('积分抵扣'),
                                         SizedBox(width: 12),
@@ -209,21 +214,27 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                   return Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: const BoxDecoration(
-                                      border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+                                      border: Border(
+                                          bottom: BorderSide(
+                                              color:
+                                                  CupertinoColors.separator)),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
+                                        const Icon(CupertinoIcons.star_fill,
+                                            color: Color(0xFFFFB300)),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               const Text('积分抵扣'),
                                               Text(
                                                 '可用 ${state.availableCoins} 积分',
                                                 style: const TextStyle(
-                                                  color: CupertinoColors.secondaryLabel,
+                                                  color: CupertinoColors
+                                                      .secondaryLabel,
                                                   fontSize: 11,
                                                 ),
                                               ),
@@ -232,16 +243,23 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                         ),
                                         CupertinoButton(
                                           padding: EdgeInsets.zero,
-                                          onPressed: () => _showCoinPicker(state.availableCoins),
+                                          onPressed: () => _showCoinPicker(
+                                              state.availableCoins),
                                           child: Row(
                                             children: [
                                               Text(
                                                 state.selectedCoins > 0
                                                     ? '-${currencyFormat.format(state.discountAmount / 100)}'
                                                     : '使用',
-                                                style: const TextStyle(color: CupertinoColors.activeBlue),
+                                                style: const TextStyle(
+                                                    color: CupertinoColors
+                                                        .activeBlue),
                                               ),
-                                              const Icon(CupertinoIcons.chevron_right, size: 16, color: CupertinoColors.activeBlue),
+                                              const Icon(
+                                                  CupertinoIcons.chevron_right,
+                                                  size: 16,
+                                                  color: CupertinoColors
+                                                      .activeBlue),
                                             ],
                                           ),
                                         ),
@@ -253,17 +271,22 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                   return Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: const BoxDecoration(
-                                      border: Border(bottom: BorderSide(color: CupertinoColors.separator)),
+                                      border: Border(
+                                          bottom: BorderSide(
+                                              color:
+                                                  CupertinoColors.separator)),
                                     ),
                                     child: const Row(
                                       children: [
-                                        Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB300)),
+                                        Icon(CupertinoIcons.star_fill,
+                                            color: Color(0xFFFFB300)),
                                         SizedBox(width: 8),
                                         Expanded(child: Text('积分抵扣')),
                                         Text(
                                           '加载失败',
                                           style: TextStyle(
-                                            color: CupertinoColors.destructiveRed,
+                                            color:
+                                                CupertinoColors.destructiveRed,
                                             fontSize: 12,
                                           ),
                                         ),
@@ -278,7 +301,8 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
-                                const Icon(CupertinoIcons.ticket_fill, color: Color(0xFFFF6B35)),
+                                const Icon(CupertinoIcons.ticket_fill,
+                                    color: Color(0xFFFF6B35)),
                                 const SizedBox(width: 8),
                                 const Expanded(child: Text('优惠券')),
                                 CupertinoButton(
@@ -290,9 +314,12 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                                         _useCouponCount > 0
                                             ? '已选 $_useCouponCount 张 (-¥${(_couponDiscount / 100).toStringAsFixed(2)})'
                                             : '选择',
-                                        style: const TextStyle(color: CupertinoColors.activeBlue),
+                                        style: const TextStyle(
+                                            color: CupertinoColors.activeBlue),
                                       ),
-                                      const Icon(CupertinoIcons.chevron_right, size: 16, color: CupertinoColors.activeBlue),
+                                      const Icon(CupertinoIcons.chevron_right,
+                                          size: 16,
+                                          color: CupertinoColors.activeBlue),
                                     ],
                                   ),
                                 ),
@@ -303,9 +330,7 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   _buildSection(
                     title: '订单备注',
                     child: CupertinoTextField(
@@ -322,13 +347,13 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                 ],
               ),
             ),
-
             BlocBuilder<CoinDiscountBloc, CoinDiscountState>(
               builder: (context, coinState) {
                 final coinDiscountYuan = coinState is CoinDiscountLoaded
                     ? coinState.discountAmount / 100
                     : 0.0;
-                final actualPayYuan = _productsTotalYuan - coinDiscountYuan - _couponDiscountYuan;
+                final actualPayYuan =
+                    _productsTotalYuan - coinDiscountYuan - _couponDiscountYuan;
 
                 return Container(
                   padding: const EdgeInsets.all(16),
@@ -359,10 +384,13 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('优惠抵扣', style: TextStyle(color: CupertinoColors.activeGreen)),
+                                const Text('优惠抵扣',
+                                    style: TextStyle(
+                                        color: CupertinoColors.activeGreen)),
                                 Text(
                                   '-${currencyFormat.format(coinDiscountYuan + _couponDiscountYuan)}',
-                                  style: const TextStyle(color: CupertinoColors.activeGreen),
+                                  style: const TextStyle(
+                                      color: CupertinoColors.activeGreen),
                                 ),
                               ],
                             ),
@@ -371,10 +399,16 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('应付金额', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                            const Text('应付金额',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 16)),
                             Text(
-                              currencyFormat.format(actualPayYuan > 0 ? actualPayYuan : 0),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: CupertinoColors.destructiveRed),
+                              currencyFormat.format(
+                                  actualPayYuan > 0 ? actualPayYuan : 0),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: CupertinoColors.destructiveRed),
                             ),
                           ],
                         ),
@@ -384,7 +418,8 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                           child: CupertinoButton.filled(
                             borderRadius: BorderRadius.circular(12),
                             onPressed: actualPayYuan > 0 ? _goToPayment : null,
-                            child: const Text('去收款', style: TextStyle(fontWeight: FontWeight.w600)),
+                            child: const Text('去收款',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
                           ),
                         ),
                       ],
@@ -419,7 +454,8 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
 
   void _showCoinPicker(int availableCoins) {
     final coinState = context.read<CoinDiscountBloc>().state;
-    final currentSelected = coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
+    final currentSelected =
+        coinState is CoinDiscountLoaded ? coinState.selectedCoins : 0;
     int tempSelected = currentSelected;
 
     showCupertinoModalPopup(
@@ -431,22 +467,31 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: CupertinoColors.separator))),
+              decoration: const BoxDecoration(
+                  border: Border(
+                      bottom: BorderSide(color: CupertinoColors.separator))),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CupertinoButton(padding: EdgeInsets.zero, child: const Text('取消'), onPressed: () => Navigator.pop(ctx)),
-                  const Text('积分抵扣', style: TextStyle(fontWeight: FontWeight.w600)),
+                  CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      child: const Text('取消'),
+                      onPressed: () => Navigator.pop(ctx)),
+                  const Text('积分抵扣',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: const Text('确定'),
                     onPressed: () {
-                      final orderAmount = (_order.productsTotalYuan * 100).toInt();
-                      context.read<CoinDiscountBloc>().add(CoinDiscountCalculateRequested(
-                        customerIdent: _order.customerIdent!,
-                        coins: tempSelected,
-                        orderAmount: orderAmount,
-                      ));
+                      final orderAmount =
+                          (_order.productsTotalYuan * 100).toInt();
+                      context
+                          .read<CoinDiscountBloc>()
+                          .add(CoinDiscountCalculateRequested(
+                            customerIdent: _order.customerIdent!,
+                            coins: tempSelected,
+                            orderAmount: orderAmount,
+                          ));
                       Navigator.pop(ctx);
                     },
                   ),
@@ -464,7 +509,8 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
                 },
                 children: List.generate(
                   (availableCoins ~/ 100) + 1,
-                  (index) => Center(child: Text('${index * 100} 积分 (可抵扣 ¥$index)')),
+                  (index) =>
+                      Center(child: Text('${index * 100} 积分 (可抵扣 ¥$index)')),
                 ),
               ),
             ),
@@ -482,9 +528,8 @@ class _RetailConfirmPageState extends State<RetailConfirmPage> {
         setState(() {
           _useCouponCount = result['couponCount'] ?? 0;
           _couponDiscount = result['discount'] ?? 0;
-          _selectedCoupons = (result['coupons'] as List<dynamic>?)
-                  ?.cast<CouponModel>() ??
-              [];
+          _selectedCoupons =
+              (result['coupons'] as List<dynamic>?)?.cast<CouponModel>() ?? [];
         });
       }
     });

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/stocktaking_remote_datasource.dart';
 import '../../data/models/stocktaking_model.dart';
 import '../bloc/stocktaking_detail_bloc.dart';
 
@@ -21,9 +20,7 @@ class _StocktakingAddPageState extends State<StocktakingAddPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = StocktakingAddBloc(
-      dataSource: StocktakingRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<StocktakingAddBloc>();
     _bloc.add(const StocktakingLoadWarehousesRequested());
   }
 
@@ -41,7 +38,8 @@ class _StocktakingAddPageState extends State<StocktakingAddPage> {
       child: BlocConsumer<StocktakingAddBloc, StocktakingAddState>(
         listener: (context, state) {
           if (state is StocktakingAddSuccess) {
-            context.pushReplacement('/inventory/stocktaking/${state.stocktakingId}');
+            context.pushReplacement(
+                '/inventory/stocktaking/${state.stocktakingId}');
           } else if (state is StocktakingAddError) {
             showCupertinoDialog(
               context: context,
@@ -101,16 +99,19 @@ class _StocktakingAddPageState extends State<StocktakingAddPage> {
                           ),
                           const SizedBox(height: 8),
                           GestureDetector(
-                            onTap: () => _showWarehousePicker(context, warehouses),
+                            onTap: () =>
+                                _showWarehousePicker(context, warehouses),
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: CupertinoColors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: CupertinoColors.separator),
+                                border: Border.all(
+                                    color: CupertinoColors.separator),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     _selectedWarehouse?.name ?? '请选择仓库',
@@ -147,18 +148,21 @@ class _StocktakingAddPageState extends State<StocktakingAddPage> {
                             decoration: BoxDecoration(
                               color: CupertinoColors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: CupertinoColors.separator),
+                              border:
+                                  Border.all(color: CupertinoColors.separator),
                             ),
                           ),
                           const Spacer(),
                           CupertinoButton(
                             color: CupertinoColors.activeBlue,
                             borderRadius: BorderRadius.circular(12),
-                            onPressed: _selectedWarehouse != null && !isSubmitting
-                                ? () => _submit()
-                                : null,
+                            onPressed:
+                                _selectedWarehouse != null && !isSubmitting
+                                    ? () => _submit()
+                                    : null,
                             child: isSubmitting
-                                ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                                ? const CupertinoActivityIndicator(
+                                    color: CupertinoColors.white)
                                 : const Text(
                                     '创建盘库单',
                                     style: TextStyle(
@@ -177,7 +181,8 @@ class _StocktakingAddPageState extends State<StocktakingAddPage> {
     );
   }
 
-  void _showWarehousePicker(BuildContext context, List<WarehouseModel> warehouses) {
+  void _showWarehousePicker(
+      BuildContext context, List<WarehouseModel> warehouses) {
     if (warehouses.isEmpty) return;
 
     showCupertinoModalPopup(
@@ -214,7 +219,8 @@ class _StocktakingAddPageState extends State<StocktakingAddPage> {
                     _selectedWarehouse = warehouses[index];
                   });
                 },
-                children: warehouses.map((w) => Center(child: Text(w.name))).toList(),
+                children:
+                    warehouses.map((w) => Center(child: Text(w.name))).toList(),
               ),
             ),
           ],
@@ -228,7 +234,8 @@ class _StocktakingAddPageState extends State<StocktakingAddPage> {
 
     _bloc.add(StocktakingAddSubmitted(
       warehouseID: _selectedWarehouse!.id,
-      remarks: _remarksController.text.isNotEmpty ? _remarksController.text : null,
+      remarks:
+          _remarksController.text.isNotEmpty ? _remarksController.text : null,
     ));
   }
 }

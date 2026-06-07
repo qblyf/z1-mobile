@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/stocktaking_remote_datasource.dart';
 import '../../data/models/stocktaking_model.dart';
 import '../bloc/stocktaking_detail_bloc.dart';
 
@@ -21,9 +20,7 @@ class _StocktakingDetailPageState extends State<StocktakingDetailPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = StocktakingDetailBloc(
-      dataSource: StocktakingRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<StocktakingDetailBloc>();
     _bloc.add(StocktakingDetailLoadRequested(widget.id));
   }
 
@@ -92,7 +89,8 @@ class _StocktakingDetailPageState extends State<StocktakingDetailPage> {
             const SizedBox(height: 16),
             CupertinoButton(
               child: const Text('重试'),
-              onPressed: () => _bloc.add(StocktakingDetailLoadRequested(widget.id)),
+              onPressed: () =>
+                  _bloc.add(StocktakingDetailLoadRequested(widget.id)),
             ),
           ],
         ),
@@ -154,17 +152,20 @@ class _StocktakingDetailPageState extends State<StocktakingDetailPage> {
                           _InfoRow(
                             icon: CupertinoIcons.building_2_fill,
                             label: '仓库',
-                            value: stocktaking.warehouseName ?? '仓库${stocktaking.warehouseID}',
+                            value: stocktaking.warehouseName ??
+                                '仓库${stocktaking.warehouseID}',
                           ),
                           const SizedBox(height: 8),
                           _InfoRow(
                             icon: CupertinoIcons.clock,
                             label: '创建时间',
                             value: dateFormat.format(
-                              DateTime.fromMillisecondsSinceEpoch(stocktaking.createdAt * 1000),
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  stocktaking.createdAt * 1000),
                             ),
                           ),
-                          if (stocktaking.remarks != null && stocktaking.remarks!.isNotEmpty) ...[
+                          if (stocktaking.remarks != null &&
+                              stocktaking.remarks!.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             _InfoRow(
                               icon: CupertinoIcons.doc_text,
@@ -209,7 +210,8 @@ class _StocktakingDetailPageState extends State<StocktakingDetailPage> {
                       child: Center(
                         child: Text(
                           '暂无商品',
-                          style: TextStyle(color: CupertinoColors.secondaryLabel),
+                          style:
+                              TextStyle(color: CupertinoColors.secondaryLabel),
                         ),
                       ),
                     ),
@@ -248,10 +250,12 @@ class _StocktakingDetailPageState extends State<StocktakingDetailPage> {
                       onPressed: isOperating
                           ? null
                           : () => _showConfirmDialog('完成盘库', '确认完成此盘库？', () {
-                                _bloc.add(StocktakingDetailEndRequested(widget.id));
+                                _bloc.add(
+                                    StocktakingDetailEndRequested(widget.id));
                               }),
                       child: isOperating
-                          ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                          ? const CupertinoActivityIndicator(
+                              color: CupertinoColors.white)
                           : const Text(
                               '完成盘库',
                               style: TextStyle(
@@ -270,10 +274,12 @@ class _StocktakingDetailPageState extends State<StocktakingDetailPage> {
                       onPressed: isOperating
                           ? null
                           : () => _showConfirmDialog('重新盘库', '确认重新开始盘库？', () {
-                                _bloc.add(StocktakingDetailRestartRequested(widget.id));
+                                _bloc.add(StocktakingDetailRestartRequested(
+                                    widget.id));
                               }),
                       child: isOperating
-                          ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                          ? const CupertinoActivityIndicator(
+                              color: CupertinoColors.white)
                           : const Text(
                               '重新盘库',
                               style: TextStyle(
@@ -309,7 +315,8 @@ class _StocktakingDetailPageState extends State<StocktakingDetailPage> {
     return const SizedBox.shrink();
   }
 
-  void _showConfirmDialog(String title, String content, VoidCallback onConfirm) {
+  void _showConfirmDialog(
+      String title, String content, VoidCallback onConfirm) {
     showCupertinoDialog(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
@@ -472,7 +479,11 @@ class _ProductCard extends StatelessWidget {
                       : isLoss
                           ? const Color(0xFFDC2626)
                           : CupertinoColors.label,
-                  prefix: diff > 0 ? '+' : diff < 0 ? '-' : '',
+                  prefix: diff > 0
+                      ? '+'
+                      : diff < 0
+                          ? '-'
+                          : '',
                 ),
               ),
             ],

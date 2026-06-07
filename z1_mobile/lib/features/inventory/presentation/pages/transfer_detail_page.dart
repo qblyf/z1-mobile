@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/transfer_remote_datasource.dart';
 import '../../data/models/transfer_model.dart';
 import '../bloc/transfer_detail_bloc.dart';
 
@@ -21,9 +20,7 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = TransferDetailBloc(
-      dataSource: TransferRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<TransferDetailBloc>();
     _bloc.add(TransferDetailLoadRequested(widget.id));
   }
 
@@ -92,7 +89,8 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
             const SizedBox(height: 16),
             CupertinoButton(
               child: const Text('重试'),
-              onPressed: () => _bloc.add(TransferDetailLoadRequested(widget.id)),
+              onPressed: () =>
+                  _bloc.add(TransferDetailLoadRequested(widget.id)),
             ),
           ],
         ),
@@ -149,20 +147,23 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
                           _InfoRow(
                             icon: CupertinoIcons.arrow_right,
                             label: '调出仓库',
-                            value: transfer.fromWarehouseName ?? '仓库${transfer.fromWarehouseID}',
+                            value: transfer.fromWarehouseName ??
+                                '仓库${transfer.fromWarehouseID}',
                           ),
                           const SizedBox(height: 8),
                           _InfoRow(
                             icon: CupertinoIcons.arrow_left,
                             label: '调入仓库',
-                            value: transfer.toWarehouseName ?? '仓库${transfer.toWarehouseID}',
+                            value: transfer.toWarehouseName ??
+                                '仓库${transfer.toWarehouseID}',
                           ),
                           const SizedBox(height: 8),
                           _InfoRow(
                             icon: CupertinoIcons.clock,
                             label: '创建时间',
                             value: dateFormat.format(
-                              DateTime.fromMillisecondsSinceEpoch(transfer.createdAt * 1000),
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  transfer.createdAt * 1000),
                             ),
                           ),
                           if (transfer.shippedAt != null) ...[
@@ -171,7 +172,8 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
                               icon: CupertinoIcons.cube_box,
                               label: '发货时间',
                               value: dateFormat.format(
-                                DateTime.fromMillisecondsSinceEpoch(transfer.shippedAt! * 1000),
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    transfer.shippedAt! * 1000),
                               ),
                             ),
                           ],
@@ -181,7 +183,8 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
                               icon: CupertinoIcons.checkmark_circle,
                               label: '入库时间',
                               value: dateFormat.format(
-                                DateTime.fromMillisecondsSinceEpoch(transfer.receivedAt! * 1000),
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    transfer.receivedAt! * 1000),
                               ),
                             ),
                           ],
@@ -222,7 +225,8 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
                       child: Center(
                         child: Text(
                           '暂无商品',
-                          style: TextStyle(color: CupertinoColors.secondaryLabel),
+                          style:
+                              TextStyle(color: CupertinoColors.secondaryLabel),
                         ),
                       ),
                     ),
@@ -279,7 +283,9 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
               ? const CupertinoActivityIndicator(color: CupertinoColors.white)
               : const Text(
                   '确认发货',
-                  style: TextStyle(fontWeight: FontWeight.w600, color: CupertinoColors.white),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: CupertinoColors.white),
                 ),
         ),
       );
@@ -298,7 +304,9 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
               ? const CupertinoActivityIndicator(color: CupertinoColors.white)
               : const Text(
                   '确认入库',
-                  style: TextStyle(fontWeight: FontWeight.w600, color: CupertinoColors.white),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: CupertinoColors.white),
                 ),
         ),
       );
@@ -307,7 +315,8 @@ class _TransferDetailPageState extends State<TransferDetailPage> {
     return const SizedBox.shrink();
   }
 
-  void _showConfirmDialog(String title, String content, VoidCallback onConfirm) {
+  void _showConfirmDialog(
+      String title, String content, VoidCallback onConfirm) {
     showCupertinoDialog(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(

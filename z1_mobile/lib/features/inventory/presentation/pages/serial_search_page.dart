@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/serial_search_remote_datasource.dart';
 import '../../data/models/serial_search_model.dart';
 import '../bloc/serial_search_bloc.dart';
 
@@ -20,9 +19,7 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = SerialSearchBloc(
-      dataSource: SerialSearchRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<SerialSearchBloc>();
     _bloc.add(const SerialSearchWarehousesRequested());
   }
 
@@ -84,7 +81,8 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
                 child: CupertinoTextField(
                   controller: _searchController,
                   placeholder: '输入序列号或条码',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: CupertinoColors.systemGrey6,
                     borderRadius: BorderRadius.circular(8),
@@ -112,12 +110,14 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
               ),
               const SizedBox(width: 12),
               CupertinoButton(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 color: CupertinoColors.activeBlue,
                 borderRadius: BorderRadius.circular(8),
                 onPressed: () {
                   if (_searchController.text.isNotEmpty) {
-                    _bloc.add(SerialSearchCodeSubmitted(serial: _searchController.text));
+                    _bloc.add(SerialSearchCodeSubmitted(
+                        serial: _searchController.text));
                   }
                 },
                 child: const Text(
@@ -139,9 +139,11 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
                   final warehouse = warehouses[index];
                   final isSelected = _isWarehouseSelected(state, warehouse.id);
                   return GestureDetector(
-                    onTap: () => _bloc.add(SerialSearchWarehouseChanged(warehouse.id)),
+                    onTap: () =>
+                        _bloc.add(SerialSearchWarehouseChanged(warehouse.id)),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? CupertinoColors.activeBlue
@@ -171,11 +173,14 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
   bool _isWarehouseSelected(SerialSearchState state, int warehouseId) {
     if (state is SerialSearchInitial && state.selectedWarehouseId != null) {
       return state.selectedWarehouseId == warehouseId;
-    } else if (state is SerialSearchLoaded && state.selectedWarehouseId != null) {
+    } else if (state is SerialSearchLoaded &&
+        state.selectedWarehouseId != null) {
       return state.selectedWarehouseId == warehouseId;
-    } else if (state is SerialSearchError && state.selectedWarehouseId != null) {
+    } else if (state is SerialSearchError &&
+        state.selectedWarehouseId != null) {
       return state.selectedWarehouseId == warehouseId;
-    } else if (state is SerialSearchLoading && state.selectedWarehouseId != null) {
+    } else if (state is SerialSearchLoading &&
+        state.selectedWarehouseId != null) {
       return state.selectedWarehouseId == warehouseId;
     }
     return false;
@@ -209,7 +214,8 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
             const SizedBox(height: 16),
             CupertinoButton(
               child: const Text('重试'),
-              onPressed: () => _bloc.add(SerialSearchCodeSubmitted(serial: state.queryCode)),
+              onPressed: () =>
+                  _bloc.add(SerialSearchCodeSubmitted(serial: state.queryCode)),
             ),
           ],
         ),
@@ -295,7 +301,8 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
                   final flow = result.stockFlows[index];
                   return _buildFlowItem(flow);
                 },
-                childCount: result.stockFlows.length > 5 ? 5 : result.stockFlows.length,
+                childCount:
+                    result.stockFlows.length > 5 ? 5 : result.stockFlows.length,
               ),
             ),
           ),
@@ -432,18 +439,16 @@ class _SerialSearchPageState extends State<SerialSearchPage> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: isInflow
-                  ? const Color(0xFFDCFCE7)
-                  : const Color(0xFFFEE2E2),
+              color:
+                  isInflow ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               isInflow
                   ? CupertinoIcons.arrow_down_circle_fill
                   : CupertinoIcons.arrow_up_circle_fill,
-              color: isInflow
-                  ? const Color(0xFF16A34A)
-                  : const Color(0xFFDC2626),
+              color:
+                  isInflow ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
               size: 20,
             ),
           ),

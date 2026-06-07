@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/home_remote_datasource.dart';
 import '../../data/models/order_model.dart';
 import '../bloc/home_bloc.dart';
 
@@ -15,7 +14,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) {
-        final bloc = HomeBloc(dataSource: HomeRemoteDataSourceImpl(apiClient: getIt()));
+        final bloc = getIt<HomeBloc>();
         bloc.add(const HomeLoadRequested());
         return bloc;
       },
@@ -58,7 +57,8 @@ class _HomePageContent extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(CupertinoIcons.exclamationmark_triangle, size: 48, color: CupertinoColors.systemGrey),
+              const Icon(CupertinoIcons.exclamationmark_triangle,
+                  size: 48, color: CupertinoColors.systemGrey),
               const SizedBox(height: 16),
               Text(
                 '加载失败: ${state.message}',
@@ -68,7 +68,8 @@ class _HomePageContent extends StatelessWidget {
               const SizedBox(height: 16),
               CupertinoButton(
                 child: const Text('重试'),
-                onPressed: () => context.read<HomeBloc>().add(const HomeLoadRequested()),
+                onPressed: () =>
+                    context.read<HomeBloc>().add(const HomeLoadRequested()),
               ),
             ],
           ),
@@ -131,7 +132,8 @@ class _HomePageContent extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(CupertinoIcons.hand_raised_fill, color: CupertinoColors.white, size: 24),
+          const Icon(CupertinoIcons.hand_raised_fill,
+              color: CupertinoColors.white, size: 24),
           const SizedBox(width: 12),
           Text(
             '欢迎回来，$userName',
@@ -226,7 +228,9 @@ class _HomePageContent extends StatelessWidget {
           child: _StatCard(
             title: '今日销售额',
             value: formatter.format(stats.todaySales),
-            subtitle: stats.salesGrowth > 0 ? '↑ ${stats.salesGrowth.toStringAsFixed(0)}%' : '',
+            subtitle: stats.salesGrowth > 0
+                ? '↑ ${stats.salesGrowth.toStringAsFixed(0)}%'
+                : '',
             color: CupertinoColors.activeBlue,
           ),
         ),
@@ -309,7 +313,8 @@ class _HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentOrders(BuildContext context, List orders, NumberFormat formatter) {
+  Widget _buildRecentOrders(
+      BuildContext context, List orders, NumberFormat formatter) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -522,7 +527,8 @@ class _MenuCard extends StatelessWidget {
                     top: -4,
                     right: -4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
                         color: CupertinoColors.destructiveRed,
                         borderRadius: BorderRadius.circular(6),

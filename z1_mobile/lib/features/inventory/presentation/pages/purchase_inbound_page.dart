@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/purchase_remote_datasource.dart';
 import '../../data/models/purchase_model.dart';
 import '../bloc/purchase_inbound_bloc.dart';
 
@@ -23,9 +22,7 @@ class _PurchaseInboundPageState extends State<PurchaseInboundPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = PurchaseInboundBloc(
-      dataSource: PurchaseRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<PurchaseInboundBloc>();
     _bloc.add(PurchaseInboundLoadRequested(widget.id));
   }
 
@@ -118,7 +115,8 @@ class _PurchaseInboundPageState extends State<PurchaseInboundPage> {
             const SizedBox(height: 16),
             CupertinoButton(
               child: const Text('重试'),
-              onPressed: () => _bloc.add(PurchaseInboundLoadRequested(widget.id)),
+              onPressed: () =>
+                  _bloc.add(PurchaseInboundLoadRequested(widget.id)),
             ),
           ],
         ),
@@ -148,7 +146,8 @@ class _PurchaseInboundPageState extends State<PurchaseInboundPage> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  state.purchase.code ?? '采购单#${state.purchase.id}',
+                                  state.purchase.code ??
+                                      '采购单#${state.purchase.id}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 16,
@@ -192,9 +191,11 @@ class _PurchaseInboundPageState extends State<PurchaseInboundPage> {
                           ),
                           const SizedBox(height: 12),
                           GestureDetector(
-                            onTap: () => _showWarehousePicker(context, state.warehouses),
+                            onTap: () =>
+                                _showWarehousePicker(context, state.warehouses),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF3F4F6),
                                 borderRadius: BorderRadius.circular(8),
@@ -260,7 +261,8 @@ class _PurchaseInboundPageState extends State<PurchaseInboundPage> {
                         final product = state.purchase.products[index];
                         return _InboundProductCard(
                           product: product,
-                          count: state.productCounts[product.productId] ?? product.remainCount,
+                          count: state.productCounts[product.productId] ??
+                              product.remainCount,
                           onCountChanged: (count) {
                             _bloc.add(PurchaseInboundProductCountUpdated(
                               productId: product.productId,
@@ -336,7 +338,8 @@ class _PurchaseInboundPageState extends State<PurchaseInboundPage> {
                       ? null
                       : () => _bloc.add(const PurchaseInboundSubmitRequested()),
                   child: state.isSubmitting
-                      ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                      ? const CupertinoActivityIndicator(
+                          color: CupertinoColors.white)
                       : const Text(
                           '确认入库',
                           style: TextStyle(
@@ -355,7 +358,8 @@ class _PurchaseInboundPageState extends State<PurchaseInboundPage> {
     return const SizedBox.shrink();
   }
 
-  void _showWarehousePicker(BuildContext context, List<WarehouseModel> warehouses) {
+  void _showWarehousePicker(
+      BuildContext context, List<WarehouseModel> warehouses) {
     if (warehouses.isEmpty) return;
 
     showCupertinoModalPopup(
@@ -451,7 +455,8 @@ class _InboundProductCardState extends State<_InboundProductCard> {
   @override
   void didUpdateWidget(_InboundProductCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.count != widget.count && _controller.text != widget.count.toString()) {
+    if (oldWidget.count != widget.count &&
+        _controller.text != widget.count.toString()) {
       _controller.text = widget.count.toString();
     }
   }
@@ -565,7 +570,8 @@ class _InboundProductCardState extends State<_InboundProductCard> {
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   decoration: BoxDecoration(
                     color: CupertinoColors.white,
                     border: Border.all(color: CupertinoColors.separator),

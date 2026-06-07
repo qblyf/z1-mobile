@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/transfer_remote_datasource.dart';
 import '../../data/models/transfer_model.dart';
 import '../bloc/transfer_list_bloc.dart';
 
@@ -26,9 +25,7 @@ class _TransferListPageState extends State<TransferListPage> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _bloc = TransferListBloc(
-      dataSource: TransferRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<TransferListBloc>();
     _bloc.add(const TransferListLoadRequested());
   }
 
@@ -78,14 +75,16 @@ class _TransferListPageState extends State<TransferListPage> {
                       for (int i = 0; i < _filters.length; i++)
                         i: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(_filters[i], style: const TextStyle(fontSize: 13)),
+                          child: Text(_filters[i],
+                              style: const TextStyle(fontSize: 13)),
                         ),
                     },
                     onValueChanged: (value) {
                       setState(() {
                         _selectedFilterIndex = value ?? 0;
                       });
-                      _bloc.add(TransferListFilterChanged(value == 0 ? null : value! - 1));
+                      _bloc.add(TransferListFilterChanged(
+                          value == 0 ? null : value! - 1));
                     },
                   ),
                 ),
@@ -117,14 +116,16 @@ class _TransferListPageState extends State<TransferListPage> {
                             const SizedBox(height: 16),
                             CupertinoButton(
                               child: const Text('重试'),
-                              onPressed: () => _bloc.add(const TransferListRefreshRequested()),
+                              onPressed: () => _bloc
+                                  .add(const TransferListRefreshRequested()),
                             ),
                           ],
                         ),
                       );
                     }
 
-                    if (state is TransferListLoaded || state is TransferListLoadingMore) {
+                    if (state is TransferListLoaded ||
+                        state is TransferListLoadingMore) {
                       final items = state is TransferListLoaded
                           ? state.items
                           : (state as TransferListLoadingMore).items;
@@ -134,7 +135,8 @@ class _TransferListPageState extends State<TransferListPage> {
                         return const Center(
                           child: Text(
                             '暂无调拨记录',
-                            style: TextStyle(color: CupertinoColors.secondaryLabel),
+                            style: TextStyle(
+                                color: CupertinoColors.secondaryLabel),
                           ),
                         );
                       }
@@ -145,7 +147,8 @@ class _TransferListPageState extends State<TransferListPage> {
                           CupertinoSliverRefreshControl(
                             onRefresh: () async {
                               _bloc.add(const TransferListRefreshRequested());
-                              await Future.delayed(const Duration(milliseconds: 500));
+                              await Future.delayed(
+                                  const Duration(milliseconds: 500));
                             },
                           ),
                           SliverPadding(
@@ -158,7 +161,8 @@ class _TransferListPageState extends State<TransferListPage> {
                                         ? const Padding(
                                             padding: EdgeInsets.all(16),
                                             child: Center(
-                                              child: CupertinoActivityIndicator(),
+                                              child:
+                                                  CupertinoActivityIndicator(),
                                             ),
                                           )
                                         : const SizedBox.shrink();
@@ -168,7 +172,8 @@ class _TransferListPageState extends State<TransferListPage> {
                                     child: _TransferCard(item: items[index]),
                                   );
                                 },
-                                childCount: items.length + (isLoadingMore ? 1 : 0),
+                                childCount:
+                                    items.length + (isLoadingMore ? 1 : 0),
                               ),
                             ),
                           ),
@@ -214,7 +219,8 @@ class _TransferCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item.code ?? '调拨单#${item.id}',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 15),
                   ),
                 ),
                 _StateBadge(state: item.state),
@@ -223,7 +229,8 @@ class _TransferCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(CupertinoIcons.arrow_right, size: 14, color: CupertinoColors.secondaryLabel),
+                const Icon(CupertinoIcons.arrow_right,
+                    size: 14, color: CupertinoColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
@@ -240,17 +247,20 @@ class _TransferCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(CupertinoIcons.clock, size: 14, color: CupertinoColors.secondaryLabel),
+                const Icon(CupertinoIcons.clock,
+                    size: 14, color: CupertinoColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Text(
-                  dateFormat.format(DateTime.fromMillisecondsSinceEpoch(item.createdAt * 1000)),
+                  dateFormat.format(DateTime.fromMillisecondsSinceEpoch(
+                      item.createdAt * 1000)),
                   style: const TextStyle(
                     color: CupertinoColors.secondaryLabel,
                     fontSize: 12,
                   ),
                 ),
                 const Spacer(),
-                const Icon(CupertinoIcons.cube_box, size: 14, color: CupertinoColors.secondaryLabel),
+                const Icon(CupertinoIcons.cube_box,
+                    size: 14, color: CupertinoColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Text(
                   '${item.productCount} 品项',

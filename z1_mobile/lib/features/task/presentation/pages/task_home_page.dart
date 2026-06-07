@@ -143,7 +143,7 @@ class _TaskCard extends StatelessWidget {
         border: Border.all(
           color: task.isCompleted
               ? CupertinoColors.systemGrey4
-              : _priorityColor.withOpacity(0.3),
+              : _priorityColor.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -152,9 +152,7 @@ class _TaskCard extends StatelessWidget {
             task.isCompleted
                 ? CupertinoIcons.checkmark_circle_fill
                 : _priorityIcon,
-            color: task.isCompleted
-                ? const Color(0xFF10B981)
-                : _priorityColor,
+            color: task.isCompleted ? const Color(0xFF10B981) : _priorityColor,
             size: 20,
           ),
           const SizedBox(width: 12),
@@ -167,9 +165,8 @@ class _TaskCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    decoration: task.isCompleted
-                        ? TextDecoration.lineThrough
-                        : null,
+                    decoration:
+                        task.isCompleted ? TextDecoration.lineThrough : null,
                     color: task.isCompleted
                         ? CupertinoColors.secondaryLabel
                         : CupertinoColors.label,

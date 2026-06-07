@@ -32,11 +32,15 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
     setState(() => _state = MemberCreditscoreLoading());
     try {
       final apiClient = getIt<ApiClient>();
-      final response = await apiClient.get(ApiEndpoints.memberCreditscore, queryParameters: {'userIdents': widget.memberId});
+      final response = await apiClient.get(ApiEndpoints.memberCreditscore,
+          queryParameters: {'userIdents': widget.memberId});
       if (response is Success && response.value != null) {
         final data = response.value as Map<String, dynamic>;
         _member = MemberModel.fromJson(data['member'] ?? {});
-        final recordsList = (data['records'] as List?)?.map((e) => CreditRecord.fromJson(e as Map<String, dynamic>)).toList() ?? [];
+        final recordsList = (data['records'] as List?)
+                ?.map((e) => CreditRecord.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [];
         setState(() {
           _member = _member;
           _records = recordsList;
@@ -76,9 +80,11 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text((_state as MemberCreditscoreError).message, style: const TextStyle(color: AppTheme.grey600)),
+            Text((_state as MemberCreditscoreError).message,
+                style: const TextStyle(color: AppTheme.grey600)),
             const SizedBox(height: 16),
-            CupertinoButton.filled(onPressed: _loadData, child: const Text('重试')),
+            CupertinoButton.filled(
+                onPressed: _loadData, child: const Text('重试')),
           ],
         ),
       );
@@ -99,7 +105,11 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
       decoration: BoxDecoration(
         color: CupertinoColors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: CupertinoColors.systemGrey.withValues(alpha: 0.1), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(
+              color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
+              blurRadius: 8)
+        ],
       ),
       child: Column(
         children: [
@@ -107,10 +117,13 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                 child: Text(
                   member.name.isNotEmpty ? member.name[0] : '?',
-                  style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 20),
+                  style: const TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20),
                 ),
               ),
               const SizedBox(width: 12),
@@ -118,8 +131,12 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(member.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    Text(member.phone, style: const TextStyle(color: AppTheme.grey500, fontSize: 14)),
+                    Text(member.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text(member.phone,
+                        style: const TextStyle(
+                            color: AppTheme.grey500, fontSize: 14)),
                   ],
                 ),
               ),
@@ -129,7 +146,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.05),
+              color: AppTheme.primaryColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -137,15 +154,21 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
               children: [
                 Column(
                   children: [
-                    const Text('当前积分', style: TextStyle(color: AppTheme.grey600, fontSize: 14)),
+                    const Text('当前积分',
+                        style:
+                            TextStyle(color: AppTheme.grey600, fontSize: 14)),
                     const SizedBox(height: 4),
                     Text(
                       '${member.availableExperience}',
-                      style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 32),
+                      style: const TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 32),
                     ),
                     Text(
                       '可抵 ¥${member.availableExperienceYuan.toStringAsFixed(2)}',
-                      style: const TextStyle(color: AppTheme.grey500, fontSize: 12),
+                      style: const TextStyle(
+                          color: AppTheme.grey500, fontSize: 12),
                     ),
                   ],
                 ),
@@ -161,7 +184,8 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('积分变动记录', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        const Text('积分变动记录',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         const SizedBox(height: 12),
         if (_records.isEmpty)
           Container(
@@ -170,7 +194,9 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
               color: CupertinoColors.white,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Center(child: Text('暂无变动记录', style: TextStyle(color: AppTheme.grey500))),
+            child: const Center(
+                child:
+                    Text('暂无变动记录', style: TextStyle(color: AppTheme.grey500))),
           )
         else
           ..._records.map((record) => _buildRecordItem(record)),
@@ -192,7 +218,8 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (isPositive ? AppTheme.successColor : AppTheme.errorColor).withOpacity(0.1),
+              color: (isPositive ? AppTheme.successColor : AppTheme.errorColor)
+                  .withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -206,7 +233,8 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(record.typeLabel, style: const TextStyle(fontWeight: FontWeight.w500)),
+                Text(record.typeLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w500)),
                 const SizedBox(height: 4),
                 Text(
                   record.createdAtFormatted,
@@ -221,7 +249,8 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
               Text(
                 '${isPositive ? '+' : ''}${record.change}',
                 style: TextStyle(
-                  color: isPositive ? AppTheme.successColor : AppTheme.errorColor,
+                  color:
+                      isPositive ? AppTheme.successColor : AppTheme.errorColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -259,7 +288,8 @@ class CreditRecord {
   factory CreditRecord.fromJson(Map<String, dynamic> json) => CreditRecord(
         id: json['id'] as int? ?? 0,
         type: json['type'] as String? ?? '',
-        typeLabel: json['typeLabel'] as String? ?? json['type'] as String? ?? '',
+        typeLabel:
+            json['typeLabel'] as String? ?? json['type'] as String? ?? '',
         change: json['change'] as int? ?? 0,
         note: json['note'] as String?,
         createdAt: json['createdAt'] as int? ?? 0,
@@ -272,8 +302,11 @@ class CreditRecord {
 }
 
 sealed class MemberCreditscoreState {}
+
 class MemberCreditscoreLoading extends MemberCreditscoreState {}
+
 class MemberCreditscoreLoaded extends MemberCreditscoreState {}
+
 class MemberCreditscoreError extends MemberCreditscoreState {
   final String message;
   MemberCreditscoreError(this.message);

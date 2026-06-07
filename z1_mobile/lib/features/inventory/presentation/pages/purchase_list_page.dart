@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../injection.dart';
-import '../../data/datasources/purchase_remote_datasource.dart';
 import '../../data/models/purchase_model.dart';
 import '../bloc/purchase_list_bloc.dart';
 
@@ -24,9 +23,7 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _bloc = PurchaseListBloc(
-      dataSource: PurchaseRemoteDataSourceImpl(apiClient: getIt()),
-    );
+    _bloc = getIt<PurchaseListBloc>();
     _bloc.add(const PurchaseListLoadRequested());
   }
 
@@ -99,14 +96,16 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
                             const SizedBox(height: 16),
                             CupertinoButton(
                               child: const Text('重试'),
-                              onPressed: () => _bloc.add(const PurchaseListRefreshRequested()),
+                              onPressed: () => _bloc
+                                  .add(const PurchaseListRefreshRequested()),
                             ),
                           ],
                         ),
                       );
                     }
 
-                    if (state is PurchaseListLoaded || state is PurchaseListLoadingMore) {
+                    if (state is PurchaseListLoaded ||
+                        state is PurchaseListLoadingMore) {
                       final items = state is PurchaseListLoaded
                           ? state.items
                           : (state as PurchaseListLoadingMore).items;
@@ -116,7 +115,8 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
                         return const Center(
                           child: Text(
                             '暂无采购记录',
-                            style: TextStyle(color: CupertinoColors.secondaryLabel),
+                            style: TextStyle(
+                                color: CupertinoColors.secondaryLabel),
                           ),
                         );
                       }
@@ -127,7 +127,8 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
                           CupertinoSliverRefreshControl(
                             onRefresh: () async {
                               _bloc.add(const PurchaseListRefreshRequested());
-                              await Future.delayed(const Duration(milliseconds: 500));
+                              await Future.delayed(
+                                  const Duration(milliseconds: 500));
                             },
                           ),
                           SliverPadding(
@@ -140,7 +141,8 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
                                         ? const Padding(
                                             padding: EdgeInsets.all(16),
                                             child: Center(
-                                              child: CupertinoActivityIndicator(),
+                                              child:
+                                                  CupertinoActivityIndicator(),
                                             ),
                                           )
                                         : const SizedBox.shrink();
@@ -150,7 +152,8 @@ class _PurchaseListPageState extends State<PurchaseListPage> {
                                     child: _PurchaseCard(item: items[index]),
                                   );
                                 },
-                                childCount: items.length + (isLoadingMore ? 1 : 0),
+                                childCount:
+                                    items.length + (isLoadingMore ? 1 : 0),
                               ),
                             ),
                           ),
@@ -232,7 +235,8 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? CupertinoColors.activeBlue : const Color(0xFFF3F4F6),
+          color:
+              isSelected ? CupertinoColors.activeBlue : const Color(0xFFF3F4F6),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
@@ -274,7 +278,8 @@ class _PurchaseCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item.code ?? '采购单#${item.id}',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 15),
                   ),
                 ),
                 _StateBadge(state: item.state),
@@ -283,7 +288,8 @@ class _PurchaseCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(CupertinoIcons.building_2_fill, size: 14, color: CupertinoColors.secondaryLabel),
+                const Icon(CupertinoIcons.building_2_fill,
+                    size: 14, color: CupertinoColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Text(
                   item.supplierName ?? '供应商',
@@ -297,10 +303,12 @@ class _PurchaseCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(CupertinoIcons.clock, size: 14, color: CupertinoColors.secondaryLabel),
+                const Icon(CupertinoIcons.clock,
+                    size: 14, color: CupertinoColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Text(
-                  dateFormat.format(DateTime.fromMillisecondsSinceEpoch(item.createdAt * 1000)),
+                  dateFormat.format(DateTime.fromMillisecondsSinceEpoch(
+                      item.createdAt * 1000)),
                   style: const TextStyle(
                     color: CupertinoColors.secondaryLabel,
                     fontSize: 12,
