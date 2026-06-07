@@ -22,6 +22,9 @@ class AuthUser extends Equatable {
   /// 员工主部门 ID（来自 access token JWT payload，非 /members/self 返回）
   final int? deptID;
 
+  /// 员工主部门名称（登录后异步注入，用于首页门店显示）
+  final String? deptName;
+
   /// 默认仓库 ID（主部门换算所得，登录后异步注入）
   final int? defaultWarehouseID;
 
@@ -43,6 +46,7 @@ class AuthUser extends Equatable {
     this.wxAcatar,
     this.shoppingGuide,
     this.deptID,
+    this.deptName,
     this.defaultWarehouseID,
   });
 
@@ -77,6 +81,7 @@ class AuthUser extends Equatable {
 
   AuthUser copyWith({
     int? deptID,
+    String? deptName,
     int? defaultWarehouseID,
   }) {
     return AuthUser(
@@ -97,13 +102,21 @@ class AuthUser extends Equatable {
       wxAcatar: wxAcatar,
       shoppingGuide: shoppingGuide,
       deptID: deptID ?? this.deptID,
+      deptName: deptName ?? this.deptName,
       defaultWarehouseID: defaultWarehouseID ?? this.defaultWarehouseID,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [userIdent, mobilePhone, realName, status, deptID, defaultWarehouseID];
+  List<Object?> get props => [
+        userIdent,
+        mobilePhone,
+        realName,
+        status,
+        deptID,
+        deptName,
+        defaultWarehouseID,
+      ];
 }
 
 /// 登录请求

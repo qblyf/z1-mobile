@@ -119,6 +119,8 @@ void main() {
             (_) async => const Success(testLoginResponse),
           );
           when(() => mockTokenService.getAccessToken()).thenReturn(token);
+          when(() => mockSessionRemoteDataSource.getDepartmentName(any()))
+              .thenAnswer((_) async => const Success('IT部'));
           when(() => mockSessionRemoteDataSource.grantPermissionPackage(any()))
               .thenAnswer((_) async => const Success('Bearer jwt'));
           when(() => mockSessionRemoteDataSource.getDefaultWarehouseByDept(
@@ -137,7 +139,8 @@ void main() {
               .having((s) => s.user.defaultWarehouseID, 'wh before', null),
           isA<AuthAuthenticated>()
               .having((s) => s.user.defaultWarehouseID, 'wh after', 63)
-              .having((s) => s.user.deptID, 'dept', 35),
+              .having((s) => s.user.deptID, 'dept', 35)
+              .having((s) => s.user.deptName, 'deptName', 'IT部'),
         ],
         verify: (_) {
           verify(() => mockTokenService.savePermissionFor(

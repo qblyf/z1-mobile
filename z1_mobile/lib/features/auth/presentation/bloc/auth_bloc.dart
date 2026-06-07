@@ -168,6 +168,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final deptID = deptIDFromToken(_tokenService.getAccessToken());
 
+      // 部门名称（首页门店显示；仅需 Authorization，独立于权限 JWT）
+      String? deptName;
+      if (deptID != null) {
+        final dept = await _sessionDatasource.getDepartmentName(deptID);
+        if (dept.isSuccess) deptName = dept.value;
+      }
+
       // 1) 零售权限包 JWT（含 shopSaleAdd / GetWarehouseIDsByMainDeptID）
       String? permissionJwt;
       final grant = await _sessionDatasource
@@ -192,6 +199,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       return user.copyWith(
         deptID: deptID,
+        deptName: deptName,
         defaultWarehouseID: defaultWarehouseID,
       );
     } catch (_) {

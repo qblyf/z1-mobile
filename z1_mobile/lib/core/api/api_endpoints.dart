@@ -213,6 +213,11 @@ class ApiEndpoints {
   /// 零售开单/查询权限包 key（含 shopSaleAdd / GetWarehouseIDsByMainDeptID）
   static const String permKeyShopSaleApply = 'shopSaleApplyView';
 
+  // ===== 部门 =====
+  /// 部门详情（departmentIDs 逗号分隔；返回 {code, res:[{id,name,...}]}，仅需 Authorization）
+  static String departmentDetail(String departmentIDs) =>
+      '/department/detail?departmentIDs=$departmentIDs';
+
   // ===== 盘库 =====
   /// 盘库列表（添加分页参数）
   static String stocktakingList({int page = 1, int pageSize = 20}) =>

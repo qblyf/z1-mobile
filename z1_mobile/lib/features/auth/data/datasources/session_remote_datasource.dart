@@ -17,6 +17,9 @@ abstract class SessionRemoteDataSource {
     int deptId, {
     required String permissionJwt,
   });
+
+  /// 取部门名称（仅需 Authorization，无需权限 JWT）
+  Future<Result<String?>> getDepartmentName(int deptId);
 }
 
 class SessionRemoteDataSourceImpl implements SessionRemoteDataSource {
@@ -51,6 +54,21 @@ class SessionRemoteDataSourceImpl implements SessionRemoteDataSource {
     return response.map((data) {
       final list = (data['list'] as List<dynamic>?)?.cast<int>() ?? const [];
       return list.isNotEmpty ? list.first : null;
+    });
+  }
+
+  @override
+  Future<Result<String?>> getDepartmentName(int deptId) async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.departmentDetail('$deptId'),
+      parser: (data) => data as Map<String, dynamic>,
+    );
+
+    return response.map((data) {
+      final res = data['res'] as List<dynamic>?;
+      if (res == null || res.isEmpty) return null;
+      final first = res.first as Map<String, dynamic>;
+      return first['name'] as String?;
     });
   }
 }
