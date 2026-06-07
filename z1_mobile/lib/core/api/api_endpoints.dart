@@ -202,6 +202,16 @@ class ApiEndpoints {
   static String warehouseListCondition({int? state, int limit = 100, int offset = 0}) {
     return '/warehouse/list-condition?state=${state ?? 1}&limit=$limit&offset=$offset';
   }
+  /// 按员工主部门取可用仓库 ID 列表（返回 {code, list:[...]}，需真实 Use-Permissions）
+  static String warehouseIdsByMainDept(int deptId) =>
+      '/warehouse/get-warehouse-ids-by-main-dept-id?departmentID=$deptId';
+
+  // ===== 权限包 =====
+  /// 发放权限包（返回 res.permissionsJWT[自带 Bearer 前缀] + res.data.deptIDs）
+  static String permissionPackageGrant(String key) =>
+      '/permission-package/grant?key=$key';
+  /// 零售开单/查询权限包 key（含 shopSaleAdd / GetWarehouseIDsByMainDeptID）
+  static const String permKeyShopSaleApply = 'shopSaleApplyView';
 
   // ===== 盘库 =====
   /// 盘库列表（添加分页参数）

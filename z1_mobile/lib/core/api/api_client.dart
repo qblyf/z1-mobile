@@ -23,9 +23,12 @@ class ApiInterceptor extends Interceptor {
     }
 
     // 添加 Use-Permissions header（用于权限验证）
-    final permission = _tokenService.getPermissionToken();
-    if (permission != null && permission.isNotEmpty) {
-      options.headers['Use-Permissions'] = permission;
+    // 若调用方已显式传入（按权限包 key 的专属 JWT），不覆盖
+    if (!options.headers.containsKey('Use-Permissions')) {
+      final permission = _tokenService.getPermissionToken();
+      if (permission != null && permission.isNotEmpty) {
+        options.headers['Use-Permissions'] = permission;
+      }
     }
 
     handler.next(options);
@@ -197,15 +200,19 @@ class ApiClient {
   }
 
   /// GET 请求（直接调用，不经过 z1func）
+  ///
+  /// [headers] 可覆盖默认请求头（如按权限包 key 传专属 Use-Permissions JWT）
   Future<Result<T>> get<T>(
     String url, {
     Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
     T Function(dynamic)? parser,
   }) async {
     try {
       final response = await _dio.get(
         url,
         queryParameters: queryParameters,
+        options: headers != null ? Options(headers: headers) : null,
       );
       return _parseResponse(response, parser);
     } on DioException catch (e) {
@@ -214,13 +221,20 @@ class ApiClient {
   }
 
   /// POST 请求（直接调用，不经过 z1func）
+  ///
+  /// [headers] 可覆盖默认请求头（如按权限包 key 传专属 Use-Permissions JWT）
   Future<Result<T>> post<T>(
     String url, {
     dynamic data,
+    Map<String, dynamic>? headers,
     T Function(dynamic)? parser,
   }) async {
     try {
-      final response = await _dio.post(url, data: data);
+      final response = await _dio.post(
+        url,
+        data: data,
+        options: headers != null ? Options(headers: headers) : null,
+      );
       return _parseResponse(response, parser);
     } on DioException catch (e) {
       return _handleError(e);

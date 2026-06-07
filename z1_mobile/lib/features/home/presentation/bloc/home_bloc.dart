@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../data/datasources/home_remote_datasource.dart';
 import '../../data/models/order_model.dart';
 import '../../../auth/data/models/user_model.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 // ===== Events =====
 abstract class HomeEvent extends Equatable {
@@ -60,9 +61,13 @@ class HomeError extends HomeState {
 // ===== BLoC =====
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final HomeRemoteDataSource _dataSource;
+  final AuthBloc _authBloc;
 
-  HomeBloc({required HomeRemoteDataSource dataSource})
-      : _dataSource = dataSource,
+  HomeBloc({
+    required HomeRemoteDataSource dataSource,
+    required AuthBloc authBloc,
+  })  : _dataSource = dataSource,
+        _authBloc = authBloc,
         super(const HomeInitial()) {
     on<HomeLoadRequested>(_onHomeLoadRequested);
     on<HomeRefreshRequested>(_onHomeRefreshRequested);
@@ -84,6 +89,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _loadData(Emitter<HomeState> emit) async {
+    final authState = _authBloc.state;
+    if (authState is! AuthAuthenticated) {
+      emit(const HomeError('未登录'));
+      return;
+    }
+    final AuthUser user = authState.user;
+
     final result = await _dataSource.getOrderList();
 
     if (result.isFailure) {
@@ -95,18 +107,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final stats = HomeStats.fromOrders(orders);
     final recentOrders = orders.take(3).toList();
 
-    // TODO(用户信息持久化): 当前显示硬编码占位用户。等 AuthBloc 提供已登录 user 后：
-    // 1) HomeBloc 构造函数注入 AuthBloc 或 user provider
-    // 2) 这里读取 AuthAuthenticated.user 并传给 HomeLoaded
-    // 3) 删除 defaultUser 兜底
-    const defaultUser = AuthUser(
-      userIdent: 999999999,
-      mobilePhone: '',
-      realName: '用户',
-    );
-
     emit(HomeLoaded(
-      user: defaultUser,
+      user: user,
       stats: stats,
       recentOrders: recentOrders,
     ));

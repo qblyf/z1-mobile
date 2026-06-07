@@ -64,6 +64,11 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
+      // 登录态注入是两段式 emit（先基础 user 再补默认仓），
+      // 仅在「首次进入已认证」时跳转，避免重复导航
+      listenWhen: (prev, curr) =>
+          curr is AuthError ||
+          (prev is! AuthAuthenticated && curr is AuthAuthenticated),
       listener: (context, state) {
         if (state is AuthError) {
           _showError(state.message);

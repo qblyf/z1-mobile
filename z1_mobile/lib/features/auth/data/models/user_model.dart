@@ -19,6 +19,12 @@ class AuthUser extends Equatable {
   final String? wxAcatar;
   final Map<String, dynamic>? shoppingGuide;
 
+  /// 员工主部门 ID（来自 access token JWT payload，非 /members/self 返回）
+  final int? deptID;
+
+  /// 默认仓库 ID（主部门换算所得，登录后异步注入）
+  final int? defaultWarehouseID;
+
   const AuthUser({
     required this.userIdent,
     required this.mobilePhone,
@@ -36,29 +42,68 @@ class AuthUser extends Equatable {
     this.wxName,
     this.wxAcatar,
     this.shoppingGuide,
+    this.deptID,
+    this.defaultWarehouseID,
   });
 
-  factory AuthUser.fromJson(Map<String, dynamic> json) => AuthUser(
-        userIdent: json['user_ident'] as int? ?? 0,
-        mobilePhone: json['mobile_phone'] as String? ?? '',
-        realName: json['real_name'] as String? ?? '',
-        email: json['email'] as String?,
-        gender: json['gender'] as int? ?? 0,
-        birthDay: json['birth_day'] as int?,
-        coin: json['coin'] as int? ?? 0,
-        experience: json['experience'] as int? ?? 0,
-        grade: json['grade'] as int? ?? 0,
-        storeFrontID: json['store_front_id'] as int? ?? 0,
-        joinTime: json['join_time'] as int? ?? 0,
-        lastTime: json['last_time'] as int? ?? 0,
-        status: json['status'] as int? ?? 1,
-        wxName: json['wx_name'] as String?,
-        wxAcatar: json['wx_avatar'] as String?,
-        shoppingGuide: json['shopping_guide'] as Map<String, dynamic>?,
-      );
+  /// 销售员标识 = 登录用户标识（开单 sellerIdent 直接用它，不冗余存储）
+  int get sellerIdent => userIdent;
+
+  // 注意：/members/self 实际返回 camelCase（userIdent/mobilePhone/...），
+  // 兼容老的 snake_case 作为兜底。
+  factory AuthUser.fromJson(Map<String, dynamic> json) {
+    T? pick<T>(String camel, String snake) =>
+        (json[camel] ?? json[snake]) as T?;
+    return AuthUser(
+      userIdent: pick<int>('userIdent', 'user_ident') ?? 0,
+      mobilePhone: pick<String>('mobilePhone', 'mobile_phone') ?? '',
+      realName: pick<String>('realName', 'real_name') ?? '',
+      email: pick<String>('email', 'email'),
+      gender: pick<int>('gender', 'gender') ?? 0,
+      birthDay: pick<int>('birthDay', 'birth_day'),
+      coin: pick<int>('coin', 'coin') ?? 0,
+      experience: pick<int>('experience', 'experience') ?? 0,
+      grade: pick<int>('grade', 'grade') ?? 0,
+      storeFrontID: pick<int>('storeFrontID', 'store_front_id') ?? 0,
+      joinTime: pick<int>('joinTime', 'join_time') ?? 0,
+      lastTime: pick<int>('lastTime', 'last_time') ?? 0,
+      status: pick<int>('status', 'status') ?? 1,
+      wxName: pick<String>('wxName', 'wx_name'),
+      wxAcatar: pick<String>('wxAcatar', 'wx_avatar'),
+      shoppingGuide:
+          pick<Map<String, dynamic>>('shoppingGuide', 'shopping_guide'),
+    );
+  }
+
+  AuthUser copyWith({
+    int? deptID,
+    int? defaultWarehouseID,
+  }) {
+    return AuthUser(
+      userIdent: userIdent,
+      mobilePhone: mobilePhone,
+      realName: realName,
+      email: email,
+      gender: gender,
+      birthDay: birthDay,
+      coin: coin,
+      experience: experience,
+      grade: grade,
+      storeFrontID: storeFrontID,
+      joinTime: joinTime,
+      lastTime: lastTime,
+      status: status,
+      wxName: wxName,
+      wxAcatar: wxAcatar,
+      shoppingGuide: shoppingGuide,
+      deptID: deptID ?? this.deptID,
+      defaultWarehouseID: defaultWarehouseID ?? this.defaultWarehouseID,
+    );
+  }
 
   @override
-  List<Object?> get props => [userIdent, mobilePhone, realName, status];
+  List<Object?> get props =>
+      [userIdent, mobilePhone, realName, status, deptID, defaultWarehouseID];
 }
 
 /// 登录请求

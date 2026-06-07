@@ -3,8 +3,10 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api/api_client.dart';
+import 'core/datasources/warehouse_remote_datasource.dart';
 import 'core/services/token_service.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
+import 'features/auth/data/datasources/session_remote_datasource.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/home/data/datasources/home_remote_datasource.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
@@ -77,18 +79,30 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(apiClient: apiClient),
   );
+  getIt.registerLazySingleton<SessionRemoteDataSource>(
+    () => SessionRemoteDataSourceImpl(apiClient: apiClient),
+  );
+
+  // 共享仓库数据源
+  getIt.registerLazySingleton<WarehouseRemoteDataSource>(
+    () => WarehouseRemoteDataSourceImpl(apiClient: apiClient),
+  );
 
   // BLoCs
   getIt.registerSingleton<AuthBloc>(
     AuthBloc(
       authDatasource: getIt<AuthRemoteDataSource>(),
+      sessionDatasource: getIt<SessionRemoteDataSource>(),
       tokenService: tokenService,
     ),
   );
 
   // Home BLoC
   getIt.registerLazySingleton<HomeBloc>(
-    () => HomeBloc(dataSource: HomeRemoteDataSourceImpl(apiClient: getIt())),
+    () => HomeBloc(
+      dataSource: HomeRemoteDataSourceImpl(apiClient: getIt()),
+      authBloc: getIt<AuthBloc>(),
+    ),
   );
 
   // Member DataSource
