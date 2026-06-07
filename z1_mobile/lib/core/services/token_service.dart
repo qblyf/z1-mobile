@@ -45,6 +45,7 @@ class TokenService {
   Future<void> clearTokens() async {
     await _prefs.remove(_accessTokenKey);
     await _prefs.remove(_refreshTokenKey);
+    await _prefs.remove(_permissionTokenKey);
   }
 
   /// 检查是否已登录

@@ -14,7 +14,8 @@ class ApiInterceptor extends Interceptor {
         _baseUrl = baseUrl;
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     // 添加 Authorization header
     final token = _tokenService.getAccessToken();
     if (token != null) {
@@ -22,10 +23,10 @@ class ApiInterceptor extends Interceptor {
     }
 
     // 添加 Use-Permissions header（用于权限验证）
-    // TODO(权限令牌): 后端要求请求头 `Use-Permissions` 携带 permission token，
-    // 当前未实现，所有"按权限过滤数据"的接口会拿到默认/最小权限集。
-    // 接入步骤：1) 登录响应中提取 permission token  2) 存入 TokenService.getPermissionToken
-    //          3) 此处读取并设置到 options.headers['Use-Permissions']
+    final permission = _tokenService.getPermissionToken();
+    if (permission != null && permission.isNotEmpty) {
+      options.headers['Use-Permissions'] = permission;
+    }
 
     handler.next(options);
   }
@@ -112,7 +113,8 @@ class ApiClient {
   })  : _dio = dio,
         _tokenService = tokenService,
         _baseUrl = dio.options.baseUrl {
-    _dio.interceptors.add(ApiInterceptor(tokenService: tokenService, baseUrl: _baseUrl));
+    _dio.interceptors
+        .add(ApiInterceptor(tokenService: tokenService, baseUrl: _baseUrl));
   }
 
   /// 通过 z1func 中间层发起请求
@@ -233,6 +235,12 @@ class ApiClient {
 
     if (data == null) {
       return Failure(ApiFailure.serverError('空响应'));
+    }
+
+    if (data is Map<String, dynamic> &&
+        data['code'] != null &&
+        data['code'] != 10000) {
+      return Failure(ApiFailure.serverError(_extractErrorMessage(data)));
     }
 
     if (parser != null) {

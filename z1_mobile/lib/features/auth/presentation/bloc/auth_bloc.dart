@@ -93,10 +93,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     final isLoggedIn = _tokenService.isLoggedIn();
     if (isLoggedIn) {
-      // TODO(用户信息持久化): 当前即使本地有 token 也 emit Unauthenticated，等价于"无法自动登录"。
-      // 接入 AuthLocalDataSource.getUser 后改为：getUser() ?? 调 /user/self 拉取 → emit AuthAuthenticated(user)
-      // 失败兜底再 emit AuthUnauthenticated
-      emit(const AuthUnauthenticated());
+      final result = await _authDatasource.getUserInfo();
+      if (result.isSuccess && result.value != null) {
+        emit(AuthAuthenticated(result.value!));
+      } else {
+        await _tokenService.clearTokens();
+        emit(const AuthUnauthenticated());
+      }
     } else {
       emit(const AuthUnauthenticated());
     }
@@ -121,15 +124,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(result.failure!.message));
         return;
       }
-      
+
       final response = result.value!;
       await _tokenService.saveTokens(
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
+        permissionToken: response.permissionToken,
       );
 
-      // 使用响应中的用户信息或模拟用户
-      final user = AuthUser(
+      var user = response.user;
+      if (user == null) {
+        final userResult = await _authDatasource.getUserInfo();
+        if (userResult.isSuccess) {
+          user = userResult.value;
+        }
+      }
+
+      user ??= AuthUser(
         userIdent: 999999999,
         mobilePhone: event.mobilePhone,
         realName: '用户',

@@ -84,12 +84,14 @@ class LoginRequest {
 class LoginResponse {
   final String accessToken;
   final String? refreshToken;
+  final String? permissionToken;
   final int expiresIn;
   final AuthUser? user;
 
   const LoginResponse({
     required this.accessToken,
     this.refreshToken,
+    this.permissionToken,
     this.expiresIn = 604800,
     this.user,
   });
@@ -97,6 +99,7 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) => LoginResponse(
         accessToken: json['access_token'] as String,
         refreshToken: json['refresh_token'] as String?,
+        permissionToken: json['permission_token'] as String?,
         expiresIn: json['expires_in'] as int? ?? 604800,
         user: json['user'] != null
             ? AuthUser.fromJson(json['user'] as Map<String, dynamic>)

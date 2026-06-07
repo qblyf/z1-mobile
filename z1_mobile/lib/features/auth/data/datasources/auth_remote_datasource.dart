@@ -41,7 +41,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return LoginResponse(
         accessToken: res?['token'] as String? ?? '',
         refreshToken: res?['refresh_token'] as String?,
+        permissionToken: res?['permissionToken'] as String? ??
+            res?['permission_token'] as String? ??
+            res?['permission'] as String?,
         expiresIn: res?['expires_in'] as int? ?? 604800,
+        user: res?['user'] is Map<String, dynamic>
+            ? AuthUser.fromJson(res?['user'] as Map<String, dynamic>)
+            : null,
       );
     });
   }
