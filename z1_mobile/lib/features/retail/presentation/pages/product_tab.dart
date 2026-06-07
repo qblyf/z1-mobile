@@ -398,9 +398,9 @@ class _CartSkuItem extends StatelessWidget {
           ),
           Row(
             children: [
-              CupertinoButton(padding: EdgeInsets.zero, minSize: 28, child: const Icon(CupertinoIcons.minus_circle, size: 22), onPressed: () => onQuantityChanged(-1)),
+              CupertinoButton(padding: EdgeInsets.zero, onPressed: () => onQuantityChanged(-1), minimumSize: const Size(28, 28), child: const Icon(CupertinoIcons.minus_circle, size: 22)),
               Text('${item.quantity}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              CupertinoButton(padding: EdgeInsets.zero, minSize: 28, child: const Icon(CupertinoIcons.plus_circle, size: 22), onPressed: () => onQuantityChanged(1)),
+              CupertinoButton(padding: EdgeInsets.zero, onPressed: () => onQuantityChanged(1), minimumSize: const Size(28, 28), child: const Icon(CupertinoIcons.plus_circle, size: 22)),
             ],
           ),
           const SizedBox(width: 8),

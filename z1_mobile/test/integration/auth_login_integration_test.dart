@@ -95,12 +95,12 @@ void main() {
     });
 
     test('验证 Result 类型的行为', () {
-      final successResult = Success<String>('test_token');
+      const successResult = Success<String>('test_token');
       expect(successResult.isSuccess, true);
       expect(successResult.isFailure, false);
       expect(successResult.value, 'test_token');
 
-      final failureResult = Failure<String>(
+      const failureResult = Failure<String>(
         ApiFailure(
           type: ApiErrorType.unauthorized,
           message: '登录失败',
@@ -109,7 +109,7 @@ void main() {
       expect(failureResult.isSuccess, false);
       expect(failureResult.isFailure, true);
       expect(failureResult.value, isNull);
-      expect(failureResult.failure?.message, '登录失败');
+      expect(failureResult.failure.message, '登录失败');
     });
 
     test('验证 TokenModel 过期检测逻辑', () {

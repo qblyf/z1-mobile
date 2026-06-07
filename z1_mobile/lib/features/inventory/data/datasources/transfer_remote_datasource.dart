@@ -126,7 +126,7 @@ class TransferRemoteDataSourceImpl implements TransferRemoteDataSource {
       parser: (data) => data,
     );
 
-    return response.map((data) => null);
+    return response.map((data) {});
   }
 
   @override
@@ -137,7 +137,7 @@ class TransferRemoteDataSourceImpl implements TransferRemoteDataSource {
       parser: (data) => data,
     );
 
-    return response.map((data) => null);
+    return response.map((data) {});
   }
 
   @override

@@ -226,7 +226,7 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     '单位：积分（1积分 = 0.01元）',
                     style: TextStyle(color: AppTheme.grey500, fontSize: 12),
                   ),
@@ -268,10 +268,10 @@ class _MemberCreditscoreEditPageState extends State<MemberCreditscoreEditPage> {
                 ),
                 child: Row(
                   children: [
-                    Icon(CupertinoIcons.exclamationmark_circle, color: AppTheme.errorColor, size: 20),
+                    const Icon(CupertinoIcons.exclamationmark_circle, color: AppTheme.errorColor, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(_errorMessage!, style: TextStyle(color: AppTheme.errorColor)),
+                      child: Text(_errorMessage!, style: const TextStyle(color: AppTheme.errorColor)),
                     ),
                   ],
                 ),

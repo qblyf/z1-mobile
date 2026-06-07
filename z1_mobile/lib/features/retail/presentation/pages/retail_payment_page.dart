@@ -139,7 +139,7 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
           context: context,
           builder: (ctx) => CupertinoAlertDialog(
             title: const Text('创建订单失败'),
-            content: Text('${e}'),
+            content: Text('$e'),
             actions: [
               CupertinoDialogAction(
                 child: const Text('确定'),
@@ -322,11 +322,10 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
                                 const SizedBox(width: 8),
                                 CupertinoButton(
                                   padding: EdgeInsets.zero,
-                                  minSize: 24,
-                                  child: const Icon(CupertinoIcons.xmark_circle_fill, color: CupertinoColors.systemGrey),
                                   onPressed: () {
                                     setState(() => _selectedPayments.remove(entry.key));
-                                  },
+                                  }, minimumSize: const Size(24, 24),
+                                  child: const Icon(CupertinoIcons.xmark_circle_fill, color: CupertinoColors.systemGrey),
                                 ),
                               ],
                             ),

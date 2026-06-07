@@ -54,9 +54,9 @@ class WorkbenchPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _QuickActionItem(icon: CupertinoIcons.cart, label: '零售开单', color: const Color(0xFFFF6B35), onTap: () => context.go('/home/retail/entry')),
-            _QuickActionItem(icon: CupertinoIcons.barcode_viewfinder, label: '扫码', color: CupertinoColors.activeGreen),
-            _QuickActionItem(icon: CupertinoIcons.search, label: '查序列号', color: CupertinoColors.activeBlue),
-            _QuickActionItem(icon: CupertinoIcons.person_2, label: '查会员', color: const Color(0xFFAF52DE)),
+            const _QuickActionItem(icon: CupertinoIcons.barcode_viewfinder, label: '扫码', color: CupertinoColors.activeGreen),
+            const _QuickActionItem(icon: CupertinoIcons.search, label: '查序列号', color: CupertinoColors.activeBlue),
+            const _QuickActionItem(icon: CupertinoIcons.person_2, label: '查会员', color: Color(0xFFAF52DE)),
           ],
         ),
       ],
@@ -105,20 +105,20 @@ class WorkbenchPage extends StatelessWidget {
               ],
             ),
           ),
-          _ApprovalItem(
+          const _ApprovalItem(
             icon: '📋',
             title: '退换货审批',
             subtitle: '订单 Z1-20260514-028 · ¥560',
             tag: '紧急',
             tagColor: CupertinoColors.destructiveRed,
           ),
-          _ApprovalItem(
+          const _ApprovalItem(
             icon: '📦',
             title: '调拨确认',
             subtitle: '从华强北二店调入 12 件商品',
             time: '2小时前',
           ),
-          _ApprovalItem(
+          const _ApprovalItem(
             icon: '💰',
             title: '积分调整审批',
             subtitle: '会员张三 · 调整积分 2000',
@@ -160,17 +160,17 @@ class WorkbenchPage extends StatelessWidget {
               color: Color(0xFFFFFBF0),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Text('📋', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                const Expanded(
+                Text('📋', style: TextStyle(fontSize: 18)),
+                SizedBox(width: 8),
+                Expanded(
                   child: Text(
                     '今日任务',
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                 ),
-                const Text(
+                Text(
                   '3 项待完成',
                   style: TextStyle(
                     color: CupertinoColors.secondaryLabel,
@@ -180,20 +180,20 @@ class WorkbenchPage extends StatelessWidget {
               ],
             ),
           ),
-          _TaskItem(
+          const _TaskItem(
             icon: '📦',
             title: '盘点珠宝区',
             subtitle: '截止时间 18:00',
             tag: '紧急',
             tagColor: CupertinoColors.destructiveRed,
           ),
-          _TaskItem(
+          const _TaskItem(
             icon: '📝',
             title: '周报填写',
             subtitle: '截止时间 明天 09:00',
             time: '明天',
           ),
-          _TaskItem(
+          const _TaskItem(
             icon: '📞',
             title: '客户回访',
             subtitle: 'VIP 客户：赵总 · 购买钻戒',
@@ -243,17 +243,17 @@ class WorkbenchPage extends StatelessWidget {
               ],
             ),
           ),
-          _NotificationItem(
+          const _NotificationItem(
             title: '系统更新通知',
             content: 'Z1 全网连锁 v2.3.0 版本已发布...',
             time: '刚刚',
           ),
-          _NotificationItem(
+          const _NotificationItem(
             title: '库存预警',
             content: '商品「50分钻戒 D色 VS1」库存不足...',
             time: '1小时前',
           ),
-          _NotificationItem(
+          const _NotificationItem(
             title: '审批提醒',
             content: '您有 3 条待审批事项，请及时处理',
             time: '3小时前',

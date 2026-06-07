@@ -162,12 +162,12 @@ class _ApprovalCenterViewState extends State<_ApprovalCenterView> {
   }
 
   Widget _buildEmpty() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('📋', style: TextStyle(fontSize: 48)),
-          const SizedBox(height: 16),
+          Text('📋', style: TextStyle(fontSize: 48)),
+          SizedBox(height: 16),
           Text(
             '暂无审批记录',
             style: TextStyle(
@@ -216,7 +216,7 @@ class _ApprovalListItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.systemGrey.withOpacity(0.1),
+            color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

@@ -75,9 +75,9 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text((_state as MemberCreditscoreError).message, style: TextStyle(color: AppTheme.grey600)),
+            Text((_state as MemberCreditscoreError).message, style: const TextStyle(color: AppTheme.grey600)),
             const SizedBox(height: 16),
-            CupertinoButton.filled(child: const Text('重试'), onPressed: _loadData),
+            CupertinoButton.filled(onPressed: _loadData, child: const Text('重试')),
           ],
         ),
       );
@@ -98,7 +98,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
       decoration: BoxDecoration(
         color: CupertinoColors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: CupertinoColors.systemGrey.withOpacity(0.1), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: CupertinoColors.systemGrey.withValues(alpha: 0.1), blurRadius: 8)],
       ),
       child: Column(
         children: [
@@ -109,7 +109,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
                 backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
                 child: Text(
                   member.name.isNotEmpty ? member.name[0] : '?',
-                  style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 20),
+                  style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 20),
                 ),
               ),
               const SizedBox(width: 12),
@@ -118,7 +118,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(member.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    Text(member.phone, style: TextStyle(color: AppTheme.grey500, fontSize: 14)),
+                    Text(member.phone, style: const TextStyle(color: AppTheme.grey500, fontSize: 14)),
                   ],
                 ),
               ),
@@ -136,15 +136,15 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
               children: [
                 Column(
                   children: [
-                    Text('当前积分', style: TextStyle(color: AppTheme.grey600, fontSize: 14)),
+                    const Text('当前积分', style: TextStyle(color: AppTheme.grey600, fontSize: 14)),
                     const SizedBox(height: 4),
                     Text(
                       '${member.availableExperience}',
-                      style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 32),
+                      style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 32),
                     ),
                     Text(
                       '可抵 ¥${member.availableExperienceYuan.toStringAsFixed(2)}',
-                      style: TextStyle(color: AppTheme.grey500, fontSize: 12),
+                      style: const TextStyle(color: AppTheme.grey500, fontSize: 12),
                     ),
                   ],
                 ),
@@ -169,7 +169,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
               color: CupertinoColors.white,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(child: Text('暂无变动记录', style: TextStyle(color: AppTheme.grey500))),
+            child: const Center(child: Text('暂无变动记录', style: TextStyle(color: AppTheme.grey500))),
           )
         else
           ..._records.map((record) => _buildRecordItem(record)),
@@ -209,7 +209,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
                 const SizedBox(height: 4),
                 Text(
                   record.createdAtFormatted,
-                  style: TextStyle(color: AppTheme.grey500, fontSize: 12),
+                  style: const TextStyle(color: AppTheme.grey500, fontSize: 12),
                 ),
               ],
             ),
@@ -228,7 +228,7 @@ class _MemberCreditscorePageState extends State<MemberCreditscorePage> {
               if (record.note?.isNotEmpty ?? false)
                 Text(
                   record.note!,
-                  style: TextStyle(color: AppTheme.grey500, fontSize: 12),
+                  style: const TextStyle(color: AppTheme.grey500, fontSize: 12),
                 ),
             ],
           ),

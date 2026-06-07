@@ -70,28 +70,28 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(
+                    const Text(
                       '李明',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Color(0xFFE0EDFF),
+                        color: const Color(0xFFE0EDFF),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text(
+                      child: const Text(
                         '收银员',
                         style: TextStyle(
                           color: CupertinoColors.activeBlue,
@@ -101,15 +101,15 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 4),
-                Text(
+                const SizedBox(height: 4),
+                const Text(
                   '深圳华强北旗舰店',
                   style: TextStyle(
                     color: CupertinoColors.secondaryLabel,
                     fontSize: 13,
                   ),
                 ),
-                Text(
+                const Text(
                   '入职 2 年 3 个月',
                   style: TextStyle(
                     color: CupertinoColors.tertiaryLabel,
@@ -148,10 +148,10 @@ class ProfilePage extends StatelessWidget {
               ),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -196,12 +196,12 @@ class ProfilePage extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
+          const Padding(
+            padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '💰 收入构成',
                   style: TextStyle(
                     fontSize: 13,
@@ -209,7 +209,7 @@ class ProfilePage extends StatelessWidget {
                     color: CupertinoColors.secondaryLabel,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _IncomeItem(
                   icon: '💵',
                   title: '基础薪资',
@@ -218,16 +218,16 @@ class ProfilePage extends StatelessWidget {
                   color: CupertinoColors.activeBlue,
                   percent: '38.9%',
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 _IncomeItem(
                   icon: '📈',
                   title: '销售提成',
                   subtitle: '按销售额 2%',
                   amount: '¥6,200',
-                  color: const Color(0xFFFF6B35),
+                  color: Color(0xFFFF6B35),
                   percent: '48.2%',
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 _IncomeItem(
                   icon: '🏆',
                   title: '工分奖金',
@@ -236,7 +236,7 @@ class ProfilePage extends StatelessWidget {
                   color: CupertinoColors.activeGreen,
                   percent: '14.0%',
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 _IncomeItem(
                   icon: '📉',
                   title: '保险纳税',
@@ -267,17 +267,17 @@ class ProfilePage extends StatelessWidget {
               color: Color(0xFFF5F3FF),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Text('🏅', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                const Expanded(
+                Text('🏅', style: TextStyle(fontSize: 18)),
+                SizedBox(width: 8),
+                Expanded(
                   child: Text(
                     '本月业绩排行',
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                 ),
-                const Text(
+                Text(
                   '门店 12 人',
                   style: TextStyle(
                     color: CupertinoColors.secondaryLabel,
@@ -357,9 +357,9 @@ class ProfilePage extends StatelessWidget {
               ],
             ),
           ),
-          _RankingItem(rank: '1', name: '王小红', amount: '¥352,800', tag: '本月销冠', tagColor: const Color(0xFFFFB020)),
-          _RankingItem(rank: '2', name: '张伟', amount: '¥318,500', subtitle: '差距 ¥33,000'),
-          _RankingItem(
+          const _RankingItem(rank: '1', name: '王小红', amount: '¥352,800', tag: '本月销冠', tagColor: Color(0xFFFFB020)),
+          const _RankingItem(rank: '2', name: '张伟', amount: '¥318,500', subtitle: '差距 ¥33,000'),
+          const _RankingItem(
             rank: '3',
             name: '李明',
             amount: '¥285,600',
@@ -394,24 +394,24 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Text('✅', style: TextStyle(fontSize: 18)),
-                SizedBox(width: 8),
-                Expanded(
+                const Text('✅', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                const Expanded(
                   child: Text(
                     '审批中心',
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: CupertinoColors.destructiveRed,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
+                  child: const Text(
                     '2',
                     style: TextStyle(
                       color: CupertinoColors.white,
@@ -423,20 +423,20 @@ class ProfilePage extends StatelessWidget {
               ],
             ),
           ),
-          _MenuItem(
+          const _MenuItem(
             icon: '📋',
             title: '待我审批',
             subtitle: '退换货、调拨、积分调整',
             tag: '2 项',
             tagColor: CupertinoColors.destructiveRed,
           ),
-          _MenuItem(
+          const _MenuItem(
             icon: '📤',
             title: '我发起的',
             subtitle: '查看我提交的审批',
             trailing: '3 项进行中',
           ),
-          _MenuItem(
+          const _MenuItem(
             icon: '📜',
             title: '审批历史',
             subtitle: '已处理的审批记录',
@@ -453,7 +453,7 @@ class ProfilePage extends StatelessWidget {
         color: CupertinoColors.white,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
+      child: const Column(
         children: [
           _MenuItem(icon: '🏪', title: '门店切换', subtitle: '深圳华强北旗舰店'),
           _MenuItem(icon: '📊', title: '收入明细'),

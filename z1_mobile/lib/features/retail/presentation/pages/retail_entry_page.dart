@@ -197,12 +197,11 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
               if (_boundMember != null)
                 CupertinoButton(
                   padding: EdgeInsets.zero,
-                  minSize: 0,
+                  onPressed: () => setState(() => _boundMember = null), minimumSize: const Size(0, 0),
                   child: const Text(
                     '解除',
                     style: TextStyle(color: CupertinoColors.destructiveRed, fontSize: 12),
                   ),
-                  onPressed: () => setState(() => _boundMember = null),
                 ),
             ],
           ),
@@ -594,7 +593,7 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
   }
 
   Widget _buildStartButton() {
-    final canStart = _selectedType != null && (_boundMember != null || _isWalkIn);
+    final canStart = (_boundMember != null || _isWalkIn);
 
     return CupertinoButton.filled(
       borderRadius: BorderRadius.circular(14),

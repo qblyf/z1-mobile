@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:z1_mobile/core/api/result.dart';
-import 'package:z1_mobile/core/errors/exceptions.dart';
 import 'package:z1_mobile/features/auth/data/models/user_model.dart';
 
 void main() {
@@ -12,26 +10,26 @@ void main() {
         realName: 'Test',
         mobilePhone: '13800138000',
       );
-      final result = Success<AuthUser>(user);
+      const result = Success<AuthUser>(user);
 
       expect(result.isSuccess, true);
       expect(result.isFailure, false);
-      expect(result.value?.userIdent, 1);
+      expect(result.value.userIdent, 1);
       expect(result.failure, isNull);
     });
 
     test('Failure 包含错误信息', () {
-      final failure = ApiFailure(
+      const failure = ApiFailure(
         type: ApiErrorType.serverError,
         message: '服务器错误',
         statusCode: 500,
       );
-      final result = Failure<AuthUser>(failure);
+      const result = Failure<AuthUser>(failure);
 
       expect(result.isSuccess, false);
       expect(result.isFailure, true);
       expect(result.value, isNull);
-      expect(result.failure?.message, '服务器错误');
+      expect(result.failure.message, '服务器错误');
     });
 
     test('fold 方法正确路由', () {
@@ -40,7 +38,7 @@ void main() {
         realName: 'Test',
         mobilePhone: '13800138000',
       );
-      final successResult = Success<AuthUser>(user);
+      const successResult = Success<AuthUser>(user);
 
       final successValue = successResult.fold(
         (_) => 'error',
@@ -64,7 +62,7 @@ void main() {
         realName: 'Test',
         mobilePhone: '13800138000',
       );
-      final result = Success<AuthUser>(user);
+      const result = Success<AuthUser>(user);
       final mapped = result.map((u) => u.userIdent);
 
       expect(mapped.value, 1);
