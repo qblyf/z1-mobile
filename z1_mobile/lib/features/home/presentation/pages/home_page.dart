@@ -97,7 +97,7 @@ class _HomePageContent extends StatelessWidget {
           const SizedBox(height: 16),
 
           // 门店信息卡片
-          _buildStoreCard(),
+          _buildStoreCard(state.user.deptName),
           const SizedBox(height: 16),
 
           // 快捷操作
@@ -148,7 +148,7 @@ class _HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreCard() {
+  Widget _buildStoreCard(String? deptName) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -162,27 +162,27 @@ class _HomePageContent extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(
+          const Icon(
             CupertinoIcons.building_2_fill,
             color: CupertinoColors.activeBlue,
             size: 32,
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '深圳华强北旗舰店',
-                style: TextStyle(
+                deptName?.isNotEmpty == true ? deptName! : '加载中…',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
-                '当前门店',
+              const SizedBox(height: 4),
+              const Text(
+                '所在部门',
                 style: TextStyle(
                   fontSize: 12,
                   color: CupertinoColors.secondaryLabel,
