@@ -101,7 +101,7 @@ class RetailCompletePage extends StatelessWidget {
                       ],
                     ),
                   ],
-                  Divider(height: 24),
+                  const Divider(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

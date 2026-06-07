@@ -49,6 +49,14 @@ class ApiEndpoints {
   /// 仓库列表
   static const String warehouseList = '/warehouse/list-base';
 
+  // ===== 采购 =====
+  /// 采购列表
+  static const String purchaseList = '/purchase/list';
+  /// 采购单详情
+  static String purchaseDetail(int id) => '/purchase/detail?id=$id';
+  /// 采购入库
+  static const String purchaseIntoWarehouse = '/purchase/into-warehouse';
+
   // ===== 通用 =====
   /// 用户信息（登录后获取）
   static const String userSelf = '/members/self';

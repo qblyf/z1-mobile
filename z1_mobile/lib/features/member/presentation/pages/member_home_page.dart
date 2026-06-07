@@ -159,7 +159,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
                   backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
                   child: Text(
                     member.name.isNotEmpty ? member.name[0] : '?',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
@@ -193,7 +193,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
                 backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
                 child: Text(
                   member.name.isNotEmpty ? member.name[0] : '?',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppTheme.primaryColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -223,7 +223,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
                           ),
                           child: Text(
                             member.levelName,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppTheme.primaryColor,
                               fontSize: 12,
                             ),
@@ -234,7 +234,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
                     const SizedBox(height: 4),
                     Text(
                       member.maskedPhone,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppTheme.grey600,
                         fontSize: 14,
                       ),
@@ -246,13 +246,13 @@ class _MemberHomePageState extends State<MemberHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${member.availableExperienceYuan.toStringAsFixed(0)}',
+                    member.availableExperienceYuan.toStringAsFixed(0),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  Text(
+                  const Text(
                     '积分',
                     style: TextStyle(
                       color: AppTheme.grey500,
@@ -273,7 +273,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.person_off_outlined,
             size: 64,
             color: AppTheme.grey400,
@@ -283,7 +283,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
             searchKeyword != null && searchKeyword.isNotEmpty
                 ? '未找到该会员'
                 : '暂无会员数据',
-            style: TextStyle(
+            style: const TextStyle(
               color: AppTheme.grey600,
               fontSize: 16,
             ),
@@ -305,7 +305,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             size: 64,
             color: AppTheme.errorColor,
@@ -313,7 +313,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
           const SizedBox(height: 16),
           Text(
             message,
-            style: TextStyle(color: AppTheme.grey600),
+            style: const TextStyle(color: AppTheme.grey600),
           ),
           const SizedBox(height: 16),
           ElevatedButton(

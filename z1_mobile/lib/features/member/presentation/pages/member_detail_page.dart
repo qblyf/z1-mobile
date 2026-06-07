@@ -97,7 +97,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                   backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
                   child: Text(
                     member.name.isNotEmpty ? member.name[0] : '?',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 24,
@@ -127,7 +127,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                             ),
                             child: Text(
                               member.levelName,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: 12,
                               ),
@@ -138,7 +138,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                       const SizedBox(height: 4),
                       Text(
                         member.phone,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.grey600,
                           fontSize: 14,
                         ),
@@ -149,14 +149,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               ],
             ),
             const SizedBox(height: 12),
-            Divider(color: AppTheme.grey200),
+            const Divider(color: AppTheme.grey200),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '注册于 ${member.createdAtFormatted}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppTheme.grey500,
                     fontSize: 12,
                   ),
@@ -177,7 +177,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                     ),
                     child: Text(
                       tag,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppTheme.grey700,
                         fontSize: 12,
                       ),
@@ -210,7 +210,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                   ),
                 ),
                 Text(
-                  '${member.availableExperienceYuan.toStringAsFixed(0)}',
+                  member.availableExperienceYuan.toStringAsFixed(0),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 28,
@@ -221,7 +221,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             const SizedBox(height: 4),
             Text(
               '可抵 ¥${member.availableExperienceYuan.toStringAsFixed(2)}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppTheme.grey500,
                 fontSize: 12,
               ),
@@ -299,7 +299,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppTheme.grey700,
               fontSize: 12,
             ),
@@ -355,7 +355,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                           fontSize: 18,
                         ),
                       ),
-                      Text(
+                      const Text(
                         '今日',
                         style: TextStyle(
                           color: AppTheme.grey500,
@@ -376,7 +376,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                           fontSize: 18,
                         ),
                       ),
-                      Text(
+                      const Text(
                         '本周',
                         style: TextStyle(
                           color: AppTheme.grey500,
@@ -418,9 +418,9 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
         ),
         const SizedBox(height: 12),
         if (orders.isEmpty)
-          Card(
+          const Card(
             child: Padding(
-              padding: const EdgeInsets.all(32),
+              padding: EdgeInsets.all(32),
               child: Center(
                 child: Text(
                   '暂无消费记录',
@@ -458,7 +458,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                     const SizedBox(height: 4),
                     Text(
                       order.createdAtFormatted,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppTheme.grey500,
                         fontSize: 12,
                       ),
@@ -509,13 +509,13 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.person_off_outlined,
             size: 64,
             color: AppTheme.grey400,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             '该会员不存在',
             style: TextStyle(
               color: AppTheme.grey600,
@@ -537,7 +537,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             size: 64,
             color: AppTheme.errorColor,
@@ -545,7 +545,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
           const SizedBox(height: 16),
           Text(
             message,
-            style: TextStyle(color: AppTheme.grey600),
+            style: const TextStyle(color: AppTheme.grey600),
           ),
           const SizedBox(height: 16),
           ElevatedButton(

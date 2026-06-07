@@ -384,9 +384,8 @@ class _RetailProductPageState extends State<RetailProductPage> {
                                 children: [
                                   CupertinoButton(
                                     padding: EdgeInsets.zero,
-                                    minSize: 28,
+                                    onPressed: () => _updateQuantity(item, -1), minimumSize: const Size(28, 28),
                                     child: const Icon(CupertinoIcons.minus_circle, size: 22),
-                                    onPressed: () => _updateQuantity(item, -1),
                                   ),
                                   Text(
                                     '${item.quantity}',
@@ -394,9 +393,8 @@ class _RetailProductPageState extends State<RetailProductPage> {
                                   ),
                                   CupertinoButton(
                                     padding: EdgeInsets.zero,
-                                    minSize: 28,
+                                    onPressed: () => _updateQuantity(item, 1), minimumSize: const Size(28, 28),
                                     child: const Icon(CupertinoIcons.plus_circle, size: 22),
-                                    onPressed: () => _updateQuantity(item, 1),
                                   ),
                                 ],
                               ),
@@ -470,9 +468,9 @@ class _ProductCard extends StatelessWidget {
         children: [
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: CupertinoColors.systemGrey6,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
               ),
               alignment: Alignment.center,
               child: const Icon(CupertinoIcons.cube_box, size: 48, color: CupertinoColors.systemGrey),

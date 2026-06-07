@@ -13,10 +13,10 @@ class TaskHomePage extends StatelessWidget {
       child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
-          children: [
+          children: const [
             _TaskSection(
               title: '今日任务',
-              tasks: const [
+              tasks: [
                 _TaskItem(
                   title: '完成会员资料补充',
                   deadline: '今天 18:00',
@@ -29,10 +29,10 @@ class TaskHomePage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             _TaskSection(
               title: '本周任务',
-              tasks: const [
+              tasks: [
                 _TaskItem(
                   title: '周报提交',
                   deadline: '周五 17:00',
@@ -45,10 +45,10 @@ class TaskHomePage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             _TaskSection(
               title: '已完成',
-              tasks: const [
+              tasks: [
                 _TaskItem(
                   title: '客户回访',
                   deadline: '昨天',

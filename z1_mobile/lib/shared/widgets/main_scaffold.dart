@@ -46,7 +46,7 @@ class MainScaffold extends StatelessWidget {
         children: [
           Expanded(child: child),
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: CupertinoColors.systemBackground,
               border: Border(
                 top: BorderSide(
