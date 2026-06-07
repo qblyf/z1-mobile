@@ -1,8 +1,9 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/api/api_client.dart';
 import '../../../../core/api/api_endpoints.dart';
+import '../../../../core/services/token_service.dart';
 import '../../../../injection.dart';
 import '../../data/models/retail_order_model.dart';
 
@@ -97,10 +98,16 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
     setState(() => _isProcessing = true);
 
     try {
-      final dio = getIt<Dio>();
-      final response = await dio.post(
+      // 零售开单专属权限令牌（登录态注入时按 shopSaleApplyView 拉取并存储）
+      final permissionJwt = getIt<TokenService>()
+          .getPermissionFor(ApiEndpoints.permKeyShopSaleApply);
+
+      final result = await getIt<ApiClient>().post<Map<String, dynamic>>(
         ApiEndpoints.shopSaleAdd,
-        options: Options(headers: {'Use-Permissions': 'all'}),
+        headers: permissionJwt != null
+            ? {'Use-Permissions': permissionJwt}
+            : null,
+        parser: (data) => data as Map<String, dynamic>,
         data: {
           'warehouseID': _order.warehouseID,
           'customerIdent': _order.customerIdent ?? 0,
@@ -131,7 +138,16 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
         },
       );
 
-      final orderNumber = response.data['orderNumber'] ?? 'Z1-${DateTime.now().millisecondsSinceEpoch}';
+      if (result.isFailure) {
+        if (mounted) {
+          await _showError(result.failure!.message);
+        }
+        return;
+      }
+
+      final res = result.value?['res'] as Map<String, dynamic>?;
+      final orderNumber = res?['orderNumber']?.toString() ??
+          'Z1-${DateTime.now().millisecondsSinceEpoch}';
 
       final payments = _selectedPayments.entries
           .map((e) => PayItem(paymentTypeID: e.key, amount: e.value))
@@ -148,25 +164,29 @@ class _RetailPaymentPageState extends State<RetailPaymentPage> {
       }
     } catch (e) {
       if (mounted) {
-        await showCupertinoDialog<void>(
-          context: context,
-          builder: (ctx) => CupertinoAlertDialog(
-            title: const Text('创建订单失败'),
-            content: Text('$e'),
-            actions: [
-              CupertinoDialogAction(
-                child: const Text('确定'),
-                onPressed: () => Navigator.pop(ctx),
-              ),
-            ],
-          ),
-        );
+        await _showError('$e');
       }
     } finally {
       if (mounted) {
         setState(() => _isProcessing = false);
       }
     }
+  }
+
+  Future<void> _showError(String message) {
+    return showCupertinoDialog<void>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('创建订单失败'),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('确定'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

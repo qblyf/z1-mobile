@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/datasources/warehouse_remote_datasource.dart';
+import '../../../../core/models/warehouse_model.dart';
+import '../../../../injection.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/models/retail_order_model.dart';
 import '../bloc/member_bloc.dart';
 
@@ -43,10 +47,39 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
   bool _isWalkIn = false;
   Timer? _debounceTimer;
 
+  List<WarehouseModel> _warehouses = [];
+  WarehouseModel? _selectedWarehouse;
+  bool _loadingWarehouses = true;
+
   @override
   void initState() {
     super.initState();
     context.read<MemberBloc>().add(const MemberLoadRecentRequested());
+    _loadWarehouses();
+  }
+
+  Future<void> _loadWarehouses() async {
+    final result = await getIt<WarehouseRemoteDataSource>().getWarehouseList();
+    if (!mounted) return;
+    final list = result.value ?? const <WarehouseModel>[];
+    // 预选登录态默认仓
+    final authState = context.read<AuthBloc>().state;
+    final defaultId =
+        authState is AuthAuthenticated ? authState.user.defaultWarehouseID : null;
+    WarehouseModel? preselect;
+    if (defaultId != null) {
+      for (final w in list) {
+        if (w.id == defaultId) {
+          preselect = w;
+          break;
+        }
+      }
+    }
+    setState(() {
+      _warehouses = list;
+      _selectedWarehouse = preselect;
+      _loadingWarehouses = false;
+    });
   }
 
   @override
@@ -84,17 +117,95 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
   }
 
   void _startOrder() {
-    // TODO(缺口4): warehouseID/sellerIdent 暂硬编码为当前超管账号(技术部仓库63)
-    // 待登录态注入用户信息后改为动态读取
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) {
+      _showAlert('登录状态已失效', '请重新登录后再开单。');
+      return;
+    }
+    final warehouseId = _selectedWarehouse?.id;
+    if (warehouseId == null || warehouseId == 0) {
+      _showAlert('请选择仓库', '未识别到默认仓库，请先手动选择开单仓库。');
+      return;
+    }
+
     final order = RetailOrder(
       salesType: _selectedType,
       customerIdent: _boundMember?.ident,
       customerName: _boundMember?.realName,
-      warehouseID: 63,
-      sellerIdent: 999999999,
+      warehouseID: warehouseId,
+      sellerIdent: authState.user.userIdent,
     );
 
     context.push('/home/retail/product', extra: order);
+  }
+
+  void _showAlert(String title, String message) {
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('确定'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showWarehousePicker() {
+    if (_warehouses.isEmpty) return;
+    int index = _selectedWarehouse != null
+        ? _warehouses.indexWhere((w) => w.id == _selectedWarehouse!.id)
+        : 0;
+    if (index < 0) index = 0;
+
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => Container(
+        height: 250,
+        color: CupertinoColors.systemBackground,
+        child: Column(
+          children: [
+            Container(
+              height: 44,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('取消'),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      setState(() => _selectedWarehouse = _warehouses[index]);
+                    },
+                    child: const Text('确定'),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: CupertinoPicker(
+                itemExtent: 40,
+                scrollController:
+                    FixedExtentScrollController(initialItem: index),
+                onSelectedItemChanged: (i) => index = i,
+                children: _warehouses
+                    .map((w) => Center(child: Text(w.name)))
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -108,6 +219,8 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
           padding: const EdgeInsets.all(16),
           children: [
             _buildSalesTypeSection(),
+            const SizedBox(height: 16),
+            _buildWarehouseSection(),
             const SizedBox(height: 16),
             _buildMemberBindSection(),
             const SizedBox(height: 16),
@@ -172,6 +285,59 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWarehouseSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: CupertinoColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '开单仓库',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: CupertinoColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_loadingWarehouses)
+            const Center(child: CupertinoActivityIndicator())
+          else
+            GestureDetector(
+              onTap: _showWarehousePicker,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey6,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: CupertinoColors.separator),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _selectedWarehouse?.name ?? '请选择仓库',
+                      style: TextStyle(
+                        color: _selectedWarehouse != null
+                            ? CupertinoColors.label
+                            : CupertinoColors.tertiaryLabel,
+                      ),
+                    ),
+                    const Icon(CupertinoIcons.chevron_down,
+                        color: CupertinoColors.secondaryLabel, size: 18),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -597,7 +763,8 @@ class _RetailEntryPageState extends State<RetailEntryPage> {
   }
 
   Widget _buildStartButton() {
-    final canStart = (_boundMember != null || _isWalkIn);
+    final canStart =
+        (_boundMember != null || _isWalkIn) && _selectedWarehouse != null;
 
     return CupertinoButton.filled(
       borderRadius: BorderRadius.circular(14),
