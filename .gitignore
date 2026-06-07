@@ -6,6 +6,10 @@
 .claude/local/
 .worktrees/
 
+# 根目录功能开发工作区（git worktree，不应作为 gitlink 入主仓库）
+/purchase-dev/
+/workbench/
+
 # Agent 工作区数据（按约定走 mcp__agent-memory__memory 工具读写，不入 git）
 memory/JOURNAL.jsonl
 
